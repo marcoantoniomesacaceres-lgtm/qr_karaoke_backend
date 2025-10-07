@@ -35,4 +35,8 @@ def conectar_usuario_a_mesa(
     db_mesa = crud.get_mesa_by_qr(db, qr_code=qr_code)
     if not db_mesa:
         raise HTTPException(status_code=404, detail="Mesa no encontrada")
+    
+    if crud.is_nick_banned(db, nick=usuario.nick):
+        raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
+
     return crud.create_usuario_en_mesa(db=db, usuario=usuario, mesa_id=db_mesa.id)

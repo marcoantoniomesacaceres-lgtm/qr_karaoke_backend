@@ -123,30 +123,59 @@ def get_cola_priorizada(db: Session):
         .all()
     )
 
+def get_producto_by_nombre(db: Session, nombre: str):
+    """Busca un producto por su nombre."""
+    return db.query(models.Producto).filter(models.Producto.nombre == nombre).first()
+
+def get_productos(db: Session, skip: int = 0, limit: int = 100):
+    """Obtiene una lista de todos los productos del catálogo."""
+    return db.query(models.Producto).offset(skip).limit(limit).all()
+
+def create_producto(db: Session, producto: schemas.ProductoCreate):
+    """Crea un nuevo producto en el catálogo."""
+    db_producto = models.Producto(**producto.dict())
+    db.add(db_producto)
+    db.commit()
+    db.refresh(db_producto)
+    return db_producto
+
 def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usuario_id: int):
     """Crea un nuevo consumo, lo asocia a un usuario y actualiza su nivel."""
     # Definimos los umbrales para cada nivel
     SILVER_THRESHOLD = 50.0
     GOLD_THRESHOLD = 150.0
 
-    # Creamos el objeto de consumo y lo añadimos a la sesión
-    db_consumo = models.Consumo(**consumo.dict(), usuario_id=usuario_id)
-    db.add(db_consumo)
+    # 1. Obtener el producto del catálogo para saber su precio
+    db_producto = db.query(models.Producto).filter(models.Producto.id == consumo.producto_id).first()
+    if not db_producto:
+        return None, "Producto no encontrado en el catálogo."
+
+    if not db_producto.is_active:
+        return None, "El producto no está disponible actualmente."
+
+    # 2. Calcular el valor total de la transacción
+    valor_total_transaccion = db_producto.valor * consumo.cantidad
+
+    # 3. Crear el registro de consumo
+    db_consumo = models.Consumo(
+        producto_id=consumo.producto_id,
+        cantidad=consumo.cantidad,
+        valor_total=valor_total_transaccion,
+        usuario_id=usuario_id
+    )
 
     # Obtenemos el usuario para poder actualizarlo
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if not db_usuario:
-        # En un caso real, esto debería lanzar una excepción, pero por ahora lo dejamos pasar.
         db.rollback()
-        return None
+        return None, "Usuario no encontrado."
 
-    # Sumamos el valor del nuevo consumo al total que ya tenía el usuario
-    # Para obtener el total, sumamos todos los consumos del usuario en la BD
-    # Nota: Hacemos commit del consumo nuevo primero para que la suma sea correcta.
+    db.add(db_consumo)
     db.commit()
     db.refresh(db_consumo)
 
-    total_consumido = db.query(func.sum(models.Consumo.valor)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
+    # 4. Actualizar el nivel del usuario
+    total_consumido = db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
 
     if total_consumido >= GOLD_THRESHOLD:
         db_usuario.nivel = "oro"
@@ -155,7 +184,7 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
 
     db.commit()
     db.refresh(db_usuario)
-    return db_consumo
+    return db_consumo, None
 
 def marcar_cancion_actual_como_cantada(db: Session):
     """
@@ -169,6 +198,7 @@ def marcar_cancion_actual_como_cantada(db: Session):
 
     # 2. Actualizar el estado de la canción a 'cantada'
     cancion_actual.estado = "cantada"
+    cancion_actual.finished_at = datetime.datetime.utcnow()
 
     # 3. Dar puntos al usuario por cantar
     if cancion_actual.usuario:
@@ -322,3 +352,652 @@ def reordenar_cola_manual(db: Session, canciones_ids: List[int]):
         db.query(models.Cancion).filter(models.Cancion.id == cancion_id).update({"orden_manual": i + 1})
     
     db.commit()
+
+def get_usuarios_sin_consumo(db: Session):
+    """
+    Obtiene una lista de todos los usuarios que no han realizado ningún consumo.
+    """
+    return (
+        db.query(models.Usuario)
+        .outerjoin(models.Consumo)
+        .group_by(models.Usuario.id)
+        .having(func.count(models.Consumo.id) == 0)
+        .all()
+    )
+
+def get_mesa_by_id(db: Session, mesa_id: int):
+    """Busca una mesa por su ID."""
+    return db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
+
+def delete_mesa(db: Session, mesa_id: int):
+    """Elimina una mesa de la base de datos por su ID."""
+    db_mesa = db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
+    if db_mesa:
+        db.delete(db_mesa)
+        db.commit()
+
+def move_song_to_top(db: Session, cancion_id: int):
+    """
+    Mueve una canción específica al principio de la cola manual.
+    """
+    # 1. Validar que la canción existe y está aprobada
+    cancion_a_mover = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'aprobado'
+    ).first()
+
+    if not cancion_a_mover:
+        return None
+
+    # 2. Encontrar el valor de orden manual más bajo actual
+    min_orden = db.query(func.min(models.Cancion.orden_manual)).scalar()
+
+    nuevo_orden = 1
+    if min_orden is not None:
+        nuevo_orden = min_orden - 1
+    
+    # 3. Asignar el nuevo orden a la canción
+    cancion_a_mover.orden_manual = nuevo_orden
+    db.commit()
+    db.refresh(cancion_a_mover)
+    return cancion_a_mover
+
+def get_canciones_cantadas_por_usuario(db: Session):
+    """
+    Obtiene un reporte de la cantidad de canciones cantadas por cada usuario.
+    """
+    return (
+        db.query(
+            models.Usuario.nick,
+            func.count(models.Cancion.id).label("canciones_cantadas"),
+        )
+        .join(models.Cancion, models.Usuario.id == models.Cancion.usuario_id)
+        .filter(models.Cancion.estado == "cantada")
+        .group_by(models.Usuario.nick)
+        .order_by(func.count(models.Cancion.id).desc())
+        .all()
+    )
+
+def update_usuario_nick(db: Session, usuario_id: int, nuevo_nick: str):
+    """
+    Actualiza el nick de un usuario específico.
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if db_usuario:
+        db_usuario.nick = nuevo_nick
+        db.commit()
+        db.refresh(db_usuario)
+    return db_usuario
+
+def get_ingresos_promedio_por_usuario(db: Session):
+    """
+    Calcula los ingresos promedio por cada usuario que ha consumido.
+    """
+    # Calcular ingresos totales
+    total_ingresos = db.query(func.sum(models.Consumo.valor)).scalar() or 0
+
+    # Contar el número de usuarios únicos con consumo
+    usuarios_con_consumo = db.query(models.Consumo.usuario_id).distinct().count()
+
+    if usuarios_con_consumo == 0:
+        return 0
+
+    return total_ingresos / usuarios_con_consumo
+
+def update_usuario_mesa(db: Session, usuario_id: int, nueva_mesa_id: int):
+    """
+    Actualiza la mesa de un usuario específico.
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if db_usuario:
+        db_usuario.mesa_id = nueva_mesa_id
+        db.commit()
+        db.refresh(db_usuario)
+    return db_usuario
+
+def get_usuarios_una_cancion(db: Session):
+    """
+    Obtiene una lista de usuarios que han cantado exactamente una canción.
+    """
+    return (
+        db.query(models.Usuario)
+        .join(models.Cancion, models.Usuario.id == models.Cancion.usuario_id)
+        .filter(models.Cancion.estado == "cantada")
+        .group_by(models.Usuario.id)
+        .having(func.count(models.Cancion.id) == 1)
+        .all()
+    )
+
+def add_puntos_a_usuario(db: Session, usuario_id: int, puntos_a_anadir: int):
+    """
+    Añade una cantidad de puntos a un usuario específico.
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if db_usuario:
+        db_usuario.puntos += puntos_a_anadir
+        db.commit()
+        db.refresh(db_usuario)
+    return db_usuario
+
+def get_mesas_vacias(db: Session):
+    """
+    Obtiene una lista de todas las mesas que no tienen usuarios conectados.
+    """
+    return (
+        db.query(models.Mesa)
+        .outerjoin(models.Usuario)
+        .group_by(models.Mesa.id)
+        .having(func.count(models.Usuario.id) == 0)
+        .all()
+    )
+
+def delete_usuario(db: Session, usuario_id: int):
+    """
+    Elimina un usuario y todos sus datos asociados (canciones, consumos).
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not db_usuario:
+        return None
+
+    # Borrar datos dependientes primero para evitar errores de clave foránea
+    db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).delete(synchronize_session=False)
+    db.query(models.Cancion).filter(models.Cancion.usuario_id == usuario_id).delete(synchronize_session=False)
+
+    # Finalmente, borrar el usuario
+    db.delete(db_usuario)
+    db.commit()
+    return db_usuario
+
+def get_ingresos_promedio_por_usuario_por_mesa(db: Session):
+    """
+    Calcula los ingresos promedio por usuario para cada mesa.
+    """
+    # Subconsulta para obtener el número de usuarios por mesa
+    user_count_subq = (
+        db.query(
+            models.Mesa.id.label("mesa_id"),
+            func.count(models.Usuario.id).label("num_usuarios"),
+        )
+        .join(models.Usuario)
+        .group_by(models.Mesa.id)
+        .subquery()
+    )
+
+    # Consulta principal que une los ingresos totales por mesa con el conteo de usuarios
+    return db.query(
+        models.Mesa.nombre,
+        (func.coalesce(func.sum(models.Consumo.valor), 0) / func.coalesce(user_count_subq.c.num_usuarios, 1)).label("ingresos_promedio")
+    ).join(models.Usuario).join(models.Consumo).join(user_count_subq, models.Mesa.id == user_count_subq.c.mesa_id, isouter=True).group_by(models.Mesa.nombre, user_count_subq.c.num_usuarios).order_by(func.sum(models.Consumo.valor).desc()).all()
+
+def is_nick_banned(db: Session, nick: str):
+    """Verifica si un nick está en la lista de baneados (case-insensitive)."""
+    return db.query(models.BannedNick).filter(models.BannedNick.nick.ilike(nick)).first() is not None
+
+def ban_usuario(db: Session, usuario_id: int):
+    """
+    Banea a un usuario: añade su nick a la lista de baneados y luego lo elimina.
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not db_usuario:
+        return None
+
+    # 1. Añadir el nick a la lista de baneados si no existe
+    nick_baneado_existente = db.query(models.BannedNick).filter(models.BannedNick.nick.ilike(db_usuario.nick)).first()
+    if not nick_baneado_existente:
+        banned_nick_entry = models.BannedNick(nick=db_usuario.nick)
+        db.add(banned_nick_entry)
+        # Hacemos un commit intermedio para asegurar que el nick baneado se guarde
+        # antes de proceder con el borrado del usuario.
+        db.commit()
+
+    # 2. Eliminar al usuario y sus datos asociados (reutilizamos la función existente)
+    delete_usuario(db, usuario_id=usuario_id)
+
+    return db_usuario
+
+def get_tiempo_promedio_espera(db: Session):
+    """
+    Calcula el tiempo promedio en segundos desde que una canción se añade hasta que se canta.
+    """
+    # Para SQLite, usamos julianday para calcular la diferencia en días y luego convertimos a segundos.
+    # Para PostgreSQL, sería: func.avg(func.extract('epoch', models.Cancion.finished_at - models.Cancion.created_at))
+    avg_seconds = db.query(func.avg((func.julianday(models.Cancion.finished_at) - func.julianday(models.Cancion.created_at)) * 86400)).filter(
+        models.Cancion.estado == "cantada",
+        models.Cancion.finished_at.isnot(None)
+    ).scalar()
+    return avg_seconds or 0
+
+def get_actividad_por_hora(db: Session):
+    """
+    Obtiene un reporte de la cantidad de canciones cantadas por cada hora del día.
+    """
+    return (
+        db.query(
+            # Usamos strftime para SQLite para extraer la hora.
+            # Para PostgreSQL sería: extract('hour', models.Cancion.started_at)
+            func.strftime('%H', models.Cancion.started_at).label("hora"),
+            func.count(models.Cancion.id).label("canciones_cantadas"),
+        )
+        .filter(models.Cancion.estado == "cantada", models.Cancion.started_at.isnot(None))
+        .group_by(func.strftime('%H', models.Cancion.started_at))
+        .order_by(func.count(models.Cancion.id).desc())
+        .all()
+    )
+
+def get_canciones_cantadas_por_mesa(db: Session):
+    """
+    Obtiene un reporte de la cantidad de canciones cantadas por cada mesa.
+    """
+    return (
+        db.query(
+            models.Mesa.nombre,
+            func.count(models.Cancion.id).label("canciones_cantadas"),
+        )
+        .join(models.Usuario, models.Mesa.id == models.Usuario.mesa_id)
+        .join(models.Cancion, models.Usuario.id == models.Cancion.usuario_id)
+        .filter(models.Cancion.estado == "cantada")
+        .group_by(models.Mesa.nombre)
+        .order_by(func.count(models.Cancion.id).desc())
+        .all()
+    )
+
+def set_usuario_silenciado(db: Session, usuario_id: int, silenciar: bool):
+    """
+    Actualiza el estado 'silenciado' de un usuario.
+    """
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if db_usuario:
+        db_usuario.is_silenced = silenciar
+        db.commit()
+        db.refresh(db_usuario)
+    return db_usuario
+
+def unban_nick(db: Session, nick: str):
+    """
+    Elimina un nick de la lista de baneados para permitir que se vuelva a registrar.
+    """
+    banned_nick_entry = db.query(models.BannedNick).filter(models.BannedNick.nick.ilike(nick)).first()
+    if banned_nick_entry:
+        db.delete(banned_nick_entry)
+        db.commit()
+    return banned_nick_entry
+
+def get_banned_nicks(db: Session):
+    """
+    Obtiene una lista de todos los nicks baneados.
+    """
+    return db.query(models.BannedNick).order_by(models.BannedNick.banned_at.desc()).all()
+
+def get_canciones_mas_rechazadas(db: Session, limit: int = 10):
+    """
+    Obtiene un reporte de las canciones más rechazadas, agrupadas y contadas.
+    """
+    return (
+        db.query(
+            models.Cancion.titulo,
+            models.Cancion.youtube_id,
+            func.count(models.Cancion.id).label("veces_rechazada"),
+        )
+        .filter(models.Cancion.estado == "rechazada")
+        .group_by(models.Cancion.titulo, models.Cancion.youtube_id)
+        .order_by(func.count(models.Cancion.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_usuarios_mas_rechazados(db: Session, limit: int = 10):
+    """
+    Obtiene un reporte de los usuarios a los que más se les han rechazado canciones.
+    """
+    return (
+        db.query(
+            models.Usuario.nick,
+            func.count(models.Cancion.id).label("canciones_rechazadas"),
+        )
+        .join(models.Cancion, models.Usuario.id == models.Cancion.usuario_id)
+        .filter(models.Cancion.estado == "rechazada")
+        .group_by(models.Usuario.nick)
+        .order_by(func.count(models.Cancion.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_ingresos_por_categoria(db: Session):
+    """
+    Calcula los ingresos totales agrupados por cada categoría de producto.
+    """
+    return (
+        db.query(
+            models.Consumo.categoria,
+            func.sum(models.Consumo.valor).label("ingresos_totales")
+        )
+        .group_by(models.Consumo.categoria)
+        .order_by(func.sum(models.Consumo.valor).desc())
+        .all()
+    )
+
+def create_admin_log_entry(db: Session, action: str, details: Optional[str] = None):
+    """Crea una nueva entrada en el log de administración."""
+    log_entry = models.AdminLog(action=action, details=details)
+    db.add(log_entry)
+    db.commit()
+    return log_entry
+
+def get_admin_logs(db: Session, limit: int = 100):
+    """Obtiene las últimas entradas del log de administración."""
+    return db.query(models.AdminLog).order_by(models.AdminLog.timestamp.desc()).limit(limit).all()
+
+def get_productos_menos_consumidos(db: Session, limit: int = 5):
+    """
+    Obtiene un reporte de los productos menos consumidos, agrupados y sumada su cantidad.
+    """
+    return (
+        db.query(
+            models.Consumo.producto,
+            func.sum(models.Consumo.cantidad).label("cantidad_total"),
+        )
+        .group_by(models.Consumo.producto)
+        .order_by(func.sum(models.Consumo.cantidad).asc())  # Orden ascendente
+        .limit(limit)
+        .all()
+    )
+
+def get_productos_no_consumidos(db: Session):
+    """
+    Obtiene una lista de productos del catálogo que nunca han sido consumidos.
+    """
+    return (
+        db.query(models.Producto)
+        .outerjoin(models.Consumo)
+        .group_by(models.Producto.id)
+        .having(func.count(models.Consumo.id) == 0)
+        .all()
+    )
+
+def update_producto_valor(db: Session, producto_id: int, nuevo_valor: Decimal):
+    """
+    Actualiza el valor de un producto específico en el catálogo.
+    """
+    db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+    if db_producto:
+        db_producto.valor = nuevo_valor
+        db.commit()
+        db.refresh(db_producto)
+    return db_producto
+
+def get_usuarios_por_nivel(db: Session, nivel: str):
+    """
+    Obtiene una lista de todos los usuarios que tienen un nivel específico.
+    """
+    return db.query(models.Usuario).filter(models.Usuario.nivel == nivel).all()
+
+def get_resumen_noche(db: Session):
+    """
+    Obtiene un resumen de las métricas clave de la noche.
+    """
+    ingresos_totales = db.query(func.sum(models.Consumo.valor_total)).scalar() or 0
+    canciones_cantadas = db.query(func.count(models.Cancion.id)).filter(models.Cancion.estado == "cantada").scalar() or 0
+    usuarios_activos = db.query(func.count(models.Usuario.id)).scalar() or 0
+    return {
+        "ingresos_totales": ingresos_totales,
+        "canciones_cantadas": canciones_cantadas,
+        "usuarios_activos": usuarios_activos,
+    }
+
+def get_resumen_mesa(db: Session, mesa_id: int):
+    """
+    Obtiene un resumen detallado de una mesa específica, incluyendo usuarios,
+    consumo total y canciones pendientes/reproduciéndose.
+    """
+    db_mesa = db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
+    if not db_mesa:
+        return None
+
+    # Usuarios en la mesa
+    usuarios_mesa = db.query(models.Usuario).filter(models.Usuario.mesa_id == mesa_id).all()
+
+    # Consumo total de la mesa
+    consumo_total_mesa = (
+        db.query(func.sum(models.Consumo.valor_total))
+        .join(models.Usuario)
+        .filter(models.Usuario.mesa_id == mesa_id)
+        .scalar() or 0
+    )
+
+    # Canciones pendientes y reproduciendo de la mesa
+    canciones_mesa = (
+        db.query(models.Cancion)
+        .join(models.Usuario)
+        .filter(models.Usuario.mesa_id == mesa_id, models.Cancion.estado.in_(['pendiente', 'aprobado', 'reproduciendo']))
+        .all()
+    )
+    canciones_pendientes = [c for c in canciones_mesa if c.estado in ['pendiente', 'aprobado']]
+    cancion_reproduciendo = next((c for c in canciones_mesa if c.estado == 'reproduciendo'), None)
+
+    return {
+        "mesa_nombre": db_mesa.nombre,
+        "usuarios": usuarios_mesa,
+        "consumo_total_mesa": consumo_total_mesa,
+        "canciones_pendientes_mesa": canciones_pendientes,
+        "canciones_reproduciendo_mesa": cancion_reproduciendo,
+    }
+
+def get_usuarios_sin_canciones_cantadas(db: Session):
+    """
+    Obtiene una lista de usuarios que no han cantado ninguna canción.
+    """
+    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    subquery = db.query(models.Usuario.id).join(models.Cancion).filter(models.Cancion.estado == 'cantada').distinct()
+
+    # Consulta principal para obtener los usuarios cuyo ID NO ESTÁ en la subconsulta.
+    return db.query(models.Usuario).filter(models.Usuario.id.notin_(subquery)).all()
+
+def get_estado_mesas(db: Session):
+    """
+    Obtiene un listado de todas las mesas con su estado (ocupada/vacía),
+    número de usuarios y consumo total.
+    """
+    # Subconsulta para el conteo de usuarios por mesa
+    user_count_subq = (
+        db.query(
+            models.Mesa.id.label("mesa_id"),
+            func.count(models.Usuario.id).label("user_count")
+        )
+        .outerjoin(models.Usuario)
+        .group_by(models.Mesa.id)
+        .subquery()
+    )
+
+    # Subconsulta para el consumo total por mesa
+    consumo_total_subq = (
+        db.query(
+            models.Mesa.id.label("mesa_id"),
+            func.sum(models.Consumo.valor_total).label("total_consumido")
+        )
+        .outerjoin(models.Usuario).outerjoin(models.Consumo)
+        .group_by(models.Mesa.id)
+        .subquery()
+    )
+
+    # Consulta principal que une los datos
+    return db.query(
+        models.Mesa,
+        func.coalesce(user_count_subq.c.user_count, 0),
+        func.coalesce(consumo_total_subq.c.total_consumido, 0)
+    ).outerjoin(user_count_subq, models.Mesa.id == user_count_subq.c.mesa_id).outerjoin(consumo_total_subq, models.Mesa.id == consumo_total_subq.c.mesa_id).order_by(models.Mesa.nombre).all()
+
+def get_ranking_puntos_usuarios(db: Session, limit: int = 10):
+    """
+    Obtiene un ranking de usuarios ordenado por la cantidad de puntos acumulados.
+    """
+    return (
+        db.query(models.Usuario)
+        .order_by(models.Usuario.puntos.desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_usuarios_cantan_pero_no_consumen(db: Session):
+    """
+    Obtiene una lista de usuarios que han cantado al menos una canción
+    pero no han realizado ningún consumo.
+    """
+    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    subquery_cantan = db.query(models.Cancion.usuario_id).filter(models.Cancion.estado == 'cantada').distinct()
+
+    # Subconsulta para obtener los IDs de los usuarios que SÍ han consumido.
+    subquery_consumen = db.query(models.Consumo.usuario_id).distinct()
+
+    # Consulta principal para obtener los usuarios que están en la primera subconsulta pero NO en la segunda.
+    return db.query(models.Usuario).filter(
+        models.Usuario.id.in_(subquery_cantan),
+        models.Usuario.id.notin_(subquery_consumen)
+    ).all()
+
+def get_consumos_por_usuario(db: Session, usuario_id: int):
+    """
+    Obtiene el historial de consumo de un usuario específico.
+    """
+    return db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).order_by(models.Consumo.created_at.desc()).all()
+
+def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: int = 10):
+    """
+    Obtiene un reporte de los usuarios que más han gastado en una categoría de producto específica.
+    """
+    return (
+        db.query(
+            models.Usuario.nick,
+            func.sum(models.Consumo.valor_total).label("total_gastado")
+        )
+        .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .filter(models.Producto.categoria.ilike(categoria))
+        .group_by(models.Usuario.nick)
+        .order_by(func.sum(models.Consumo.valor_total).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_productos_mas_consumidos_por_mesa(db: Session, mesa_id: int, limit: int = 5):
+    """
+    Obtiene un reporte de los productos más consumidos en una mesa específica.
+    """
+    return (
+        db.query(
+            models.Producto.nombre,
+            func.sum(models.Consumo.cantidad).label("cantidad_total"),
+        )
+        .join(models.Consumo, models.Producto.id == models.Consumo.producto_id)
+        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+        .filter(models.Usuario.mesa_id == mesa_id)
+        .group_by(models.Producto.nombre)
+        .order_by(func.sum(models.Consumo.cantidad).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_usuarios_oro_activos(db: Session):
+    """
+    Obtiene una lista de usuarios de nivel "Oro" que han cantado más de 5 canciones.
+    """
+    return (
+        db.query(models.Usuario)
+        .join(models.Cancion, models.Usuario.id == models.Cancion.usuario_id)
+        .filter(
+            models.Usuario.nivel == "oro",
+            models.Cancion.estado == "cantada"
+        )
+        .group_by(models.Usuario.id)
+        .having(func.count(models.Cancion.id) > 5)
+        .all()
+    )
+
+def get_canciones_mas_pedidas_por_mesa(db: Session, mesa_id: int, limit: int = 5):
+    """
+    Obtiene un reporte de las canciones más pedidas en una mesa específica.
+    """
+    return (
+        db.query(
+            models.Cancion.titulo,
+            models.Cancion.youtube_id,
+            func.count(models.Cancion.id).label("veces_pedida"),
+        )
+        .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
+        .filter(models.Usuario.mesa_id == mesa_id)
+        .group_by(models.Cancion.titulo, models.Cancion.youtube_id)
+        .order_by(func.count(models.Cancion.id).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_usuarios_consumen_pero_no_cantan(db: Session, umbral_consumo: float = 100.0):
+    """
+    Obtiene una lista de usuarios que han consumido más de un umbral
+    pero no han cantado ninguna canción.
+    """
+    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    subquery_cantan = db.query(models.Cancion.usuario_id).filter(models.Cancion.estado == 'cantada').distinct()
+
+    # Subconsulta para obtener los IDs de los usuarios que han consumido más del umbral.
+    subquery_consumen_mas_de = db.query(models.Usuario.id).join(models.Consumo).group_by(models.Usuario.id).having(func.sum(models.Consumo.valor_total) > umbral_consumo).subquery()
+
+    # Consulta principal para obtener los usuarios que están en la segunda subconsulta pero NO en la primera.
+    return db.query(models.Usuario).filter(
+        models.Usuario.id.in_(subquery_consumen_mas_de),
+        models.Usuario.id.notin_(subquery_cantan)
+    ).all()
+
+def get_categorias_mas_consumidas_por_mesa(db: Session, mesa_id: int, limit: int = 5):
+    """
+    Obtiene un reporte de las categorías de productos más consumidas en una mesa específica.
+    """
+    return (
+        db.query(
+            models.Producto.categoria,
+            func.sum(models.Consumo.cantidad).label("cantidad_total"),
+        )
+        .join(models.Consumo, models.Producto.id == models.Consumo.producto_id)
+        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+        .filter(models.Usuario.mesa_id == mesa_id)
+        .group_by(models.Producto.categoria)
+        .order_by(func.sum(models.Consumo.cantidad).desc())
+        .limit(limit)
+        .all()
+    )
+
+def get_top_consumers_one_song(db: Session, limit: int = 10):
+    """
+    Obtiene un reporte de los usuarios que más han consumido pero que solo han cantado una canción.
+    """
+    # Subconsulta para obtener los IDs de los usuarios que han cantado exactamente una canción.
+    subquery_una_cancion = (
+        db.query(models.Cancion.usuario_id)
+        .filter(models.Cancion.estado == 'cantada')
+        .group_by(models.Cancion.usuario_id)
+        .having(func.count(models.Cancion.id) == 1)
+        .subquery()
+    )
+
+    # Consulta principal que filtra por esos usuarios y los ordena por consumo
+    return (
+        db.query(models.Usuario.nick, func.sum(models.Consumo.valor_total).label("total_gastado"))
+        .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+        .filter(models.Usuario.id.in_(subquery_una_cancion))
+        .group_by(models.Usuario.nick)
+        .order_by(func.sum(models.Consumo.valor_total).desc())
+        .limit(limit)
+        .all()
+    )
+
+
+def get_consumo_por_mesa(db: Session, mesa_id: int):
+    """
+    Obtiene el historial de consumo de una mesa específica.
+    """
+    return (
+        db.query(models.Consumo)
+        .join(models.Usuario)
+        .filter(models.Usuario.mesa_id == mesa_id)
+        .order_by(models.Consumo.created_at.desc())
+        .all()
+    )

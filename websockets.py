@@ -37,4 +37,13 @@ class ConnectionManager:
         finally:
             db.close()
 
+    async def broadcast_notification(self, mensaje: str):
+        """Envía un mensaje de notificación general a todos los clientes."""
+        payload = {
+            "type": "notification",
+            "payload": {"mensaje": mensaje}
+        }
+        for connection in self.active_connections:
+            await connection.send_text(json.dumps(payload))
+
 manager = ConnectionManager()

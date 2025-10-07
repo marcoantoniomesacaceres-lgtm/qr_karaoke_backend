@@ -1,7 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from .database import engine
 from . import models
-from .api.v1.endpoints import mesas, canciones, youtube, consumos, usuarios, admin
+from .api.v1.endpoints import mesas, canciones, youtube, consumos, usuarios, admin, productos
 from .websockets import manager
 
 # Esto crea las tablas en la base de datos si no existen
@@ -36,3 +36,4 @@ app.include_router(youtube.router, prefix="/api/v1/youtube", tags=["YouTube"])
 app.include_router(consumos.router, prefix="/api/v1/consumos", tags=["Consumos"])
 app.include_router(usuarios.router, prefix="/api/v1/usuarios", tags=["Usuarios"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administración"])
+app.include_router(productos.router, prefix="/api/v1/productos", tags=["Productos"])

@@ -27,6 +27,13 @@ def anadir_cancion(
     Añade una nueva canción a la lista personal de un usuario, si hay tiempo.
     La canción se crea en estado 'pendiente' y verifica si hay tiempo suficiente antes de la hora de cierre.
     """
+    # 0. Verificar si el usuario está silenciado
+    db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
+    if not db_usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    if db_usuario.is_silenced:
+        raise HTTPException(status_code=403, detail="No tienes permiso para añadir más canciones.")
+
     # 1. Obtener la hora de cierre (configurable)
     hora_cierre_str = config.settings.KARAOKE_CIERRE
     try:
@@ -88,6 +95,7 @@ async def aprobar_cancion(cancion_id: int, db: Session = Depends(get_db), api_ke
     db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="aprobado")
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada")
+    crud.create_admin_log_entry(db, action="APPROVE_SONG", details=f"Canción '{db_cancion.titulo}' (ID: {cancion_id}) aprobada.")
     await manager.broadcast_queue_update()
     return db_cancion
 
@@ -100,6 +108,7 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
     db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="rechazada")
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada")
+    crud.create_admin_log_entry(db, action="REJECT_SONG", details=f"Canción '{db_cancion.titulo}' (ID: {cancion_id}) rechazada.")
     # También notificamos al rechazar, para que desaparezca de la lista de pendientes en el admin
     await manager.broadcast_queue_update()
     return db_cancion

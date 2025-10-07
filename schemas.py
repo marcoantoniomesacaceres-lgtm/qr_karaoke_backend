@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from decimal import Decimal
+from datetime import datetime
 
 # --- Schemas para Cancion ---
 class CancionBase(BaseModel):
@@ -28,6 +29,7 @@ class Usuario(UsuarioBase): # Schema completo de Usuario
     id: int
     puntos: int
     nivel: str
+    is_silenced: bool = False
     canciones: List[Cancion] = []
 
     class Config:
@@ -48,6 +50,12 @@ class Mesa(MesaBase):
     class Config:
         orm_mode = True # Permite que Pydantic lea datos de objetos SQLAlchemy
 
+# --- Schema para mesas vacías ---
+class MesaSimple(MesaBase):
+    id: int
+    class Config:
+        orm_mode = True
+
 # --- Schema simple para info de Mesa ---
 class MesaInfo(BaseModel):
     nombre: str
@@ -59,18 +67,34 @@ class CancionAdminView(Cancion):
     # Hereda de Cancion y añade la información del usuario
     usuario: UsuarioBase
 
+# --- Schemas para Producto ---
+class ProductoBase(BaseModel):
+    nombre: str
+    categoria: str
+    valor: Decimal
+
+class ProductoCreate(ProductoBase):
+    pass
+
+class Producto(ProductoBase):
+    id: int
+    is_active: bool
+    class Config:
+        orm_mode = True
+
 # --- Schemas para Consumo ---
 class ConsumoBase(BaseModel):
-    producto: str
+    producto_id: int
     cantidad: int = 1
-    valor: Decimal
 
 class ConsumoCreate(ConsumoBase):
     pass
 
-class Consumo(ConsumoBase):
+class Consumo(BaseModel):
     id: int
-
+    cantidad: int
+    valor_total: Decimal
+    producto: Producto
     class Config:
         orm_mode = True
 
@@ -79,6 +103,7 @@ class UsuarioPerfil(Usuario):
     total_consumido: Decimal = Decimal("0.0")
     rank: Optional[int] = None
     mesa: Optional[MesaInfo] = None
+    is_silenced: bool = False
     class Config:
         orm_mode = True
 
@@ -103,6 +128,7 @@ class UsuarioPublico(UsuarioBase):
     puntos: int
     nivel: str
     mesa: Optional[MesaInfo] = None
+    is_silenced: bool = False
     class Config:
         orm_mode = True
 
@@ -124,3 +150,119 @@ class ReporteIngresosPorMesa(BaseModel):
 # --- Schema para reordenar la cola ---
 class ReordenarCola(BaseModel):
     canciones_ids: List[int]
+
+class ReporteCancionesPorUsuario(BaseModel):
+    nick: str
+    canciones_cantadas: int
+
+# --- Schema para editar el nick de un usuario ---
+class UsuarioNickUpdate(BaseModel):
+    nick: str
+
+# --- Schema para reporte de ingresos promedio ---
+class ReporteIngresosPromedio(BaseModel):
+    ingresos_promedio_por_usuario: Decimal
+
+# --- Schema para mover un usuario de mesa ---
+class UsuarioMoverMesa(BaseModel):
+    nuevo_qr_code: str
+
+# --- Schema para añadir puntos a un usuario ---
+class UsuarioPuntosUpdate(BaseModel):
+    puntos: int
+
+class ReporteCancionesPorMesa(BaseModel):
+    mesa_nombre: str
+    canciones_cantadas: int
+
+class ReporteIngresosPromedioPorMesa(BaseModel):
+    mesa_nombre: str
+    ingresos_promedio_por_usuario: Decimal
+
+class ReporteActividadPorHora(BaseModel):
+    hora: int
+    canciones_cantadas: int
+
+# --- Schema para perdonar un nick baneado ---
+class NickUnban(BaseModel):
+    nick: str
+
+# --- Schema para reporte de tiempo de espera promedio ---
+class ReporteTiempoEsperaPromedio(BaseModel):
+    tiempo_espera_promedio_segundos: int
+
+# --- Schema para ver nicks baneados ---
+class BannedNickView(BaseModel):
+    nick: str
+    banned_at: datetime
+    class Config:
+        orm_mode = True
+
+class ReporteCancionesRechazadas(BaseModel):
+    titulo: str
+    youtube_id: str
+    veces_rechazada: int
+
+class ReporteUsuarioRechazado(BaseModel):
+    nick: str
+    canciones_rechazadas: int
+
+class ReporteIngresosPorCategoria(BaseModel):
+    categoria: str
+    ingresos_totales: Decimal
+
+class AdminLogView(BaseModel):
+    timestamp: datetime
+    action: str
+    details: Optional[str] = None
+    class Config:
+        orm_mode = True
+
+# --- Schema para notificaciones generales ---
+class Notificacion(BaseModel):
+    mensaje: str
+
+class ResumenNoche(BaseModel):
+    ingresos_totales: Decimal
+    canciones_cantadas: int
+    usuarios_activos: int
+
+class ResumenMesa(BaseModel):
+    mesa_nombre: str
+    usuarios: List[UsuarioPublico]
+    consumo_total_mesa: Decimal
+    canciones_pendientes_mesa: List[CancionAdminView]
+    canciones_reproduciendo_mesa: Optional[CancionAdminView] = None
+
+class MesaEstado(MesaBase):
+    id: int
+    estado: str
+    numero_usuarios: int
+    consumo_total: Decimal
+
+class HistorialUsuario(BaseModel):
+    canciones: List[Cancion]
+    consumos: List[Consumo]
+
+class ConsumoHistorial(BaseModel):
+    id: int
+    cantidad: int
+    valor_total: Decimal
+    created_at: datetime
+    producto: ProductoBase
+    usuario: UsuarioBase
+    class Config:
+        orm_mode = True
+
+class ReporteGastoUsuarioPorCategoria(BaseModel):
+    nick: str
+    total_gastado: Decimal
+
+class ReporteCancionMasPedida(BaseModel):
+    titulo: str
+    youtube_id: str
+    veces_pedida: int
+
+class ReporteCategoriaMasVendida(BaseModel):
+    categoria: str
+    cantidad_total: int
