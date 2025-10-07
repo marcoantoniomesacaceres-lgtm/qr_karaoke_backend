@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app import crud, schemas
-from app.database import SessionLocal
-from app.websockets import manager
-from app.security import api_key_auth
+from . import crud, schemas
+from .database import SessionLocal
+from .websockets import manager
+from .security import api_key_auth
 
 router = APIRouter()
 

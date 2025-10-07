@@ -29,7 +29,7 @@ def get_usuario_by_id(db: Session, usuario_id: int):
 
 def get_total_consumido_por_usuario(db: Session, usuario_id: int):
     """Calcula el total consumido por un usuario."""
-    return db.query(func.sum(models.Consumo.valor)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
+    return db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
 
 def get_canciones_por_usuario(db: Session, usuario_id: int):
     """Busca todas las canciones de un usuario específico."""
@@ -258,14 +258,14 @@ def get_ranking_usuarios(db: Session):
     consumo_total_subq = (
         db.query(
             models.Consumo.usuario_id.label("usuario_id"),
-            func.sum(models.Consumo.valor).label("total_consumido"),
+            func.sum(models.Consumo.valor_total).label("total_consumido"),
         )
         .group_by(models.Consumo.usuario_id)
         .subquery()
     )
 
     # Consulta principal que une usuarios con su consumo total y ordena
-    return db.query(models.Usuario, func.coalesce(consumo_total_subq.c.total_consumido, 0).label("total_consumido_calc")).join(consumo_total_subq, models.Usuario.id == consumo_total_subq.c.usuario_id, isouter=True).order_by(func.coalesce(consumo_total_subq.c.total_consumido, 0).desc()).all()
+    return db.query(models.Usuario, func.coalesce(consumo_total_subq.c.total_consumido, 0).label("total_consumido_calc")).outerjoin(consumo_total_subq, models.Usuario.id == consumo_total_subq.c.usuario_id).order_by(func.coalesce(consumo_total_subq.c.total_consumido, 0).desc()).all()
 
 def reset_database_for_new_night(db: Session):
     """
@@ -310,7 +310,7 @@ def get_productos_mas_consumidos(db: Session, limit: int = 10):
     """
     return (
         db.query(
-            models.Consumo.producto,
+            models.Producto.nombre,
             func.sum(models.Consumo.cantidad).label("cantidad_total"),
         )
         .group_by(models.Consumo.producto)
@@ -321,7 +321,7 @@ def get_productos_mas_consumidos(db: Session, limit: int = 10):
 
 def get_total_ingresos(db: Session):
     """Calcula la suma total de todos los consumos de la noche."""
-    total = db.query(func.sum(models.Consumo.valor)).scalar()
+    total = db.query(func.sum(models.Consumo.valor_total)).scalar()
     return total or 0
 
 def get_ingresos_por_mesa(db: Session):
@@ -331,12 +331,12 @@ def get_ingresos_por_mesa(db: Session):
     return (
         db.query(
             models.Mesa.nombre,
-            func.sum(models.Consumo.valor).label("ingresos_totales")
+            func.sum(models.Consumo.valor_total).label("ingresos_totales")
         )
         .join(models.Usuario, models.Mesa.id == models.Usuario.mesa_id)
         .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
         .group_by(models.Mesa.nombre)
-        .order_by(func.sum(models.Consumo.valor).desc())
+        .order_by(func.sum(models.Consumo.valor_total).desc())
         .all()
     )
 
@@ -434,7 +434,7 @@ def get_ingresos_promedio_por_usuario(db: Session):
     Calcula los ingresos promedio por cada usuario que ha consumido.
     """
     # Calcular ingresos totales
-    total_ingresos = db.query(func.sum(models.Consumo.valor)).scalar() or 0
+    total_ingresos = db.query(func.sum(models.Consumo.valor_total)).scalar() or 0
 
     # Contar el número de usuarios únicos con consumo
     usuarios_con_consumo = db.query(models.Consumo.usuario_id).distinct().count()
@@ -526,8 +526,8 @@ def get_ingresos_promedio_por_usuario_por_mesa(db: Session):
     # Consulta principal que une los ingresos totales por mesa con el conteo de usuarios
     return db.query(
         models.Mesa.nombre,
-        (func.coalesce(func.sum(models.Consumo.valor), 0) / func.coalesce(user_count_subq.c.num_usuarios, 1)).label("ingresos_promedio")
-    ).join(models.Usuario).join(models.Consumo).join(user_count_subq, models.Mesa.id == user_count_subq.c.mesa_id, isouter=True).group_by(models.Mesa.nombre, user_count_subq.c.num_usuarios).order_by(func.sum(models.Consumo.valor).desc()).all()
+        (func.coalesce(func.sum(models.Consumo.valor_total), 0) / func.coalesce(user_count_subq.c.num_usuarios, 1)).label("ingresos_promedio")
+    ).join(models.Usuario).join(models.Consumo).join(user_count_subq, models.Mesa.id == user_count_subq.c.mesa_id, isouter=True).group_by(models.Mesa.nombre, user_count_subq.c.num_usuarios).order_by(func.sum(models.Consumo.valor_total).desc()).all()
 
 def is_nick_banned(db: Session, nick: str):
     """Verifica si un nick está en la lista de baneados (case-insensitive)."""
@@ -668,11 +668,12 @@ def get_ingresos_por_categoria(db: Session):
     """
     return (
         db.query(
-            models.Consumo.categoria,
-            func.sum(models.Consumo.valor).label("ingresos_totales")
+            models.Producto.categoria,
+            func.sum(models.Consumo.valor_total).label("ingresos_totales")
         )
-        .group_by(models.Consumo.categoria)
-        .order_by(func.sum(models.Consumo.valor).desc())
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .group_by(models.Producto.categoria)
+        .order_by(func.sum(models.Consumo.valor_total).desc())
         .all()
     )
 
@@ -693,10 +694,11 @@ def get_productos_menos_consumidos(db: Session, limit: int = 5):
     """
     return (
         db.query(
-            models.Consumo.producto,
+            models.Producto.nombre,
             func.sum(models.Consumo.cantidad).label("cantidad_total"),
         )
-        .group_by(models.Consumo.producto)
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .group_by(models.Producto.nombre)
         .order_by(func.sum(models.Consumo.cantidad).asc())  # Orden ascendente
         .limit(limit)
         .all()
@@ -988,6 +990,29 @@ def get_top_consumers_one_song(db: Session, limit: int = 10):
         .limit(limit)
         .all()
     )
+
+def get_usuarios_inactivos_consumo(db: Session, horas: int = 2):
+    """
+    Obtiene una lista de usuarios cuyo último consumo fue hace más de X horas,
+    o que no han consumido nada.
+    """
+    hora_limite = datetime.datetime.utcnow() - datetime.timedelta(hours=horas)
+
+    # Subconsulta para obtener el último consumo de cada usuario
+    ultimo_consumo_subq = (
+        db.query(
+            models.Consumo.usuario_id.label("usuario_id"),
+            func.max(models.Consumo.created_at).label("ultimo_consumo_ts"),
+        )
+        .group_by(models.Consumo.usuario_id)
+        .subquery()
+    )
+
+    # Consulta principal que une usuarios con su último consumo
+    return db.query(models.Usuario).outerjoin(ultimo_consumo_subq, models.Usuario.id == ultimo_consumo_subq.c.usuario_id).filter(
+        (ultimo_consumo_subq.c.ultimo_consumo_ts < hora_limite) |
+        (ultimo_consumo_subq.c.ultimo_consumo_ts == None)
+    ).all()
 
 
 def get_consumo_por_mesa(db: Session, mesa_id: int):

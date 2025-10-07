@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from decimal import Decimal
 
-from app import crud, schemas
-from app.database import SessionLocal
-from app.security import api_key_auth
+from . import crud, schemas
+from .database import SessionLocal
+from .security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 
@@ -14,6 +15,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+class ProductoValorUpdate(schemas.BaseModel):
+    valor: Decimal
 
 @router.post("/", response_model=schemas.Producto, summary="Crear un nuevo producto en el catálogo")
 def create_product(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):

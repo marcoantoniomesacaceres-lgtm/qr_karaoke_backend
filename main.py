@@ -1,8 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from .database import engine
-from . import models
-from .api.v1.endpoints import mesas, canciones, youtube, consumos, usuarios, admin, productos
-from .websockets import manager
+from database import engine
+import models
+import mesas, canciones, youtube, consumos, usuarios, admin, productos
+from websockets import manager
 
 # Esto crea las tablas en la base de datos si no existen
 # En un entorno de producción, es mejor usar migraciones (ej. Alembic)

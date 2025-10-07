@@ -1,5 +1,6 @@
 fastapi
-uvicorn
-sqlalchemy
+uvicorn[standard]
+SQLAlchemy
 python-dotenv
 httpx
+pysqlite3-binary

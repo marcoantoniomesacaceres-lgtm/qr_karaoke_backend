@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app import crud, config, schemas
-from app.database import SessionLocal
-from app.websockets import manager
-from app.security import api_key_auth
+from . import crud, config, schemas
+from .database import SessionLocal
+from .websockets import manager
+from .security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 
@@ -37,7 +37,7 @@ def set_closing_time(closing_time: schemas.ClosingTimeUpdate):
     """
     # Aquí se podría añadir una validación del formato de la hora
     config.settings.KARAOKE_CIERRE = closing_time.hora_cierre
-    crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}")
+    crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}") # db no está definido aquí
     return {"mensaje": f"La hora de cierre ha sido actualizada a {config.settings.KARAOKE_CIERRE}"}
 
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")
@@ -98,8 +98,8 @@ def unban_user_nick(unban_data: schemas.NickUnban, db: Session = Depends(get_db)
         raise HTTPException(
             status_code=404, detail=f"El nick '{unban_data.nick}' no se encontraba en la lista de baneados."
         )
-    return {"mensaje": f"El nick '{unban_data.nick}' ha sido perdonado y puede volver a registrarse."}
     crud.create_admin_log_entry(db, action="UNBAN_NICK", details=f"Nick '{unban_data.nick}' perdonado.")
+    return {"mensaje": f"El nick '{unban_data.nick}' ha sido perdonado y puede volver a registrarse."}
 
 @router.get("/banned-nicks", response_model=List[schemas.BannedNickView], summary="Ver la lista de nicks baneados")
 def get_banned_nicks_list(db: Session = Depends(get_db)):
@@ -475,6 +475,15 @@ def get_least_sold_products_report(db: Session = Depends(get_db), limit: int = 5
     ]
     
     return report
+
+@router.get("/reports/inactive-consumers", response_model=List[schemas.UsuarioPublico], summary="Obtener usuarios con consumo inactivo")
+def get_inactive_consumers_report(db: Session = Depends(get_db), horas: int = 2):
+    """
+    **[Admin]** Devuelve una lista de todos los usuarios cuyo último consumo
+    fue hace más de X horas (por defecto 2), o que nunca han consumido.
+    """
+    users = crud.get_usuarios_inactivos_consumo(db, horas=horas)
+    return users
 
 @router.get("/reports/top-consumers-one-song", response_model=List[schemas.ReporteGastoUsuarioPorCategoria], summary="Obtener 'One-Hit Wonders' con mayor consumo")
 def get_top_consumers_one_song_report(db: Session = Depends(get_db), limit: int = 10):
