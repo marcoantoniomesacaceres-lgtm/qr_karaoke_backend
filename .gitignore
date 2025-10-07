@@ -1,1 +1,13 @@
+# Entornos virtuales
 venv/
+*.venv
+
+# Archivos de configuración local
+.env
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos de base de datos SQLite
+*.db

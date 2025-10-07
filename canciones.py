@@ -1,0 +1,175 @@
+import os
+import datetime
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+
+from app import crud, schemas, models, config
+from app.database import SessionLocal
+from app.websockets import manager
+from app.security import api_key_auth
+
+router = APIRouter()
+
+# Dependencia para obtener la sesión de la base de datos
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.post("/{usuario_id}", response_model=schemas.Cancion, summary="Añadir una canción a la lista de un usuario")
+def anadir_cancion(
+    usuario_id: int, cancion: schemas.CancionCreate, db: Session = Depends(get_db)
+):
+    """
+    Añade una nueva canción a la lista personal de un usuario, si hay tiempo.
+    La canción se crea en estado 'pendiente' y verifica si hay tiempo suficiente antes de la hora de cierre.
+    """
+    # 1. Obtener la hora de cierre (configurable)
+    hora_cierre_str = config.settings.KARAOKE_CIERRE
+    try:
+        h, m = map(int, hora_cierre_str.split(':'))
+        ahora = datetime.datetime.now()
+        hora_cierre = ahora.replace(hour=h, minute=m, second=0, microsecond=0)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=500, detail="Formato de hora de cierre inválido en la configuración.")
+
+    # 2. Si ya pasó la hora de cierre, no se aceptan más canciones.
+    if ahora >= hora_cierre:
+        raise HTTPException(status_code=400, detail="Lo sentimos, ya no se aceptan más canciones por hoy.")
+
+    # 3. Calcular el tiempo restante hasta el cierre
+    tiempo_restante_segundos = (hora_cierre - ahora).total_seconds()
+
+    # 4. Calcular la duración actual de la cola + la nueva canción
+    duracion_cola_actual = crud.get_duracion_total_cola_aprobada(db)
+    duracion_total_proyectada = duracion_cola_actual + (cancion.duracion_seconds or 0)
+
+    # 5. Comparar y decidir
+    if duracion_total_proyectada > tiempo_restante_segundos:
+        raise HTTPException(
+            status_code=400,
+            detail="No hay tiempo suficiente para añadir esta canción antes del cierre. Intenta con una más corta."
+        )
+
+    # 6. Verificar si la canción ya está en la lista del usuario
+    cancion_existente = crud.check_if_song_in_user_list(db, usuario_id=usuario_id, youtube_id=cancion.youtube_id)
+    if cancion_existente:
+        raise HTTPException(
+            status_code=409,  # 409 Conflict
+            detail=f"Ya tienes '{cancion.titulo}' en tu lista de espera."
+        )
+
+    return crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
+
+@router.get("/{usuario_id}/lista", response_model=List[schemas.Cancion], summary="Ver la lista de canciones de un usuario")
+def ver_lista_de_canciones(usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve todas las canciones que un usuario ha añadido a su lista.
+    """
+    return crud.get_canciones_por_usuario(db=db, usuario_id=usuario_id)
+
+@router.get("/pendientes", response_model=List[schemas.CancionAdminView], summary="Ver todas las canciones pendientes de aprobación")
+def ver_canciones_pendientes(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Devuelve una lista de todas las canciones que están en estado 'pendiente',
+    incluyendo la información del usuario que la solicitó.
+    """
+    return crud.get_canciones_pendientes(db=db)
+
+@router.post("/{cancion_id}/aprobar", response_model=schemas.Cancion, summary="Aprobar una canción")
+async def aprobar_cancion(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Cambia el estado de una canción a 'aprobado'.
+    Una vez aprobada, la canción entra en la cola para ser reproducida.
+    """
+    db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="aprobado")
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada")
+    await manager.broadcast_queue_update()
+    return db_cancion
+
+@router.post("/{cancion_id}/rechazar", response_model=schemas.Cancion, summary="Rechazar una canción")
+async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Cambia el estado de una canción a 'rechazada'.
+    La canción no será reproducida.
+    """
+    db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="rechazada")
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada")
+    # También notificamos al rechazar, para que desaparezca de la lista de pendientes en el admin
+    await manager.broadcast_queue_update()
+    return db_cancion
+
+@router.get("/cola", response_model=schemas.ColaView, summary="Ver la cola de canciones priorizada")
+def ver_cola_de_canciones(db: Session = Depends(get_db)):
+    """
+    Devuelve la canción que está sonando y la lista de las próximas,
+    ordenadas según la prioridad del usuario.
+    """
+    cola_completa = crud.get_cola_priorizada(db=db)
+    
+    now_playing = cola_completa[0] if cola_completa else None
+    upcoming = cola_completa[1:] if len(cola_completa) > 1 else []
+
+    return schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
+
+@router.post("/siguiente", response_model=schemas.Cancion, summary="Marcar la siguiente canción como 'cantada' y avanzar la cola")
+async def avanzar_cola(db: Session = Depends(get_db)):
+    """
+    **[Admin/Player]** Orquesta el avance de la cola:
+    1. Marca la canción actual ('reproduciendo') como 'cantada'.
+    2. Marca la siguiente canción de la cola ('aprobado') como 'reproduciendo'.
+    3. Notifica a todos los clientes de la nueva cola.
+    """
+    # Primero, marcamos la que terminó como 'cantada'
+    cancion_cantada = crud.marcar_cancion_actual_como_cantada(db)
+    
+    # Luego, marcamos la siguiente en la cola como 'reproduciendo'
+    nueva_cancion_reproduciendo = crud.marcar_siguiente_como_reproduciendo(db)
+
+    await manager.broadcast_queue_update()
+    
+    if not nueva_cancion_reproduciendo:
+        # Si no hay más canciones, podemos devolver la última que se cantó o un mensaje.
+        return cancion_cantada or Response(status_code=204)
+
+    return nueva_cancion_reproduciendo
+
+@router.get("/{cancion_id}/tiempo-espera", response_model=dict, summary="Calcular tiempo de espera para una canción")
+def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve el tiempo estimado en segundos que falta para que una canción específica
+    sea reproducida.
+    """
+    tiempo_segundos = crud.get_tiempo_espera_para_cancion(db, cancion_id=cancion_id)
+    if tiempo_segundos == -1:
+        raise HTTPException(status_code=404, detail="La canción no está en la cola de espera.")
+    
+    return {"tiempo_espera_segundos": tiempo_segundos}
+
+@router.delete("/{cancion_id}", status_code=204, summary="Eliminar una canción de la lista personal")
+def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Permite a un usuario eliminar una canción que ha añadido, siempre y
+    cuando la canción siga en estado 'pendiente'.
+    """
+    db_cancion = crud.get_cancion_by_id(db, cancion_id=cancion_id)
+
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada")
+
+    if db_cancion.usuario_id != usuario_id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta canción")
+
+    if db_cancion.estado != 'pendiente':
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar la canción porque ya ha sido procesada por un administrador"
+        )
+
+    crud.delete_cancion(db, cancion_id=cancion_id)
+    return Response(status_code=204)
