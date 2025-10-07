@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from decimal import Decimal
 
-from . import crud, schemas
-from .database import SessionLocal
-from .security import api_key_auth
+import crud, schemas
+from database import SessionLocal
+from security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 

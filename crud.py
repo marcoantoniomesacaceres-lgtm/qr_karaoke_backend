@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case
 from typing import List, Optional
 import datetime
-from . import models, schemas
+import models, schemas
 
 def get_mesa_by_qr(db: Session, qr_code: str):
     """Busca una mesa por su código QR."""
@@ -82,24 +82,15 @@ def get_cola_priorizada(db: Session):
     La prioridad se basa en:
     1. Si el último consumo fue hace menos de 1 hora.
     2. El consumo total del usuario.
+    3. Orden manual establecido por el administrador.
     """
     hora_limite = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
 
-    # Subconsulta para calcular el consumo total por usuario
-    consumo_total_subq = (
+    # Subconsulta única para obtener estadísticas de consumo por usuario
+    user_consumption_stats_subq = (
         db.query(
             models.Usuario.id.label("usuario_id"),
-            func.sum(models.Consumo.valor).label("total_consumido"),
-        )
-        .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
-        .group_by(models.Usuario.id)
-        .subquery()
-    )
-
-    # Subconsulta para obtener el último consumo de cada usuario
-    ultimo_consumo_subq = (
-        db.query(
-            models.Usuario.id.label("usuario_id"),
+            func.sum(models.Consumo.valor_total).label("total_consumido"),
             func.max(models.Consumo.created_at).label("ultimo_consumo_ts"),
         )
         .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
@@ -107,20 +98,16 @@ def get_cola_priorizada(db: Session):
         .subquery()
     )
 
-    # Case para determinar si el usuario está activo (prioridad 1) o inactivo (prioridad 0)
-    prioridad_actividad = case(
-        (ultimo_consumo_subq.c.ultimo_consumo_ts > hora_limite, 1),
-        else_=0
-    ).label("prioridad_actividad")
+    # Expresión 'case' para determinar la prioridad de actividad del usuario
+    prioridad_actividad = case((user_consumption_stats_subq.c.ultimo_consumo_ts > hora_limite, 1), else_=0).label("prioridad_actividad")
 
     # Consulta principal que une canciones con el consumo del usuario
     return (
         db.query(models.Cancion)
         .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
-        .join(consumo_total_subq, models.Usuario.id == consumo_total_subq.c.usuario_id, isouter=True)
-        .join(ultimo_consumo_subq, models.Usuario.id == ultimo_consumo_subq.c.usuario_id, isouter=True)
+        .outerjoin(user_consumption_stats_subq, models.Usuario.id == user_consumption_stats_subq.c.usuario_id)
         .filter(models.Cancion.estado == "aprobado")
-        .order_by(models.Cancion.orden_manual.asc().nulls_last(), prioridad_actividad.desc(), func.coalesce(consumo_total_subq.c.total_consumido, 0).desc(), models.Cancion.id.asc())
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), prioridad_actividad.desc(), func.coalesce(user_consumption_stats_subq.c.total_consumido, 0).desc(), models.Cancion.id.asc())
         .all()
     )
 
@@ -314,7 +301,8 @@ def get_productos_mas_consumidos(db: Session, limit: int = 10):
             models.Producto.nombre,
             func.sum(models.Consumo.cantidad).label("cantidad_total"),
         )
-        .group_by(models.Consumo.producto)
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .group_by(models.Producto.nombre)
         .order_by(func.sum(models.Consumo.cantidad).desc())
         .limit(limit)
         .all()
@@ -513,22 +501,22 @@ def get_ingresos_promedio_por_usuario_por_mesa(db: Session):
     """
     Calcula los ingresos promedio por usuario para cada mesa.
     """
-    # Subconsulta para obtener el número de usuarios por mesa
-    user_count_subq = (
+    # Consulta que calcula el total consumido y el número de usuarios únicos por mesa
+    return (
         db.query(
-            models.Mesa.id.label("mesa_id"),
-            func.count(models.Usuario.id).label("num_usuarios"),
+            models.Mesa.nombre,
+            (
+                func.coalesce(func.sum(models.Consumo.valor_total), 0) / 
+                func.greatest(func.count(func.distinct(models.Usuario.id)), 1)
+            ).label("ingresos_promedio")
         )
-        .join(models.Usuario)
-        .group_by(models.Mesa.id)
-        .subquery()
+        .select_from(models.Mesa)
+        .outerjoin(models.Usuario, models.Mesa.id == models.Usuario.mesa_id)
+        .outerjoin(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+        .group_by(models.Mesa.nombre)
+        .order_by(func.coalesce(func.sum(models.Consumo.valor_total), 0).desc())
+        .all()
     )
-
-    # Consulta principal que une los ingresos totales por mesa con el conteo de usuarios
-    return db.query(
-        models.Mesa.nombre,
-        (func.coalesce(func.sum(models.Consumo.valor_total), 0) / func.coalesce(user_count_subq.c.num_usuarios, 1)).label("ingresos_promedio")
-    ).join(models.Usuario).join(models.Consumo).join(user_count_subq, models.Mesa.id == user_count_subq.c.mesa_id, isouter=True).group_by(models.Mesa.nombre, user_count_subq.c.num_usuarios).order_by(func.sum(models.Consumo.valor_total).desc()).all()
 
 def is_nick_banned(db: Session, nick: str):
     """Verifica si un nick está en la lista de baneados (case-insensitive)."""

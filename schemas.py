@@ -94,7 +94,7 @@ class Consumo(BaseModel):
     id: int
     cantidad: int
     valor_total: Decimal
-    producto: Producto
+    producto: ProductoBase # Usamos un schema más simple para evitar anidamiento excesivo
     class Config:
         orm_mode = True
 
@@ -136,10 +136,8 @@ class UsuarioPublico(UsuarioBase):
         orm_mode = True
 
 class ProductoMasConsumido(BaseModel):
-    producto: str
+    nombre: str
     cantidad_total: int
-    class Config:
-        orm_mode = True
 
 class ReporteIngresos(BaseModel):
     ingresos_totales: Decimal
@@ -244,8 +242,8 @@ class MesaEstado(MesaBase):
     consumo_total: Decimal
 
 class HistorialUsuario(BaseModel):
-    canciones: List[Cancion]
-    consumos: List[Consumo]
+    canciones: List[Cancion] = []
+    consumos: List['ConsumoHistorial'] = []
 
 class ConsumoHistorial(BaseModel):
     id: int
@@ -256,6 +254,9 @@ class ConsumoHistorial(BaseModel):
     usuario: UsuarioBase
     class Config:
         orm_mode = True
+
+# Actualizamos la referencia forward para HistorialUsuario
+HistorialUsuario.update_forward_refs()
 
 class ReporteGastoUsuarioPorCategoria(BaseModel):
     nick: str

@@ -2,8 +2,8 @@ import json
 from typing import List
 from fastapi import WebSocket
 
-from . import schemas, crud
-from .database import SessionLocal
+import schemas, crud
+from database import SessionLocal
 
 class ConnectionManager:
     def __init__(self):

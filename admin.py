@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from . import crud, config, schemas
-from .database import SessionLocal
-from .websockets import manager
-from .security import api_key_auth
+import crud, config, schemas
+from database import SessionLocal
+from websockets import manager
+from security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 
@@ -70,10 +70,10 @@ def get_top_products_report(db: Session = Depends(get_db), limit: int = 10):
     
     report = [
         schemas.ProductoMasConsumido(
-            producto=producto,
+            nombre=nombre,
             cantidad_total=cantidad_total
         )
-        for producto, cantidad_total in top_products_data
+        for nombre, cantidad_total in top_products_data
     ]
     
     return report
@@ -188,14 +188,7 @@ def get_user_song_history(usuario_id: int, db: Session = Depends(get_db)):
     **[Admin]** Devuelve el historial completo de canciones de un usuario,
     incluyendo pendientes, aprobadas, cantadas y rechazadas.
     """
-    # Primero, verificamos que el usuario exista
-    db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
-    if not db_usuario:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuario no encontrado."
-        )
-    
+    # La función crud ya maneja el caso de un usuario inexistente devolviendo una lista vacía.
     return crud.get_canciones_por_usuario(db, usuario_id=usuario_id)
 
 @router.get("/reports/top-rejected-songs", response_model=List[schemas.ReporteCancionesRechazadas], summary="Obtener las canciones más rechazadas")
@@ -468,10 +461,10 @@ def get_least_sold_products_report(db: Session = Depends(get_db), limit: int = 5
     
     report = [
         schemas.ProductoMasConsumido(
-            producto=producto,
+            nombre=nombre,
             cantidad_total=cantidad_total
         )
-        for producto, cantidad_total in least_sold_data
+        for nombre, cantidad_total in least_sold_data
     ]
     
     return report
@@ -578,10 +571,10 @@ def get_top_products_by_table_report(mesa_id: int, db: Session = Depends(get_db)
     
     report = [
         schemas.ProductoMasConsumido(
-            producto=producto,
+            nombre=nombre,
             cantidad_total=cantidad_total
         )
-        for producto, cantidad_total in top_products_data
+        for nombre, cantidad_total in top_products_data
     ]
     
     return report

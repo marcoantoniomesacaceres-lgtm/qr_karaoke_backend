@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, B
 from sqlalchemy.orm import relationship
 import datetime
 
-from .database import Base
+from database import Base
 
 class Mesa(Base):
     __tablename__ = "mesas"
