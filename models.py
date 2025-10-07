@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, Boolean
 from sqlalchemy.orm import relationship
 import datetime
 
@@ -20,7 +20,7 @@ class Usuario(Base):
     id = Column(Integer, primary_key=True, index=True)
     nick = Column(String, index=True)
     puntos = Column(Integer, default=0)
-    nivel = Column(String, default="bronce") # bronce, plata, oro
+    nivel = Column(String, default="bronce")  # bronce, plata, oro
     last_active = Column(DateTime, default=datetime.datetime.utcnow)
     is_silenced = Column(Boolean, default=False) # Nuevo campo para silenciar
     
@@ -38,10 +38,10 @@ class Cancion(Base):
     youtube_id = Column(String, index=True)
     titulo = Column(String)
     duracion_seconds = Column(Integer, default=0)
-    estado = Column(String, default="pendiente") # pendiente, aprobado, reproduciendo, cantada, rechazada
-    started_at = Column(DateTime, nullable=True) # Hora en que empieza a sonar
-    orden_manual = Column(Integer, nullable=True) # Posición manual establecida por el admin
-    created_at = Column(DateTime, default=datetime.datetime.utcnow) # Hora en que se añade
+    estado = Column(String, default="pendiente")  # pendiente, aprobado, reproduciendo, cantada, rechazada
+    started_at = Column(DateTime, nullable=True)  # Hora en que empieza a sonar
+    orden_manual = Column(Integer, nullable=True)  # Posición manual establecida por el admin
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)  # Hora en que se añade
     finished_at = Column(DateTime, nullable=True) # Hora en que se termina de cantar
     
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
@@ -62,7 +62,7 @@ class Consumo(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     cantidad = Column(Integer, default=1)
-    valor_total = Column(Numeric(10, 2)) # Valor total de la transacción (cantidad * precio_unitario)
+    valor_total = Column(Numeric(10, 2))  # Valor total de la transacción (cantidad * precio_unitario)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     producto_id = Column(Integer, ForeignKey("productos.id"))

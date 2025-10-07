@@ -30,14 +30,14 @@ async def reset_night(db: Session = Depends(get_db)):
     return Response(status_code=204)
 
 @router.post("/set-closing-time", status_code=200, summary="Establecer la hora de cierre")
-def set_closing_time(closing_time: schemas.ClosingTimeUpdate):
+def set_closing_time(closing_time: schemas.ClosingTimeUpdate, db: Session = Depends(get_db)):
     """
     **[Admin]** Actualiza la hora de cierre del karaoke en tiempo real.
     El formato debe ser "HH:MM".
     """
     # Aquí se podría añadir una validación del formato de la hora
     config.settings.KARAOKE_CIERRE = closing_time.hora_cierre
-    crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}") # db no está definido aquí
+    crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}")
     return {"mensaje": f"La hora de cierre ha sido actualizada a {config.settings.KARAOKE_CIERRE}"}
 
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")

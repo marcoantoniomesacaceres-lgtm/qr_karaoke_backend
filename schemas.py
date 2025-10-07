@@ -116,6 +116,9 @@ class ColaView(BaseModel):
 class ClosingTimeUpdate(BaseModel):
     hora_cierre: str
 
+class ProductoValorUpdate(BaseModel):
+    valor: Decimal
+
 # --- Schema para Reportes ---
 class CancionMasCantada(BaseModel):
     titulo: str

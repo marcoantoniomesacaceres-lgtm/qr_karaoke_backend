@@ -16,9 +16,6 @@ def get_db():
     finally:
         db.close()
 
-class ProductoValorUpdate(schemas.BaseModel):
-    valor: Decimal
-
 @router.post("/", response_model=schemas.Producto, summary="Crear un nuevo producto en el catálogo")
 def create_product(producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
     """

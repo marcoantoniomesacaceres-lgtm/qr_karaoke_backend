@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
+from typing import List, Optional
 import datetime
 from . import models, schemas
 
@@ -723,6 +724,17 @@ def update_producto_valor(db: Session, producto_id: int, nuevo_valor: Decimal):
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
         db_producto.valor = nuevo_valor
+        db.commit()
+        db.refresh(db_producto)
+    return db_producto
+
+def update_producto_active_status(db: Session, producto_id: int, is_active: bool):
+    """
+    Actualiza el estado de activación de un producto.
+    """
+    db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+    if db_producto:
+        db_producto.is_active = is_active
         db.commit()
         db.refresh(db_producto)
     return db_producto
