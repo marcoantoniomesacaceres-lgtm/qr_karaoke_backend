@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Rana que Canta - Escanear QR</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #qr-reader {
+            width: 500px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        #qr-reader-results {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        /* Estilo para el botón de parar */
+        #html5-qrcode-button-camera-stop {
+            display: inline-block;
+            padding: 10px 15px;
+            margin-top: 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>La Rana que Canta</h1>
+    <div id="qr-reader"></div>
+    <div id="qr-reader-results">Escaneando...</div>
+
+    <!-- Incluimos la librería para escanear QR -->
+    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // `decodedText` contiene el código QR leído (ej: "MESA-01")
+            console.log(`Código QR leído: ${decodedText}`);
+            
+            // Mostramos el resultado
+            let resultDiv = document.getElementById('qr-reader-results');
+            resultDiv.innerHTML = `Código detectado: <strong>${decodedText}</strong>. Redirigiendo...`;
+
+            // Aquí es donde te conectarías a la API, pero por ahora solo redirigimos
+            // a una página de ejemplo para que veas que funciona.
+            // En el futuro, aquí harías la llamada a `POST /api/v1/mesas/{qr_code}/conectar`
+            // y guardarías el ID de usuario que te devuelva.
+            
+            // Detenemos el escáner para que no siga usando la cámara
+            html5QrcodeScanner.clear();
+        }
+
+        function onScanFailure(error) {
+            // Puedes ignorar esto o mostrar un mensaje si lo deseas
+            // console.warn(`Error de escaneo = ${error}`);
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // --- INICIO: Bloque para traducir la interfaz del escáner ---
+        function translateScannerUI() {
+            // Usamos un observador para esperar a que los botones se creen
+            const observer = new MutationObserver((mutations, obs) => {
+                const permissionButton = document.getElementById('html5-qrcode-button-camera-permission');
+                const fileScanLink = document.querySelector('#qr-reader a[href="#"]');
+
+                if (permissionButton) {
+                    permissionButton.innerText = 'Solicitar Permiso de Cámara';
+                }
+
+                if (fileScanLink && fileScanLink.innerText.includes('Scan an Image File')) {
+                    fileScanLink.innerText = 'Escanear un Archivo de Imagen';
+                    obs.disconnect(); // Dejamos de observar una vez traducido
+                }
+            });
+            observer.observe(document.getElementById('qr-reader'), { childList: true, subtree: true });
+        }
+        translateScannerUI();
+        // --- FIN: Bloque para traducir la interfaz del escáner ---
+    </script>
+</body>
+</html>
