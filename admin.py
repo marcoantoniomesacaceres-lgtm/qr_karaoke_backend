@@ -4,7 +4,7 @@ from typing import List
 
 import crud, config, schemas
 from database import SessionLocal
-from websockets import manager
+import websocket_manager
 from security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
@@ -26,7 +26,7 @@ async def reset_night(db: Session = Depends(get_db)):
     crud.reset_database_for_new_night(db)
     crud.create_admin_log_entry(db, action="RESET_NIGHT", details="El sistema ha sido reiniciado para una nueva noche.")
     # Después de borrar todo, notificamos a los clientes para que la cola se vacíe
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return Response(status_code=204)
 
 @router.post("/set-closing-time", status_code=200, summary="Establecer la hora de cierre")
@@ -233,7 +233,7 @@ async def delete_user(usuario_id: int, db: Session = Depends(get_db)):
         )
     
     crud.create_admin_log_entry(db, action="DELETE_USER", details=f"Usuario '{usuario_eliminado.nick}' (ID: {usuario_id}) eliminado.")
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return Response(status_code=204)
 
 @router.post("/users/{usuario_id}/ban", status_code=204, summary="Banear a un usuario")
@@ -247,7 +247,7 @@ async def ban_user(usuario_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
     
     crud.create_admin_log_entry(db, action="BAN_USER", details=f"Usuario '{usuario_baneado.nick}' (ID: {usuario_id}) baneado.")
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return Response(status_code=204)
 
 @router.get("/reports/average-income-per-table", response_model=List[schemas.ReporteIngresosPromedioPorMesa], summary="Obtener los ingresos promedio por usuario en cada mesa")
@@ -396,7 +396,7 @@ async def reorder_queue(orden: schemas.ReordenarCola, db: Session = Depends(get_
     crud.reordenar_cola_manual(db, canciones_ids=orden.canciones_ids)
     # Notificamos a todos los clientes de la nueva cola
     crud.create_admin_log_entry(db, action="REORDER_QUEUE", details=f"Cola reordenada manualmente. Nuevo orden: {orden.canciones_ids}")
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return {"mensaje": "La cola ha sido reordenada manualmente."}
 
 @router.get("/reports/inactive-users", response_model=List[schemas.UsuarioPublico], summary="Obtener usuarios sin consumo")
@@ -422,7 +422,7 @@ async def move_song_to_top_endpoint(cancion_id: int, db: Session = Depends(get_d
         )
     
     crud.create_admin_log_entry(db, action="MOVE_SONG_TOP", details=f"Canción '{cancion_movida.titulo}' (ID: {cancion_id}) movida al principio.")
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return {"mensaje": f"La canción '{cancion_movida.titulo}' ha sido movida al principio de la cola."}
 
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
@@ -594,7 +594,7 @@ async def broadcast_message(notificacion: schemas.Notificacion, db: Session = De
     **[Admin]** Envía un mensaje de texto que se mostrará en todas
     las pantallas conectadas en tiempo real.
     """
-    await manager.broadcast_notification(mensaje=notificacion.mensaje)
+    await websocket_manager.manager.broadcast_notification(mensaje=notificacion.mensaje)
     crud.create_admin_log_entry(db, action="BROADCAST_MESSAGE", details=f"Mensaje enviado: '{notificacion.mensaje}'")
     return {"mensaje": "La notificación ha sido enviada a todas las pantallas."}
 

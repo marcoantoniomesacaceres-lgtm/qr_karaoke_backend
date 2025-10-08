@@ -3,6 +3,7 @@ from sqlalchemy import func, case
 from typing import List, Optional
 import datetime
 import models, schemas
+from decimal import Decimal # Importar Decimal
 
 def get_mesa_by_qr(db: Session, qr_code: str):
     """Busca una mesa por su código QR."""

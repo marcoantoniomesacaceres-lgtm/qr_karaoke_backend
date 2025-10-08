@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 import crud, schemas
 from database import SessionLocal
-from websockets import manager
+import websocket_manager
 from security import api_key_auth
 
 router = APIRouter()
@@ -27,5 +27,5 @@ async def registrar_consumo(
     db_consumo, error_detail = crud.create_consumo_para_usuario(db=db, consumo=consumo, usuario_id=usuario_id)
     if error_detail:
         raise HTTPException(status_code=400, detail=error_detail)
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return db_consumo

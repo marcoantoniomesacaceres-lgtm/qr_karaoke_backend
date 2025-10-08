@@ -1,12 +1,12 @@
 import os
 import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from typing import List
 
 import crud, schemas, models, config
 from database import SessionLocal
-from websockets import manager
+import websocket_manager
 from security import api_key_auth
 
 router = APIRouter()
@@ -96,7 +96,7 @@ async def aprobar_cancion(cancion_id: int, db: Session = Depends(get_db), api_ke
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada")
     crud.create_admin_log_entry(db, action="APPROVE_SONG", details=f"Canción '{db_cancion.titulo}' (ID: {cancion_id}) aprobada.")
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return db_cancion
 
 @router.post("/{cancion_id}/rechazar", response_model=schemas.Cancion, summary="Rechazar una canción")
@@ -110,7 +110,7 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
         raise HTTPException(status_code=404, detail="Canción no encontrada")
     crud.create_admin_log_entry(db, action="REJECT_SONG", details=f"Canción '{db_cancion.titulo}' (ID: {cancion_id}) rechazada.")
     # También notificamos al rechazar, para que desaparezca de la lista de pendientes en el admin
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     return db_cancion
 
 @router.get("/cola", response_model=schemas.ColaView, summary="Ver la cola de canciones priorizada")
@@ -126,8 +126,11 @@ def ver_cola_de_canciones(db: Session = Depends(get_db)):
 
     return schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
 
-@router.post("/siguiente", response_model=schemas.Cancion, summary="Marcar la siguiente canción como 'cantada' y avanzar la cola")
-async def avanzar_cola(db: Session = Depends(get_db)):
+@router.post("/siguiente", 
+             response_model=schemas.Cancion, 
+             responses={204: {"description": "No hay más canciones en la cola."}},
+             summary="Marcar la siguiente canción como 'cantada' y avanzar la cola")
+async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
     """
     **[Admin/Player]** Orquesta el avance de la cola:
     1. Marca la canción actual ('reproduciendo') como 'cantada'.
@@ -140,7 +143,7 @@ async def avanzar_cola(db: Session = Depends(get_db)):
     # Luego, marcamos la siguiente en la cola como 'reproduciendo'
     nueva_cancion_reproduciendo = crud.marcar_siguiente_como_reproduciendo(db)
 
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     
     if not nueva_cancion_reproduciendo:
         # Si no hay más canciones, podemos devolver la última que se cantó o un mensaje.

@@ -1,8 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from database import engine
 import models
-import mesas, canciones, youtube, consumos, usuarios, admin, productos
-from websockets import manager
+import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 
 # Esto crea las tablas en la base de datos si no existen
 # En un entorno de producción, es mejor usar migraciones (ej. Alembic)
@@ -17,17 +16,17 @@ def read_root():
 # Endpoint de WebSocket para la cola en tiempo real
 @app.websocket("/ws/cola")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+    await websocket_manager.manager.connect(websocket)
     # Envía la cola actual tan pronto como el cliente se conecta
-    await manager.broadcast_queue_update()
+    await websocket_manager.manager.broadcast_queue_update()
     try:
         while True:
             # Mantenemos la conexión abierta esperando mensajes (aunque no los usemos)
             await websocket.receive_text()
     except WebSocketDisconnect:
-        manager.disconnect(websocket)
+        websocket_manager.manager.disconnect(websocket)
         # Opcional: podrías querer notificar una desconexión
-        # await manager.broadcast_queue_update()
+        # await websocket_manager.manager.broadcast_queue_update()
 
 # Incluimos los routers de la API REST
 app.include_router(mesas.router, prefix="/api/v1/mesas", tags=["Mesas"])

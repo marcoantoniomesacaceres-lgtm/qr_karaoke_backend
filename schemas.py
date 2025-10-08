@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from decimal import Decimal
 from datetime import datetime
@@ -15,8 +15,7 @@ class CancionCreate(CancionBase):
 class Cancion(CancionBase):
     id: int
     estado: str
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Usuario (necesario para mostrar usuarios en una mesa) ---
 class UsuarioBase(BaseModel):
@@ -32,8 +31,7 @@ class Usuario(UsuarioBase): # Schema completo de Usuario
     is_silenced: bool = False
     canciones: List[Cancion] = []
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Mesa ---
 class MesaBase(BaseModel):
@@ -47,20 +45,17 @@ class Mesa(MesaBase):
     id: int
     usuarios: List[Usuario] = [] # Al pedir una mesa, mostrará la lista de sus usuarios
 
-    class Config:
-        orm_mode = True # Permite que Pydantic lea datos de objetos SQLAlchemy
+    model_config = ConfigDict(from_attributes=True) # Permite que Pydantic lea datos de objetos SQLAlchemy
 
 # --- Schema para mesas vacías ---
 class MesaSimple(MesaBase):
     id: int
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schema simple para info de Mesa ---
 class MesaInfo(BaseModel):
     nombre: str
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schema para la vista del Administrador ---
 class CancionAdminView(Cancion):
@@ -79,8 +74,7 @@ class ProductoCreate(ProductoBase):
 class Producto(ProductoBase):
     id: int
     is_active: bool
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Consumo ---
 class ConsumoBase(BaseModel):
@@ -95,8 +89,8 @@ class Consumo(BaseModel):
     cantidad: int
     valor_total: Decimal
     producto: ProductoBase # Usamos un schema más simple para evitar anidamiento excesivo
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 # --- Schema para el Perfil de Usuario ---
 class UsuarioPerfil(Usuario):
@@ -104,8 +98,8 @@ class UsuarioPerfil(Usuario):
     rank: Optional[int] = None
     mesa: Optional[MesaInfo] = None
     is_silenced: bool = False
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 # --- Schema para la vista de la Cola ---
 class ColaView(BaseModel):
@@ -131,9 +125,9 @@ class UsuarioPublico(UsuarioBase):
     puntos: int
     nivel: str
     mesa: Optional[MesaInfo] = None
-    is_silenced: bool = False
-    class Config:
-        orm_mode = True
+    is_silenced: bool = False # Mantener este campo para consistencia, aunque Usuario ya lo tiene
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ProductoMasConsumido(BaseModel):
     nombre: str
@@ -141,8 +135,8 @@ class ProductoMasConsumido(BaseModel):
 
 class ReporteIngresos(BaseModel):
     ingresos_totales: Decimal
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ReporteIngresosPorMesa(BaseModel):
     mesa_nombre: str
@@ -196,8 +190,8 @@ class ReporteTiempoEsperaPromedio(BaseModel):
 class BannedNickView(BaseModel):
     nick: str
     banned_at: datetime
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ReporteCancionesRechazadas(BaseModel):
     titulo: str
@@ -215,9 +209,9 @@ class ReporteIngresosPorCategoria(BaseModel):
 class AdminLogView(BaseModel):
     timestamp: datetime
     action: str
-    details: Optional[str] = None
-    class Config:
-        orm_mode = True
+    details: Optional[str] = None # Optional[str] es mejor que None
+    model_config = ConfigDict(from_attributes=True)
+
 
 # --- Schema para notificaciones generales ---
 class Notificacion(BaseModel):
@@ -251,9 +245,8 @@ class ConsumoHistorial(BaseModel):
     valor_total: Decimal
     created_at: datetime
     producto: ProductoBase
-    usuario: UsuarioBase
-    class Config:
-        orm_mode = True
+    usuario: UsuarioBase # Asegúrate de que UsuarioBase esté definido antes de ConsumoHistorial
+    model_config = ConfigDict(from_attributes=True)
 
 # Actualizamos la referencia forward para HistorialUsuario
 HistorialUsuario.update_forward_refs()
