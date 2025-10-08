@@ -83,3 +83,12 @@ class AdminLog(Base):
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     action = Column(String, index=True)
     details = Column(String, nullable=True)
+
+class AdminApiKey(Base):
+    __tablename__ = "admin_api_keys"
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True, nullable=False)
+    description = Column(String, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    last_used = Column(DateTime, nullable=True)

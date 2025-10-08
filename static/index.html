@@ -3,99 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Rana que Canta - Escanear QR</title>
+    <title>La Rana que Canta - Karaoke</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #121212;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        #qr-reader {
-            width: 500px;
-            border: 2px solid #ccc;
-            border-radius: 8px;
-        }
-        #qr-reader-results {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: #333;
+        .container {
+            background-color: #1e1e1e;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
         }
         h1 {
             color: #4CAF50;
+            margin-bottom: 0.5em;
         }
-        /* Estilo para el botón de parar */
-        #html5-qrcode-button-camera-stop {
-            display: inline-block;
-            padding: 10px 15px;
-            margin-top: 10px;
-            background-color: #f44336;
-            color: white;
+        p {
+            color: #b0b0b0;
+            margin-bottom: 1.5em;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: #fff;
+            font-size: 1em;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: #ffffff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        #error-message {
+            color: #ff4d4d;
+            margin-top: 1em;
+            min-height: 1.2em;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>La Rana que Canta</h1>
-    <div id="qr-reader"></div>
-    <div id="qr-reader-results">Escaneando...</div>
+    <div class="container" id="login-container">
+        <h1>¡Bienvenido a La Rana que Canta!</h1>
+        <p id="welcome-message">Para empezar, elige un apodo para esta noche.</p>
+        <form id="login-form">
+            <input type="text" id="nick-input" placeholder="Tu apodo" required autocomplete="off">
+            <button type="submit" id="connect-button">Conectar</button>
+        </form>
+        <div id="error-message"></div>
+    </div>
 
-    <!-- Incluimos la librería para escanear QR -->
-    <script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+    <div class="container hidden" id="dashboard-container">
+        <h1>¡Listo, <span id="user-nick"></span>!</h1>
+        <p>Mesa: <strong id="table-name"></strong></p>
+        <p>Ya puedes buscar y añadir canciones a la cola.</p>
+        <p>(Aquí iría el resto de tu aplicación cliente)</p>
+        <button id="logout-button">Salir</button>
+    </div>
 
     <script>
-        function onScanSuccess(decodedText, decodedResult) {
-            // `decodedText` contiene el código QR leído (ej: "MESA-01")
-            console.log(`Código QR leído: ${decodedText}`);
-            
-            // Mostramos el resultado
-            let resultDiv = document.getElementById('qr-reader-results');
-            resultDiv.innerHTML = `Código detectado: <strong>${decodedText}</strong>. Redirigiendo...`;
+        // Elementos del DOM
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const loginForm = document.getElementById('login-form');
+        const nickInput = document.getElementById('nick-input');
+        const connectButton = document.getElementById('connect-button');
+        const errorMessage = document.getElementById('error-message');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const logoutButton = document.getElementById('logout-button');
 
-            // Aquí es donde te conectarías a la API, pero por ahora solo redirigimos
-            // a una página de ejemplo para que veas que funciona.
-            // En el futuro, aquí harías la llamada a `POST /api/v1/mesas/{qr_code}/conectar`
-            // y guardarías el ID de usuario que te devuelva.
-            
-            // Detenemos el escáner para que no siga usando la cámara
-            html5QrcodeScanner.clear();
+        // Función para obtener parámetros de la URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
         }
 
-        function onScanFailure(error) {
-            // Puedes ignorar esto o mostrar un mensaje si lo deseas
-            // console.warn(`Error de escaneo = ${error}`);
-        }
+        // Función para manejar el login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const nick = nickInput.value.trim();
+            const tableQrCode = getQueryParam('table');
 
-        let html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            if (!nick) {
+                errorMessage.textContent = 'Por favor, introduce un apodo.';
+                return;
+            }
 
-        // --- INICIO: Bloque para traducir la interfaz del escáner ---
-        function translateScannerUI() {
-            // Usamos un observador para esperar a que los botones se creen
-            const observer = new MutationObserver((mutations, obs) => {
-                const permissionButton = document.getElementById('html5-qrcode-button-camera-permission');
-                const fileScanLink = document.querySelector('#qr-reader a[href="#"]');
+            connectButton.disabled = true;
+            connectButton.textContent = 'Conectando...';
+            errorMessage.textContent = '';
 
-                if (permissionButton) {
-                    permissionButton.innerText = 'Solicitar Permiso de Cámara';
+            try {
+                const response = await fetch(`/api/v1/mesas/${tableQrCode}/conectar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nick: nick }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Ocurrió un error al conectar.');
                 }
 
-                if (fileScanLink && fileScanLink.innerText.includes('Scan an Image File')) {
-                    fileScanLink.innerText = 'Escanear un Archivo de Imagen';
-                    obs.disconnect(); // Dejamos de observar una vez traducido
-                }
-            });
-            observer.observe(document.getElementById('qr-reader'), { childList: true, subtree: true });
+                // Guardar datos del usuario en sessionStorage
+                sessionStorage.setItem('karaokeUser', JSON.stringify(data));
+                sessionStorage.setItem('karaokeTable', tableQrCode);
+
+                // Mostrar el dashboard
+                showDashboard(data, tableQrCode);
+
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                connectButton.disabled = false;
+                connectButton.textContent = 'Conectar';
+            }
         }
-        translateScannerUI();
-        // --- FIN: Bloque para traducir la interfaz del escáner ---
+
+        // Función para mostrar el dashboard
+        function showDashboard(userData, tableQrCode) {
+            document.getElementById('user-nick').textContent = userData.nick;
+            document.getElementById('table-name').textContent = tableQrCode;
+            loginContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+        }
+
+        // Función para manejar el logout
+        function handleLogout() {
+            sessionStorage.removeItem('karaokeUser');
+            sessionStorage.removeItem('karaokeTable');
+            dashboardContainer.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            nickInput.value = '';
+        }
+
+        // Lógica principal al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            const tableQrCode = getQueryParam('table');
+            const storedUser = sessionStorage.getItem('karaokeUser');
+            const storedTable = sessionStorage.getItem('karaokeTable');
+
+            if (!tableQrCode) {
+                welcomeMessage.textContent = 'Error: No se encontró el código de la mesa.';
+                loginForm.classList.add('hidden');
+                return;
+            }
+
+            // Si el usuario ya está logueado en esta mesa, mostrar dashboard
+            if (storedUser && storedTable === tableQrCode) {
+                showDashboard(JSON.parse(storedUser), tableQrCode);
+            }
+
+            loginForm.addEventListener('submit', handleLogin);
+            logoutButton.addEventListener('click', handleLogout);
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - La Rana que Canta</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 1em;
+        }
+        .container { max-width: 1200px; margin: auto; }
+        h1, h2 {
+            color: #f44336;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .tabs { display: flex; border-bottom: 1px solid #444; margin-bottom: 20px; }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            color: #aaa;
+            font-size: 1.1em;
+        }
+        .tab-button.active { color: #f44336; border-bottom: 2px solid #f44336; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .card { background-color: #1e1e1e; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+        .card h3 { margin-top: 0; color: #bb86fc; }
+
+        ul { list-style: none; padding: 0; }
+        li { background-color: #2a2a2a; margin-bottom: 10px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .song-info { flex-grow: 1; }
+        .song-info span { display: block; }
+        .song-info .title { font-weight: bold; color: #fff; }
+        .song-info .user { font-size: 0.9em; color: #aaa; }
+
+        .actions button { margin-left: 10px; }
+        button, input[type="submit"] {
+            padding: 10px 15px;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+        .btn-approve { background-color: #4CAF50; }
+        .btn-approve:hover { background-color: #45a049; }
+        .btn-reject { background-color: #f44336; }
+        .btn-reject:hover { background-color: #d32f2f; }
+        .btn-primary { background-color: #bb86fc; }
+        .btn-primary:hover { background-color: #a76ef4; }
+        .btn-secondary { background-color: #555; }
+        .btn-secondary:hover { background-color: #666; }
+        .btn-delete { background-color: #b00020; }
+        .btn-delete:hover { background-color: #90001a; }
+
+        #now-playing-card { border: 2px solid #4CAF50; }
+        #now-playing-card .title { font-size: 1.5em; color: #4CAF50; }
+
+        #reports-container select, #reports-container button { margin-bottom: 10px; }
+        #report-output { white-space: pre-wrap; background-color: #2a2a2a; padding: 15px; border-radius: 5px; font-family: monospace; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: #fff;
+            font-size: 1em;
+        }
+        #new-api-key-display {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            word-break: break-all;
+            color: #4CAF50;
+            font-family: monospace;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Administración <button id="logout-button" class="btn-secondary" style="float: right;">Cerrar Sesión</button></h1>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'cola')">Cola y Pendientes</button>
+            <button class="tab-button" onclick="openTab(event, 'reportes')">Reportes</button>
+            <button class="tab-button" onclick="openTab(event, 'gestion')">Gestión</button>
+        </div>
+
+        <!-- Pestaña de Cola y Pendientes -->
+        <div id="cola" class="tab-content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>Canciones Pendientes</h3>
+                    <ul id="pending-songs-list">
+                        <!-- Las canciones pendientes se cargarán aquí -->
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Cola de Reproducción</h3>
+                    <button id="next-song-button" class="btn-primary" style="width: 100%; margin-bottom: 20px;">Siguiente Canción</button>
+                    <div id="now-playing-card" class="card">
+                        <h3>Sonando Ahora</h3>
+                        <div id="now-playing-content">
+                            <p>No hay ninguna canción sonando.</p>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 20px;">Próximas Canciones</h3>
+                    <ul id="upcoming-songs-list">
+                        <!-- Las próximas canciones se cargarán aquí -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña de Reportes -->
+        <div id="reportes" class="tab-content">
+            <h2>Generar Reporte</h2>
+            <div class="form-group">
+                <select id="report-selector" class="form-group input">
+                    <option value="">-- Selecciona un reporte --</option>
+                    <option value="/api/v1/admin/summary">Resumen de la Noche</option>
+                    <option value="/api/v1/admin/reports/total-income">Ingresos Totales</option>
+                    <option value="/api/v1/admin/reports/top-songs">Top 10 Canciones Más Cantadas</option>
+                    <option value="/api/v1/admin/reports/top-products">Top 10 Productos Más Consumidos</option>
+                    <option value="/api/v1/admin/reports/income-by-table">Ingresos por Mesa</option>
+                    <option value="/api/v1/admin/banned-nicks">Ver Nicks Baneados</option>
+                </select>
+            </div>
+            <button id="generate-report-button" class="btn-primary">Generar</button>
+            <h3>Resultado:</h3>
+            <pre id="report-output">Selecciona un reporte y pulsa "Generar".</pre>
+        </div>
+
+        <!-- Pestaña de Gestión -->
+        <div id="gestion" class="tab-content">
+            <h2>Gestión del Sistema</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Claves de API</h3>
+                    <form id="create-api-key-form">
+                        <div class="form-group">
+                            <label for="api-key-description">Descripción de la nueva clave:</label>
+                            <input type="text" id="api-key-description" placeholder="Ej: Clave para el DJ" required>
+                        </div>
+                        <input type="submit" class="btn-primary" value="Crear Nueva Clave">
+                    </form>
+                    <div id="new-api-key-display" class="hidden"></div>
+                    <h4 style="margin-top: 20px;">Claves Existentes</h4>
+                    <ul id="api-keys-list">
+                        <!-- Lista de claves de API -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = localStorage.getItem('adminApiKey');
+        if (!API_KEY) {
+            window.location.href = '/admin';
+        }
+
+        const HEADERS = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
+
+        // --- Lógica de Pestañas ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // --- Lógica de Canciones Pendientes ---
+        const pendingList = document.getElementById('pending-songs-list');
+
+        async function fetchPendingSongs() {
+            try {
+                const response = await fetch('/api/v1/canciones/pendientes', { headers: HEADERS });
+                if (!response.ok) throw new Error('Error al cargar canciones pendientes.');
+                const songs = await response.json();
+                
+                pendingList.innerHTML = '';
+                if (songs.length === 0) {
+                    pendingList.innerHTML = '<p>No hay canciones pendientes.</p>';
+                } else {
+                    songs.forEach(song => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="song-info">
+                                <span class="title">${song.titulo}</span>
+                                <span class="user">de: ${song.usuario.nick}</span>
+                            </div>
+                            <div class="actions">
+                                <button class="btn-approve" onclick="approveSong(${song.id})">Aprobar</button>
+                                <button class="btn-reject" onclick="rejectSong(${song.id})">Rechazar</button>
+                            </div>
+                        `;
+                        pendingList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                pendingList.innerHTML = `<p style="color: #f44336;">${error.message}</p>`;
+            }
+        }
+
+        async function approveSong(songId) {
+            await fetch(`/api/v1/canciones/${songId}/aprobar`, { method: 'POST', headers: HEADERS });
+            // El WebSocket se encargará de refrescar la lista
+        }
+
+        async function rejectSong(songId) {
+            await fetch(`/api/v1/canciones/${songId}/rechazar`, { method: 'POST', headers: HEADERS });
+            // El WebSocket se encargará de refrescar la lista
+        }
+
+        // --- Lógica de la Cola (WebSocket) ---
+        const nowPlayingContent = document.getElementById('now-playing-content');
+        const upcomingList = document.getElementById('upcoming-songs-list');
+
+        function connectWebSocket() {
+            const ws = new WebSocket(`ws://${window.location.host}/ws/cola`);
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                // Actualizar "Sonando Ahora"
+                if (data.now_playing) {
+                    nowPlayingContent.innerHTML = `
+                        <div class="song-info">
+                            <span class="title">${data.now_playing.titulo}</span>
+                            <span class="user">de: ${data.now_playing.usuario.nick}</span>
+                        </div>
+                    `;
+                } else {
+                    nowPlayingContent.innerHTML = '<p>No hay ninguna canción sonando.</p>';
+                }
+
+                // Actualizar "Próximas"
+                upcomingList.innerHTML = '';
+                if (data.upcoming.length === 0) {
+                    upcomingList.innerHTML = '<p>La cola está vacía.</p>';
+                } else {
+                    data.upcoming.forEach(song => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="song-info">
+                                <span class="title">${song.titulo}</span>
+                                <span class="user">de: ${song.usuario.nick}</span>
+                            </div>
+                        `;
+                        upcomingList.appendChild(li);
+                    });
+                }
+
+                // Refrescar también la lista de pendientes
+                fetchPendingSongs();
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket desconectado. Intentando reconectar en 3 segundos...');
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = function(err) {
+                console.error('Error de WebSocket:', err);
+                ws.close();
+            };
+        }
+
+        document.getElementById('next-song-button').addEventListener('click', async () => {
+            await fetch('/api/v1/canciones/siguiente', { method: 'POST', headers: HEADERS });
+        });
+
+        // --- Lógica de Reportes ---
+        const reportOutput = document.getElementById('report-output');
+        document.getElementById('generate-report-button').addEventListener('click', async () => {
+            const endpoint = document.getElementById('report-selector').value;
+            if (!endpoint) {
+                reportOutput.textContent = 'Por favor, selecciona un reporte.';
+                return;
+            }
+            reportOutput.textContent = 'Generando...';
+            try {
+                const response = await fetch(endpoint, { headers: HEADERS });
+                const data = await response.json();
+                reportOutput.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                reportOutput.textContent = `Error al generar el reporte: ${error.message}`;
+            }
+        });
+
+        // --- Lógica de Gestión (API Keys) ---
+        const apiKeyForm = document.getElementById('create-api-key-form');
+        const apiKeyList = document.getElementById('api-keys-list');
+        const newApiKeyDisplay = document.getElementById('new-api-key-display');
+
+        async function fetchApiKeys() {
+            const response = await fetch('/api/v1/admin/api-keys', { headers: HEADERS });
+            const keys = await response.json();
+            apiKeyList.innerHTML = '';
+            keys.forEach(key => {
+                const li = document.createElement('li');
+                const lastUsed = key.last_used ? new Date(key.last_used).toLocaleString() : 'Nunca';
+                li.innerHTML = `
+                    <div class="song-info">
+                        <span class="title">${key.description || 'Sin descripción'}</span>
+                        <span class="user">Creada: ${new Date(key.created_at).toLocaleDateString()} | Último uso: ${lastUsed}</span>
+                    </div>
+                    <button class="btn-delete" onclick="deleteApiKey(${key.id}, '${key.description}')">Eliminar</button>
+                `;
+                apiKeyList.appendChild(li);
+            });
+        }
+
+        apiKeyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const description = document.getElementById('api-key-description').value;
+            const response = await fetch('/api/v1/admin/api-keys', {
+                method: 'POST',
+                headers: HEADERS,
+                body: JSON.stringify({ description })
+            });
+            const newKey = await response.json();
+            newApiKeyDisplay.textContent = `¡Clave creada! Guárdala en un lugar seguro: ${newKey.key}`;
+            newApiKeyDisplay.classList.remove('hidden');
+            apiKeyForm.reset();
+            fetchApiKeys();
+        });
+
+        async function deleteApiKey(keyId, description) {
+            if (confirm(`¿Estás seguro de que quieres eliminar la clave "${description}"? Esta acción no se puede deshacer.`)) {
+                await fetch(`/api/v1/admin/api-keys/${keyId}`, { method: 'DELETE', headers: HEADERS });
+                fetchApiKeys();
+            }
+        }
+
+        // --- Inicialización ---
+        document.getElementById('logout-button').addEventListener('click', () => {
+            localStorage.removeItem('adminApiKey');
+            window.location.href = '/admin';
+        });
+
+        // Cargar datos iniciales al entrar
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchPendingSongs();
+            connectWebSocket();
+            fetchApiKeys();
+        });
+    </script>
+</body>
+</html>

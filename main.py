@@ -19,6 +19,18 @@ async def read_index():
     """
     return FileResponse(os.path.join("static", "index.html"))
 
+@app.get("/admin", response_class=FileResponse, include_in_schema=False)
+async def read_admin_index():
+    """
+    Sirve la página de login para administradores.
+    """
+    return FileResponse(os.path.join("static", "admin.html"))
+
+@app.get("/admin/dashboard", response_class=FileResponse, include_in_schema=False)
+async def read_admin_dashboard():
+    """Sirve el panel de control del administrador."""
+    return FileResponse(os.path.join("static", "admin_dashboard.html"))
+
 # Endpoint de WebSocket para la cola en tiempo real
 @app.websocket("/ws/cola")
 async def websocket_endpoint(websocket: WebSocket):

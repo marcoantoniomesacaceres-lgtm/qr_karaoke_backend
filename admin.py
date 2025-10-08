@@ -719,3 +719,34 @@ def get_table_consumption_history(mesa_id: int, db: Session = Depends(get_db)):
 
     consumos = crud.get_consumo_por_mesa(db, mesa_id=mesa_id)
     return consumos
+
+# --- Gestión de Claves de API ---
+
+@router.post("/api-keys", response_model=schemas.AdminApiKeyView, status_code=201, summary="Crear una nueva clave de API")
+def create_new_api_key(key_data: schemas.AdminApiKeyCreate, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Genera una nueva clave de API para administradores.
+    La clave solo se mostrará una vez, ¡guárdala en un lugar seguro!
+    """
+    new_key = crud.create_admin_api_key(db, description=key_data.description)
+    crud.create_admin_log_entry(db, action="CREATE_API_KEY", details=f"Nueva clave de API creada: '{key_data.description}'")
+    return new_key
+
+@router.get("/api-keys", response_model=List[schemas.AdminApiKeyInfo], summary="Listar todas las claves de API")
+def list_api_keys(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Muestra una lista de todas las claves de API de administrador,
+    sin revelar las claves en sí.
+    """
+    return crud.get_all_admin_api_keys(db)
+
+@router.delete("/api-keys/{key_id}", status_code=204, summary="Eliminar una clave de API")
+def delete_api_key(key_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Elimina permanentemente una clave de API de administrador.
+    """
+    deleted_key = crud.delete_admin_api_key(db, key_id=key_id)
+    if not deleted_key:
+        raise HTTPException(status_code=404, detail="Clave de API no encontrada.")
+    crud.create_admin_log_entry(db, action="DELETE_API_KEY", details=f"Clave de API ID {key_id} ('{deleted_key.description}') eliminada.")
+    return Response(status_code=204)

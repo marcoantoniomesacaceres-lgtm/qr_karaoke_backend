@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - La Rana que Canta</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #1e1e1e;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            color: #f44336; /* Color rojo para admin */
+            margin-bottom: 0.5em;
+        }
+        p {
+            color: #b0b0b0;
+            margin-bottom: 1.5em;
+        }
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: #fff;
+            font-size: 1em;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #f44336;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #d32f2f;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        #error-message {
+            color: #ffcdd2;
+            margin-top: 1em;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="admin-login-container">
+        <h1>Acceso de Administrador</h1>
+        <p>Introduce tu clave de API para continuar.</p>
+        <form id="admin-login-form">
+            <input type="password" id="api-key-input" placeholder="Tu clave de API" required autocomplete="off">
+            <button type="submit" id="admin-login-button">Ingresar</button>
+        </form>
+        <div id="error-message"></div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('admin-login-form');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const loginButton = document.getElementById('admin-login-button');
+        const errorMessage = document.getElementById('error-message');
+
+        async function handleAdminLogin(event) {
+            event.preventDefault();
+            const apiKey = apiKeyInput.value.trim();
+
+            if (!apiKey) {
+                errorMessage.textContent = 'Por favor, introduce la clave de API.';
+                return;
+            }
+
+            loginButton.disabled = true;
+            loginButton.textContent = 'Verificando...';
+            errorMessage.textContent = '';
+
+            try {
+                // Probamos la clave contra un endpoint de admin simple
+                const response = await fetch('/api/v1/admin/summary', {
+                    headers: { 'X-API-Key': apiKey }
+                });
+
+                if (response.status === 403) throw new Error('Clave de API incorrecta o inválida.');
+                if (!response.ok) throw new Error('Error de autenticación en el servidor.');
+
+                // Si la clave es correcta, la guardamos y redirigimos
+                localStorage.setItem('adminApiKey', apiKey);
+                window.location.href = '/admin/dashboard';
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                loginButton.disabled = false;
+                loginButton.textContent = 'Ingresar';
+            }
+        }
+
+        loginForm.addEventListener('submit', handleAdminLogin);
+    </script>
+</body>
+</html>

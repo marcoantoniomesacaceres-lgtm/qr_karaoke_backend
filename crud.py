@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, case
+import secrets
 from typing import List, Optional
 import datetime
 import models, schemas
@@ -1014,6 +1015,44 @@ def get_usuarios_inactivos_consumo(db: Session, horas: int = 2):
         (ultimo_consumo_subq.c.ultimo_consumo_ts < hora_limite) |
         (ultimo_consumo_subq.c.ultimo_consumo_ts == None)
     ).all()
+
+
+def get_admin_api_key(db: Session, key: str) -> Optional[models.AdminApiKey]:
+    """
+    Busca una clave de API de administrador en la base de datos,
+    verifica que esté activa y actualiza su último uso.
+    """
+    db_key = db.query(models.AdminApiKey).filter(
+        models.AdminApiKey.key == key,
+        models.AdminApiKey.is_active == True
+    ).first()
+
+    if db_key:
+        db_key.last_used = datetime.datetime.utcnow()
+        db.commit()
+
+    return db_key
+
+def get_all_admin_api_keys(db: Session) -> List[models.AdminApiKey]:
+    """Obtiene todas las claves de API de administrador de la base de datos."""
+    return db.query(models.AdminApiKey).order_by(models.AdminApiKey.created_at.desc()).all()
+
+def create_admin_api_key(db: Session, description: str) -> models.AdminApiKey:
+    """Genera y almacena una nueva clave de API de administrador."""
+    new_key = secrets.token_urlsafe(32)
+    db_key = models.AdminApiKey(key=new_key, description=description)
+    db.add(db_key)
+    db.commit()
+    db.refresh(db_key)
+    return db_key
+
+def delete_admin_api_key(db: Session, key_id: int) -> Optional[models.AdminApiKey]:
+    """Elimina una clave de API de administrador por su ID."""
+    db_key = db.query(models.AdminApiKey).filter(models.AdminApiKey.id == key_id).first()
+    if db_key:
+        db.delete(db_key)
+        db.commit()
+    return db_key
 
 
 def get_consumo_por_mesa(db: Session, mesa_id: int):

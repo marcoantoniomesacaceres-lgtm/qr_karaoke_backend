@@ -212,6 +212,23 @@ class AdminLogView(BaseModel):
     details: Optional[str] = None # Optional[str] es mejor que None
     model_config = ConfigDict(from_attributes=True)
 
+# --- Schemas para Claves de API de Admin ---
+class AdminApiKeyCreate(BaseModel):
+    description: str
+
+class AdminApiKeyInfo(BaseModel):
+    """Schema para listar claves sin exponer la clave misma."""
+    id: int
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    last_used: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class AdminApiKeyView(AdminApiKeyInfo):
+    """Schema para mostrar la clave recién creada."""
+    key: str
+
 
 # --- Schema para notificaciones generales ---
 class Notificacion(BaseModel):
