@@ -34,6 +34,8 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
     Realiza una búsqueda de videos en YouTube utilizando la API oficial.
     Este endpoint actúa como un proxy para no exponer la API Key en el cliente.
     """
+    logger.info(f"Iniciando búsqueda en YouTube con el término: '{q}'")
+
     if not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "TU_API_KEY_DE_YOUTUBE_AQUI":
         logger.error("La API Key de YouTube no está configurada en las variables de entorno.")
         raise HTTPException(
@@ -44,12 +46,15 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
     async with httpx.AsyncClient() as client:
         try:
             video_id_from_url = extract_video_id_from_url(q)
+            logger.info(f"¿Es una URL? ID extraído: {video_id_from_url}")
             video_ids = []
 
             if video_id_from_url:
                 # Si 'q' es una URL, usamos el ID extraído directamente
                 video_ids = [video_id_from_url]
+                logger.info(f"Búsqueda por ID de URL: {video_ids}")
             else:
+                logger.info(f"Búsqueda por texto: '{q}'")
                 # Si 'q' es texto, realizamos una búsqueda normal
                 search_params = {
                     "part": "id",
@@ -59,12 +64,18 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
                     "videoCategoryId": "10",  # Categoría de Música
                     "maxResults": 10
                 }
+                logger.info("Realizando primera llamada a la API de YouTube (search)...")
                 search_response = await client.get(YOUTUBE_SEARCH_URL, params=search_params)
                 search_response.raise_for_status()
                 search_results = search_response.json()
+                logger.info("Respuesta de la API (search) recibida con éxito.")
                 video_ids = [item["id"]["videoId"] for item in search_results.get("items", [])]
+                logger.info(f"IDs de video encontrados: {video_ids}")
 
+            # Si después de buscar por ID o por texto no encontramos nada, devolvemos una lista vacía.
+            # Esto evita un error en la siguiente llamada a la API.
             if not video_ids:
+                logger.warning("No se encontraron IDs de video. Devolviendo lista vacía.")
                 return []
 
             # Ahora, obtenemos los detalles (como la duración) de esos videos
@@ -73,9 +84,11 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
                 "id": ",".join(video_ids),
                 "key": YOUTUBE_API_KEY,
             }
+            logger.info("Realizando segunda llamada a la API de YouTube (videos)...")
             videos_response = await client.get(YOUTUBE_VIDEOS_URL, params=video_params)
             videos_response.raise_for_status()
             videos_results = videos_response.json()
+            logger.info("Respuesta de la API (videos) recibida con éxito. Procesando resultados...")
 
             # Mapeamos los resultados a un formato simple
             formatted_results = []
@@ -104,7 +117,25 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
                     "thumbnail": thumbnail_url,
                     "duration_seconds": duration_seconds,
                 })
+            logger.info(f"Procesamiento finalizado. Se encontraron {len(formatted_results)} resultados formateados.")
 
+        except httpx.HTTPStatusError as exc:
+            # Captura errores de estado HTTP, como 4xx o 5xx de la API de YouTube.
+            try:
+                error_details = exc.response.json().get("error", {}).get("message", "Sin detalles.")
+            except Exception:
+                error_details = exc.response.text
+
+            logger.error(f"Error de estado HTTP desde la API de YouTube: {exc.response.status_code} - {error_details}")
+
+            # Si el error es un 403 (Forbidden), es muy probable que sea un problema con la API Key.
+            if exc.response.status_code == 403:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Acceso denegado por YouTube. Verifica que la API Key sea correcta, no haya expirado y no tenga restricciones de IP."
+                )
+            
+            raise HTTPException(status_code=502, detail=f"Error al comunicarse con YouTube: {error_details}")
         except httpx.RequestError as exc:
             logger.error(f"Error de red al conectar con YouTube: {exc}")
             raise HTTPException(status_code=503, detail=f"Error de red al conectar con YouTube: {exc}")

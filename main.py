@@ -2,20 +2,39 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
+from dotenv import load_dotenv
 import logging
+
+# Carga las variables de entorno desde el archivo .env
+load_dotenv()
+
+# --- Bloque de prueba para verificar variables de entorno ---
+print("YOUTUBE_API_KEY cargada:", os.getenv("YOUTUBE_API_KEY"))
+
 from database import engine
 import models
 import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 
+# --- Configuración de Logging a un archivo ---
+# Esto crea un logger que guarda todo en 'karaoke_debug.log'
+# y también lo muestra en la consola.
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Handler para el archivo
+file_handler = logging.FileHandler("karaoke_debug.log", mode='w') # 'w' para reescribir el log cada vez que se inicia
+file_handler.setFormatter(log_formatter)
+
+# Handler para la consola
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+
+logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
+logger = logging.getLogger(__name__)
+# ------------------------------------------------
+
 # Esto crea las tablas en la base de datos si no existen
 # En un entorno de producción, es mejor usar migraciones (ej. Alembic)
 models.Base.metadata.create_all(bind=engine)
-
-# --- Configuración de Logging ---
-# Esto crea un logger más informativo que el que viene por defecto.
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-# --------------------------------
 
 app = FastAPI(title="Karaoke 'La Rana que Canta'")
 
