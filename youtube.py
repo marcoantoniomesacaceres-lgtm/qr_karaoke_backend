@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
 
@@ -35,6 +34,10 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
     Este endpoint actúa como un proxy para no exponer la API Key en el cliente.
     """
     logger.info(f"Iniciando búsqueda en YouTube con el término: '{q}'")
+
+    YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+    # Usamos print() para una depuración más directa, evitando problemas con el logger.
+    print(f"--- DEBUG EN YOUTUBE.PY --- Clave leída: '{YOUTUBE_API_KEY}'")
 
     if not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "TU_API_KEY_DE_YOUTUBE_AQUI":
         logger.error("La API Key de YouTube no está configurada en las variables de entorno.")

@@ -321,6 +321,12 @@
 
             try {
                 const response = await fetch(`${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}`);
+                // Si la respuesta no es OK (ej: 403, 500), leemos el error y lo lanzamos
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
+                }
+
                 const results = await response.json();
                 resultsContainer.innerHTML = '';
                 if (results.length > 0) {
