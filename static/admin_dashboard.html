@@ -41,6 +41,9 @@
         .song-info span { display: block; }
         .song-info .title { font-weight: bold; color: #fff; }
         .song-info .user { font-size: 0.9em; color: #aaa; }
+        .song-item-info { display: flex; align-items: center; gap: 15px; }
+        .song-item-info img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+        .song-duration { font-size: 0.8em; color: #aaa; }
 
         .actions button { margin-left: 10px; }
         button, input[type="submit"] {
@@ -99,6 +102,7 @@
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'cola')">Cola y Pendientes</button>
             <button class="tab-button" onclick="openTab(event, 'reportes')">Reportes</button>
+            <button class="tab-button" onclick="openTab(event, 'youtube-search')">Buscar en YouTube</button>
             <button class="tab-button" onclick="openTab(event, 'gestion')">Gestión</button>
         </div>
 
@@ -145,6 +149,21 @@
             <button id="generate-report-button" class="btn-primary">Generar</button>
             <h3>Resultado:</h3>
             <pre id="report-output">Selecciona un reporte y pulsa "Generar".</pre>
+        </div>
+
+        <!-- Pestaña de Búsqueda en YouTube -->
+        <div id="youtube-search" class="tab-content">
+            <h2>Buscar y Añadir Canción</h2>
+            <p>Busca una canción en YouTube y añádela a la lista de un usuario. La canción se añadirá como 'pendiente'.</p>
+            <div class="form-group">
+                <label for="youtube-search-user-id">ID del Usuario que pide la canción:</label>
+                <input type="number" id="youtube-search-user-id" placeholder="Introduce el ID del usuario" class="form-group input">
+            </div>
+            <form id="youtube-search-form" class="form-group">
+                <input type="text" id="youtube-search-input" placeholder="Artista o título de la canción" required class="form-group input">
+                <button type="submit" id="youtube-search-button" class="btn-primary">Buscar</button>
+            </form>
+            <ul id="youtube-search-results" class="song-list"></ul>
         </div>
 
         <!-- Pestaña de Gestión -->
@@ -357,6 +376,87 @@
                 fetchApiKeys();
             }
         }
+
+        // --- Lógica de Búsqueda en YouTube ---
+        const youtubeSearchForm = document.getElementById('youtube-search-form');
+        const youtubeSearchInput = document.getElementById('youtube-search-input');
+        const youtubeSearchButton = document.getElementById('youtube-search-button');
+        const youtubeSearchResults = document.getElementById('youtube-search-results');
+
+        youtubeSearchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = youtubeSearchInput.value.trim();
+            if (!query) return;
+
+            youtubeSearchButton.disabled = true;
+            youtubeSearchButton.textContent = 'Buscando...';
+            youtubeSearchResults.innerHTML = '<p>Buscando...</p>';
+
+            try {
+                const response = await fetch(`/api/v1/youtube/search?q=${encodeURIComponent(query)}`, { headers: HEADERS });
+                if (!response.ok) throw new Error('Error en la búsqueda.');
+                const results = await response.json();
+
+                youtubeSearchResults.innerHTML = '';
+                if (results.length > 0) {
+                    results.forEach(song => {
+                        youtubeSearchResults.innerHTML += `
+                            <li class="song-item">
+                                <div class="song-item-info">
+                                    <img src="${song.thumbnail}" alt="Miniatura">
+                                    <div>
+                                        <div class="title">${song.title}</div>
+                                        <div class="song-duration">${Math.floor(song.duration_seconds / 60)}:${(song.duration_seconds % 60).toString().padStart(2, '0')}</div>
+                                    </div>
+                                </div>
+                                <button class="btn-primary add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    youtubeSearchResults.innerHTML = '<p>No se encontraron resultados.</p>';
+                }
+            } catch (error) {
+                youtubeSearchResults.innerHTML = `<p style="color: #f44336;">${error.message}</p>`;
+            } finally {
+                youtubeSearchButton.disabled = false;
+                youtubeSearchButton.textContent = 'Buscar';
+            }
+        });
+
+        youtubeSearchResults.addEventListener('click', async (e) => {
+            if (!e.target.classList.contains('add-song-btn')) return;
+
+            const button = e.target;
+            const userId = document.getElementById('youtube-search-user-id').value;
+
+            if (!userId) {
+                alert('Por favor, introduce el ID del usuario antes de añadir una canción.');
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Añadiendo...';
+
+            const songData = {
+                titulo: button.dataset.title,
+                youtube_id: button.dataset.youtubeId,
+                duracion_seconds: parseInt(button.dataset.duration, 10)
+            };
+
+            try {
+                const response = await fetch(`/api/v1/canciones/${userId}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(songData) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Error al añadir la canción.');
+                alert(`'${songData.titulo}' añadida a la lista del usuario ${userId}.`);
+                fetchPendingSongs(); // Refrescar la lista de pendientes
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Añadir';
+            }
+        });
 
         // --- Inicialización ---
         document.getElementById('logout-button').addEventListener('click', () => {
