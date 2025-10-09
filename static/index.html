@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Rana que Canta - Karaoke</title>
+    <title>Karaoke 'La Rana que Canta'</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             margin: 0;
             background-color: #121212;
             color: #e0e0e0;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
         }
-        .container {
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+        .login-box {
             background-color: #1e1e1e;
             padding: 2em;
             border-radius: 10px;
@@ -27,169 +21,471 @@
             max-width: 400px;
             width: 100%;
         }
-        h1 {
-            color: #4CAF50;
-            margin-bottom: 0.5em;
-        }
-        p {
-            color: #b0b0b0;
-            margin-bottom: 1.5em;
-        }
-        input[type="text"] {
-            width: calc(100% - 22px);
+        h1, h2 { color: #4CAF50; }
+        p { color: #b0b0b0; }
+        input {
+            width: calc(100% - 24px);
             padding: 10px;
-            margin-bottom: 1em;
+            margin-bottom: 15px;
             border-radius: 5px;
-            border: none;
+            border: 1px solid #444;
             background-color: #333;
             color: #fff;
             font-size: 1em;
         }
         button {
-            width: 100%;
             padding: 12px;
             background-color: #4CAF50;
             color: #ffffff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: bold;
             transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
-        }
+        button:hover:not(:disabled) { background-color: #45a049; }
         button:disabled {
             background-color: #555;
             cursor: not-allowed;
         }
-        #error-message {
-            color: #ff4d4d;
-            margin-top: 1em;
-            min-height: 1.2em;
-        }
+        .error-msg { color: #ff4d4d; margin-top: 1em; min-height: 1.2em; }
         .hidden {
             display: none;
+        }
+        .tabs { display: flex; border-bottom: 1px solid #333; margin-bottom: 20px; }
+        .tab-button { background: none; border: none; color: #aaa; padding: 15px 20px; cursor: pointer; font-size: 1em; }
+        .tab-button.active { color: #4CAF50; border-bottom: 2px solid #4CAF50; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .song-list { list-style: none; padding: 0; }
+        .song-item { background-color: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .song-item-info { display: flex; align-items: center; gap: 15px; }
+        .song-item img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+        .song-title { font-weight: bold; }
+        .song-status { font-size: 0.8em; padding: 4px 8px; border-radius: 12px; color: #121212; }
+        .status-pendiente { background-color: #ffc107; }
+        .status-aprobado { background-color: #28a745; }
+        .status-reproduciendo { background-color: #17a2b8; animation: pulse 1.5s infinite; }
+        .status-cantada { background-color: #6c757d; }
+        .status-rechazada { background-color: #dc3545; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(23, 162, 184, 0); } 100% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0); } }
+        .profile-card { background-color: #1e1e1e; padding: 20px; border-radius: 8px; text-align: center; }
+        .profile-card h3 { margin-top: 0; }
+        .profile-level { font-size: 1.2em; font-weight: bold; }
+        .level-bronce { color: #cd7f32; }
+        .level-plata { color: #c0c0c0; }
+        .level-oro { color: #ffd700; }
+        #search-results { max-height: 400px; overflow-y: auto; }
+        #notification-banner {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: top 0.5s ease-in-out;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="login-container">
-        <h1>¡Bienvenido a La Rana que Canta!</h1>
-        <p id="welcome-message">Para empezar, elige un apodo para esta noche.</p>
-        <form id="login-form">
-            <input type="text" id="nick-input" placeholder="Tu apodo" required autocomplete="off">
-            <button type="submit" id="connect-button">Conectar</button>
-        </form>
-        <div id="error-message"></div>
+    <div id="notification-banner"></div>
+
+    <div class="login-view" id="login-container">
+        <div class="login-box">
+            <h1>¡Bienvenido a La Rana que Canta!</h1>
+            <p id="welcome-message">Para empezar, elige un apodo para esta noche.</p>
+            <form id="login-form">
+                <input type="text" id="nick-input" placeholder="Tu apodo" required autocomplete="off">
+                <button type="submit" id="connect-button">Conectar</button>
+            </form>
+            <div class="error-msg" id="error-message"></div>
+        </div>
     </div>
 
-    <div class="container hidden" id="dashboard-container">
-        <h1>¡Listo, <span id="user-nick"></span>!</h1>
-        <p>Mesa: <strong id="table-name"></strong></p>
-        <p>Ya puedes buscar y añadir canciones a la cola.</p>
-        <p>(Aquí iría el resto de tu aplicación cliente)</p>
-        <button id="logout-button">Salir</button>
+    <div class="container hidden" id="dashboard-view">
+        <div class="profile-card">
+            <h3><span id="user-nick"></span></h3>
+            <p>Mesa: <strong id="table-name"></strong></p>
+            <p>Puntos: <strong id="user-points">0</strong></p>
+            <p>Nivel: <strong id="user-level" class="profile-level"></strong></p>
+            <button id="logout-button" style="width: auto; font-size: 0.8em; padding: 8px 12px;">Salir</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="tab-queue">Cola</button>
+            <button class="tab-button" data-tab="tab-search">Buscar Canción</button>
+            <button class="tab-button" data-tab="tab-my-list">Mi Lista</button>
+        </div>
+
+        <!-- Pestaña de la Cola de Karaoke -->
+        <div id="tab-queue" class="tab-content active">
+            <h2>Ahora Sonando</h2>
+            <div id="now-playing-container">
+                <p>La cola está vacía. ¡Añade una canción!</p>
+            </div>
+            <h2>Próximas Canciones</h2>
+            <ul id="upcoming-list" class="song-list">
+                <!-- Las canciones se insertarán aquí dinámicamente -->
+            </ul>
+        </div>
+
+        <!-- Pestaña de Búsqueda -->
+        <div id="tab-search" class="tab-content">
+            <h2>Buscar Canción en YouTube</h2>
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="Artista o título de la canción" required>
+                <button type="submit" id="search-button">Buscar</button>
+            </form>
+            <div id="search-results" class="song-list">
+                <!-- Los resultados de búsqueda se insertarán aquí -->
+            </div>
+        </div>
+
+        <!-- Pestaña de Mi Lista -->
+        <div id="tab-my-list" class="tab-content">
+            <h2>Mis Canciones</h2>
+            <ul id="my-song-list" class="song-list">
+                <!-- Las canciones del usuario se insertarán aquí -->
+            </ul>
+        </div>
     </div>
 
     <script>
-        // Elementos del DOM
+        // --- CONFIGURACIÓN ---
+        const API_BASE_URL = '/api/v1';
+        const WEBSOCKET_URL = `ws://${window.location.host}/ws/cola`;
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        let state = {
+            user: null,
+            tableQrCode: null,
+            websocket: null,
+        };
+
+        // --- ELEMENTOS DEL DOM ---
         const loginContainer = document.getElementById('login-container');
-        const dashboardContainer = document.getElementById('dashboard-container');
+        const dashboardView = document.getElementById('dashboard-view');
         const loginForm = document.getElementById('login-form');
         const nickInput = document.getElementById('nick-input');
         const connectButton = document.getElementById('connect-button');
         const errorMessage = document.getElementById('error-message');
         const welcomeMessage = document.getElementById('welcome-message');
         const logoutButton = document.getElementById('logout-button');
+        const notificationBanner = document.getElementById('notification-banner');
 
-        // Función para obtener parámetros de la URL
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
+        // --- FUNCIONES DE RENDERIZADO ---
+
+        function renderQueue(queueData) {
+            const nowPlayingContainer = document.getElementById('now-playing-container');
+            const upcomingList = document.getElementById('upcoming-list');
+            nowPlayingContainer.innerHTML = '';
+            upcomingList.innerHTML = '';
+
+            if (queueData.now_playing) {
+                nowPlayingContainer.innerHTML = createSongItemHTML(queueData.now_playing, false);
+            } else {
+                nowPlayingContainer.innerHTML = '<p>La cola está vacía. ¡Añade una canción!</p>';
+            }
+
+            if (queueData.upcoming && queueData.upcoming.length > 0) {
+                queueData.upcoming.forEach(song => {
+                    upcomingList.innerHTML += createSongItemHTML(song, false);
+                });
+            } else if (!queueData.now_playing) {
+                 upcomingList.innerHTML = '';
+            } else {
+                 upcomingList.innerHTML = '<li><p>No hay más canciones en la cola.</p></li>';
+            }
         }
 
-        // Función para manejar el login
+        function renderMyList(songs) {
+            const myList = document.getElementById('my-song-list');
+            myList.innerHTML = '';
+            if (songs.length > 0) {
+                songs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(song => {
+                    myList.innerHTML += createSongItemHTML(song, true);
+                });
+            } else {
+                myList.innerHTML = '<li><p>Aún no has añadido ninguna canción.</p></li>';
+            }
+        }
+
+        function createSongItemHTML(song, isMyList) {
+            const statusClass = `status-${song.estado}`;
+            const canDelete = isMyList && song.estado === 'pendiente';
+            const deleteButton = `<button class="delete-song-btn" data-song-id="${song.id}" style="background-color: #dc3545;">Eliminar</button>`;
+
+            return `
+                <li class="song-item" id="song-${song.id}">
+                    <div class="song-item-info">
+                        <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
+                        <div>
+                            <div class="song-title">${song.titulo}</div>
+                            ${song.usuario ? `<div class="song-user">por: ${song.usuario.nick}</div>` : ''}
+                        </div>
+                    </div>
+                    <div>
+                        ${isMyList ? `<span class="song-status ${statusClass}">${song.estado}</span>` : ''}
+                        ${canDelete ? deleteButton : ''}
+                    </div>
+                </li>
+            `;
+        }
+
+        function showNotification(message, duration = 3000) {
+            notificationBanner.textContent = message;
+            notificationBanner.style.top = '20px';
+            setTimeout(() => {
+                notificationBanner.style.top = '-100px';
+            }, duration);
+        }
+
+        // --- LÓGICA DE WEBSOCKET ---
+
+        function connectWebSocket() {
+            state.websocket = new WebSocket(WEBSOCKET_URL);
+
+            state.websocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'notification') {
+                    showNotification(data.payload.mensaje);
+                } else {
+                    // Asumimos que es una actualización de la cola
+                    renderQueue(data);
+                }
+            };
+
+            state.websocket.onclose = () => {
+                console.log('WebSocket desconectado. Intentando reconectar en 5 segundos...');
+                setTimeout(connectWebSocket, 5000);
+            };
+
+            state.websocket.onerror = (error) => {
+                console.error('Error de WebSocket:', error);
+                state.websocket.close();
+            };
+        }
+
+        // --- LÓGICA DE API Y EVENTOS ---
+
         async function handleLogin(event) {
             event.preventDefault();
             const nick = nickInput.value.trim();
-            const tableQrCode = getQueryParam('table');
 
             if (!nick) {
                 errorMessage.textContent = 'Por favor, introduce un apodo.';
                 return;
             }
-
             connectButton.disabled = true;
             connectButton.textContent = 'Conectando...';
             errorMessage.textContent = '';
 
             try {
-                const response = await fetch(`/api/v1/mesas/${tableQrCode}/conectar`, {
+                const response = await fetch(`${API_BASE_URL}/mesas/${state.tableQrCode}/conectar`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nick: nick }),
                 });
-
                 const data = await response.json();
-
                 if (!response.ok) {
                     throw new Error(data.detail || 'Ocurrió un error al conectar.');
                 }
-
-                // Guardar datos del usuario en sessionStorage
-                sessionStorage.setItem('karaokeUser', JSON.stringify(data));
-                sessionStorage.setItem('karaokeTable', tableQrCode);
-
-                // Mostrar el dashboard
-                showDashboard(data, tableQrCode);
-
+                state.user = data;
+                sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
+                sessionStorage.setItem('karaokeTable', state.tableQrCode);
+                showDashboard();
             } catch (error) {
                 errorMessage.textContent = error.message;
+            } finally {
                 connectButton.disabled = false;
                 connectButton.textContent = 'Conectar';
             }
         }
 
-        // Función para mostrar el dashboard
-        function showDashboard(userData, tableQrCode) {
-            document.getElementById('user-nick').textContent = userData.nick;
-            document.getElementById('table-name').textContent = tableQrCode;
-            loginContainer.classList.add('hidden');
-            dashboardContainer.classList.remove('hidden');
+        async function handleSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
+
+            const searchButton = document.getElementById('search-button');
+            searchButton.disabled = true;
+            searchButton.textContent = 'Buscando...';
+
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = '<p>Buscando...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}`);
+                const results = await response.json();
+                resultsContainer.innerHTML = '';
+                if (results.length > 0) {
+                    results.forEach(song => {
+                        resultsContainer.innerHTML += `
+                            <li class="song-item">
+                                <div class="song-item-info">
+                                    <img src="${song.thumbnail}" alt="Miniatura">
+                                    <div>
+                                        <div class="song-title">${song.title}</div>
+                                        <div class="song-duration">${Math.floor(song.duration_seconds / 60)}:${(song.duration_seconds % 60).toString().padStart(2, '0')}</div>
+                                    </div>
+                                </div>
+                                <button class="add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+                }
+            } catch (error) {
+                resultsContainer.innerHTML = `<p class="error-msg">Error al buscar: ${error.message}</p>`;
+            } finally {
+                searchButton.disabled = false;
+                searchButton.textContent = 'Buscar';
+            }
         }
 
-        // Función para manejar el logout
+        async function handleAddSong(event) {
+            if (!event.target.classList.contains('add-song-btn')) return;
+
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Añadiendo...';
+
+            const songData = {
+                titulo: button.dataset.title,
+                youtube_id: button.dataset.youtubeId,
+                duracion_seconds: parseInt(button.dataset.duration, 10)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(songData)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error al añadir la canción.');
+                }
+                showNotification(`'${songData.titulo}' añadida a tu lista.`);
+                fetchMyList(); // Actualizar la lista personal
+            } catch (error) {
+                showNotification(error.message, 5000);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Añadir';
+            }
+        }
+
+        async function handleDeleteSong(event) {
+            if (!event.target.classList.contains('delete-song-btn')) return;
+            if (!confirm('¿Seguro que quieres eliminar esta canción de tu lista?')) return;
+
+            const button = event.target;
+            const songId = button.dataset.songId;
+            button.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/${songId}?usuario_id=${state.user.id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'No se pudo eliminar la canción.');
+                }
+                showNotification('Canción eliminada.');
+                fetchMyList();
+            } catch (error) {
+                showNotification(error.message, 5000);
+                button.disabled = false;
+            }
+        }
+
+        async function fetchMyList() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}/lista`);
+                const songs = await response.json();
+                renderMyList(songs);
+            } catch (error) {
+                console.error('Error al obtener mi lista:', error);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('user-nick').textContent = state.user.nick;
+            document.getElementById('table-name').textContent = state.tableQrCode;
+            document.getElementById('user-points').textContent = state.user.puntos;
+            const levelEl = document.getElementById('user-level');
+            levelEl.textContent = state.user.nivel.charAt(0).toUpperCase() + state.user.nivel.slice(1);
+            levelEl.className = `profile-level level-${state.user.nivel}`;
+
+            loginContainer.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+
+            connectWebSocket();
+            fetchMyList();
+        }
+
         function handleLogout() {
             sessionStorage.removeItem('karaokeUser');
             sessionStorage.removeItem('karaokeTable');
-            dashboardContainer.classList.add('hidden');
+            if (state.websocket) state.websocket.close();
+            state.user = null;
+            state.tableQrCode = getQueryParam('table'); // Mantenemos el código de la mesa
+            dashboardView.classList.add('hidden');
             loginContainer.classList.remove('hidden');
             nickInput.value = '';
+            errorMessage.textContent = '';
         }
 
-        // Lógica principal al cargar la página
-        window.addEventListener('DOMContentLoaded', () => {
-            const tableQrCode = getQueryParam('table');
-            const storedUser = sessionStorage.getItem('karaokeUser');
-            const storedTable = sessionStorage.getItem('karaokeTable');
+        function handleTabClick(event) {
+            const clickedTab = event.target.closest('.tab-button');
+            if (!clickedTab) return;
 
-            if (!tableQrCode) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            clickedTab.classList.add('active');
+            document.getElementById(clickedTab.dataset.tab).classList.add('active');
+
+            if (clickedTab.dataset.tab === 'tab-my-list') {
+                fetchMyList();
+            }
+        }
+
+        function getQueryParam(param) {
+            return new URLSearchParams(window.location.search).get(param);
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.addEventListener('DOMContentLoaded', () => {
+            state.tableQrCode = getQueryParam('table');
+            if (!state.tableQrCode) {
                 welcomeMessage.textContent = 'Error: No se encontró el código de la mesa.';
                 loginForm.classList.add('hidden');
                 return;
             }
 
-            // Si el usuario ya está logueado en esta mesa, mostrar dashboard
-            if (storedUser && storedTable === tableQrCode) {
-                showDashboard(JSON.parse(storedUser), tableQrCode);
+            const storedUser = sessionStorage.getItem('karaokeUser');
+            const storedTable = sessionStorage.getItem('karaokeTable');
+
+            if (storedUser && storedTable === state.tableQrCode) {
+                state.user = JSON.parse(storedUser);
+                showDashboard();
             }
 
+            // Asignar eventos
             loginForm.addEventListener('submit', handleLogin);
             logoutButton.addEventListener('click', handleLogout);
+            document.querySelector('.tabs').addEventListener('click', handleTabClick);
+            document.getElementById('search-form').addEventListener('submit', handleSearch);
+            document.getElementById('search-results').addEventListener('click', handleAddSong);
+            document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
         });
     </script>
 </body>

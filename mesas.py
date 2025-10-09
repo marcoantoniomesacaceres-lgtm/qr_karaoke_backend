@@ -24,7 +24,7 @@ def create_mesa_endpoint(mesa: schemas.MesaCreate, db: Session = Depends(get_db)
         raise HTTPException(status_code=400, detail="El código QR ya está registrado")
     return crud.create_mesa(db=db, mesa=mesa)
 
-@router.post("/{qr_code}/conectar", response_model=schemas.Usuario, summary="Conectar un usuario a una mesa")
+@router.post("/{qr_code:path}/conectar", response_model=schemas.Usuario, summary="Conectar un usuario a una mesa")
 def conectar_usuario_a_mesa(
     qr_code: str, usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)
 ):
