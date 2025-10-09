@@ -5,6 +5,9 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any
 import re
 from urllib.parse import urlparse, parse_qs
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -32,6 +35,7 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
     Este endpoint actúa como un proxy para no exponer la API Key en el cliente.
     """
     if not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "TU_API_KEY_DE_YOUTUBE_AQUI":
+        logger.error("La API Key de YouTube no está configurada en las variables de entorno.")
         raise HTTPException(
             status_code=500,
             detail="La API Key de YouTube no está configurada en el servidor."
@@ -102,8 +106,10 @@ async def search_youtube(q: str) -> List[Dict[str, Any]]:
                 })
 
         except httpx.RequestError as exc:
+            logger.error(f"Error de red al conectar con YouTube: {exc}")
             raise HTTPException(status_code=503, detail=f"Error de red al conectar con YouTube: {exc}")
         except Exception as e:
+             logger.error(f"Error inesperado procesando la respuesta de YouTube: {e}", exc_info=True)
              raise HTTPException(status_code=500, detail=f"Error procesando la respuesta de YouTube: {str(e)}")
 
     return formatted_results

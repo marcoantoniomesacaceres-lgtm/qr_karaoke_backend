@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
+import logging
 from database import engine
 import models
 import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
@@ -9,6 +10,12 @@ import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocke
 # Esto crea las tablas en la base de datos si no existen
 # En un entorno de producción, es mejor usar migraciones (ej. Alembic)
 models.Base.metadata.create_all(bind=engine)
+
+# --- Configuración de Logging ---
+# Esto crea un logger más informativo que el que viene por defecto.
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+# --------------------------------
 
 app = FastAPI(title="Karaoke 'La Rana que Canta'")
 
