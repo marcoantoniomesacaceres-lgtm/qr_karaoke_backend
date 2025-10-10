@@ -119,6 +119,7 @@
         <div class="tabs">
             <button class="tab-button active" data-tab="tab-queue">Cola</button>
             <button class="tab-button" data-tab="tab-search">Buscar Canción</button>
+            <button class="tab-button" data-tab="tab-catalog">Catálogo</button>
             <button class="tab-button" data-tab="tab-my-list">Mi Lista</button>
         </div>
 
@@ -144,6 +145,14 @@
             <div id="search-results" class="song-list">
                 <!-- Los resultados de búsqueda se insertarán aquí -->
             </div>
+        </div>
+
+        <!-- Pestaña de Catálogo de Productos -->
+        <div id="tab-catalog" class="tab-content">
+            <h2>Catálogo de Productos</h2>
+            <ul id="product-catalog-list" class="song-list">
+                <!-- Los productos se insertarán aquí -->
+            </ul>
         </div>
 
         <!-- Pestaña de Mi Lista -->
@@ -235,6 +244,30 @@
                     </div>
                 </li>
             `;
+        }
+
+        function renderCatalog(products) {
+            const catalogList = document.getElementById('product-catalog-list');
+            catalogList.innerHTML = '';
+            const availableProducts = products.filter(p => p.is_active && p.stock > 0);
+
+            if (availableProducts.length > 0) {
+                availableProducts.forEach(product => {
+                    catalogList.innerHTML += `
+                        <li class="song-item">
+                            <div class="song-item-info">
+                                <div>
+                                    <div class="song-title">${product.nombre}</div>
+                                    <div class="song-user">${product.categoria} - $${product.valor}</div>
+                                </div>
+                            </div>
+                            <button class="order-product-btn" data-product-id="${product.id}" style="background-color: #bb86fc;">Pedir</button>
+                        </li>
+                    `;
+                });
+            } else {
+                catalogList.innerHTML = '<li><p>No hay productos disponibles en este momento.</p></li>';
+            }
         }
 
         function showNotification(message, duration = 3000) {
@@ -412,6 +445,48 @@
             }
         }
 
+        async function handleOrderProduct(event) {
+            if (!event.target.classList.contains('order-product-btn')) return;
+
+            const button = event.target;
+            const productId = button.dataset.productId;
+
+            // Podríamos añadir un input de cantidad, pero por simplicidad pedimos de 1 en 1.
+            const orderData = {
+                producto_id: parseInt(productId, 10),
+                cantidad: 1
+            };
+
+            button.disabled = true;
+            button.textContent = 'Pidiendo...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumos/${state.user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Error al procesar el pedido.');
+
+                showNotification('¡Pedido realizado con éxito! Se han sumado puntos a tu perfil.');
+                // Actualizamos el perfil para reflejar los nuevos puntos y posible cambio de nivel
+                fetchUserProfile();
+                fetchProducts(); // Volvemos a cargar los productos para actualizar el stock visualmente
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 5000);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Pedir';
+            }
+        }
+
+        async function fetchProducts() {
+            const response = await fetch(`${API_BASE_URL}/productos/`);
+            const products = await response.json();
+            renderCatalog(products);
+        }
+
         async function fetchMyList() {
             try {
                 const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}/lista`);
@@ -422,13 +497,29 @@
             }
         }
 
-        function showDashboard() {
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/${state.user.id}/perfil`);
+                const profile = await response.json();
+                state.user = profile; // Actualizamos el estado local del usuario
+                sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
+                updateProfileCard();
+            } catch (error) {
+                console.error('Error al actualizar el perfil:', error);
+            }
+        }
+
+        function updateProfileCard() {
             document.getElementById('user-nick').textContent = state.user.nick;
-            document.getElementById('table-name').textContent = state.tableQrCode;
             document.getElementById('user-points').textContent = state.user.puntos;
             const levelEl = document.getElementById('user-level');
             levelEl.textContent = state.user.nivel.charAt(0).toUpperCase() + state.user.nivel.slice(1);
             levelEl.className = `profile-level level-${state.user.nivel}`;
+        }
+
+        function showDashboard() {
+            document.getElementById('table-name').textContent = state.tableQrCode;
+            updateProfileCard();
 
             loginContainer.classList.add('hidden');
             dashboardView.classList.remove('hidden');
@@ -462,6 +553,9 @@
             if (clickedTab.dataset.tab === 'tab-my-list') {
                 fetchMyList();
             }
+            if (clickedTab.dataset.tab === 'tab-catalog') {
+                fetchProducts();
+            }
         }
 
         function getQueryParam(param) {
@@ -491,6 +585,7 @@
             document.querySelector('.tabs').addEventListener('click', handleTabClick);
             document.getElementById('search-form').addEventListener('submit', handleSearch);
             document.getElementById('search-results').addEventListener('click', handleAddSong);
+            document.getElementById('product-catalog-list').addEventListener('click', handleOrderProduct);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
         });
     </script>

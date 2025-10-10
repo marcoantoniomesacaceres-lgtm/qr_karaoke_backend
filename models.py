@@ -53,6 +53,7 @@ class Producto(Base):
     nombre = Column(String, unique=True, index=True)
     categoria = Column(String, index=True, default="General")
     valor = Column(Numeric(10, 2))
+    stock = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
 
     consumos = relationship("Consumo", back_populates="producto")

@@ -93,6 +93,13 @@
             font-family: monospace;
         }
         .hidden { display: none; }
+        #product-form-card {
+            background-color: #2a2a2a;
+            margin-bottom: 20px;
+        }
+        .product-stock { font-weight: bold; }
+        .stock-low { color: #f4b400; } /* Amarillo */
+        .stock-out { color: #f44336; } /* Rojo */
     </style>
 </head>
 <body>
@@ -103,6 +110,7 @@
             <button class="tab-button active" onclick="openTab(event, 'cola')">Cola y Pendientes</button>
             <button class="tab-button" onclick="openTab(event, 'reportes')">Reportes</button>
             <button class="tab-button" onclick="openTab(event, 'youtube-search')">Buscar en YouTube</button>
+            <button class="tab-button" onclick="openTab(event, 'productos')">Productos</button>
             <button class="tab-button" onclick="openTab(event, 'gestion')">Gestión</button>
         </div>
 
@@ -164,6 +172,36 @@
                 <button type="submit" id="youtube-search-button" class="btn-primary">Buscar</button>
             </form>
             <ul id="youtube-search-results" class="song-list"></ul>
+        </div>
+
+        <!-- Pestaña de Productos -->
+        <div id="productos" class="tab-content">
+            <h2>Gestión de Productos</h2>
+            <div id="product-form-card" class="card">
+                <h3 id="product-form-title">Añadir Nuevo Producto</h3>
+                <form id="product-form">
+                    <input type="hidden" id="product-id">
+                    <div class="form-group">
+                        <label for="product-name">Nombre:</label>
+                        <input type="text" id="product-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-category">Categoría:</label>
+                        <input type="text" id="product-category" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-price">Precio:</label>
+                        <input type="number" id="product-price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-stock">Stock (Cantidad):</label>
+                        <input type="number" id="product-stock" step="1" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Guardar Producto</button>
+                    <button type="button" id="cancel-edit-product" class="btn-secondary hidden">Cancelar Edición</button>
+                </form>
+            </div>
+            <ul id="product-list" class="song-list"></ul>
         </div>
 
         <!-- Pestaña de Gestión -->
@@ -458,11 +496,100 @@
             }
         });
 
+        // --- Lógica de Productos ---
+        const productList = document.getElementById('product-list');
+        const productForm = document.getElementById('product-form');
+        const productFormTitle = document.getElementById('product-form-title');
+        const productIdInput = document.getElementById('product-id');
+        const productNameInput = document.getElementById('product-name');
+        const productCategoryInput = document.getElementById('product-category');
+        const productPriceInput = document.getElementById('product-price');
+        const productStockInput = document.getElementById('product-stock');
+        const cancelEditBtn = document.getElementById('cancel-edit-product');
+
+        async function fetchProducts() {
+            const response = await fetch('/api/v1/productos', { headers: HEADERS });
+            const products = await response.json();
+            productList.innerHTML = '';
+            products.forEach(product => {
+                let stockClass = '';
+                if (product.stock <= 0) stockClass = 'stock-out';
+                else if (product.stock <= 5) stockClass = 'stock-low';
+
+                productList.innerHTML += `
+                    <li class="song-item">
+                        <div class="song-item-info">
+                            <div>
+                                <div class="title">${product.nombre} <span class="user">(${product.categoria})</span></div>
+                                <div>Precio: $${product.valor} | Stock: <span class="product-stock ${stockClass}">${product.stock}</span></div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-secondary" onclick='editProduct(${JSON.stringify(product)})'>Editar</button>
+                            <button class="btn-delete" onclick="deleteProduct(${product.id}, '${product.nombre}')">Eliminar</button>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function editProduct(product) {
+            productFormTitle.textContent = 'Editando Producto';
+            productIdInput.value = product.id;
+            productNameInput.value = product.nombre;
+            productCategoryInput.value = product.categoria;
+            productPriceInput.value = product.valor;
+            productStockInput.value = product.stock;
+            cancelEditBtn.classList.remove('hidden');
+            window.scrollTo(0, 0); // Scroll to top to see the form
+        }
+
+        function resetProductForm() {
+            productForm.reset();
+            productIdInput.value = '';
+            productFormTitle.textContent = 'Añadir Nuevo Producto';
+            cancelEditBtn.classList.add('hidden');
+        }
+
+        cancelEditBtn.addEventListener('click', resetProductForm);
+
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const productData = {
+                nombre: productNameInput.value,
+                categoria: productCategoryInput.value,
+                valor: parseFloat(productPriceInput.value),
+                stock: parseInt(productStockInput.value, 10)
+            };
+
+            const id = productIdInput.value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/v1/productos/${id}` : '/api/v1/productos';
+
+            await fetch(url, {
+                method: method,
+                headers: HEADERS,
+                body: JSON.stringify(productData)
+            });
+
+            resetProductForm();
+            fetchProducts();
+        });
+
+        async function deleteProduct(id, name) {
+            if (confirm(`¿Estás seguro de que quieres eliminar el producto "${name}"?`)) {
+                await fetch(`/api/v1/productos/${id}`, { method: 'DELETE', headers: HEADERS });
+                fetchProducts();
+            }
+        }
+
         // --- Inicialización ---
         document.getElementById('logout-button').addEventListener('click', () => {
             localStorage.removeItem('adminApiKey');
             window.location.href = '/admin';
         });
+
+        document.querySelector('button[onclick*="productos"]').addEventListener('click', fetchProducts);
 
         // Cargar datos iniciales al entrar
         window.addEventListener('DOMContentLoaded', () => {

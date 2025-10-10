@@ -140,6 +140,12 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
     if not db_producto:
         return None, "Producto no encontrado en el catálogo."
 
+    if db_producto.stock < consumo.cantidad:
+        return None, f"No hay suficiente stock para '{db_producto.nombre}'. Disponible: {db_producto.stock}"
+
+    if consumo.cantidad <= 0:
+        return None, "La cantidad debe ser mayor que cero."
+
     if not db_producto.is_active:
         return None, "El producto no está disponible actualmente."
 
@@ -159,6 +165,12 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
     if not db_usuario:
         db.rollback()
         return None, "Usuario no encontrado."
+
+    # 5. Descontar del stock
+    db_producto.stock -= consumo.cantidad
+
+    # 6. Otorgar puntos al usuario (ej: 1 punto por cada 10 de moneda gastados)
+    db_usuario.puntos += int(valor_total_transaccion / 10)
 
     db.add(db_consumo)
     db.commit()
@@ -309,6 +321,16 @@ def get_productos_mas_consumidos(db: Session, limit: int = 10):
         .limit(limit)
         .all()
     )
+
+def delete_producto(db: Session, producto_id: int):
+    """Elimina un producto de la base de datos por su ID."""
+    db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+    if db_producto:
+        # Opcional: verificar si tiene consumos asociados antes de borrar
+        db.delete(db_producto)
+        db.commit()
+        return db_producto
+    return None
 
 def get_total_ingresos(db: Session):
     """Calcula la suma total de todos los consumos de la noche."""
@@ -706,6 +728,18 @@ def get_productos_no_consumidos(db: Session):
         .having(func.count(models.Consumo.id) == 0)
         .all()
     )
+
+def update_producto(db: Session, producto_id: int, producto_update: schemas.ProductoCreate):
+    """
+    Actualiza los datos de un producto específico.
+    """
+    db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+    if db_producto:
+        for key, value in producto_update.dict().items():
+            setattr(db_producto, key, value)
+        db.commit()
+        db.refresh(db_producto)
+    return db_producto
 
 def update_producto_valor(db: Session, producto_id: int, nuevo_valor: Decimal):
     """

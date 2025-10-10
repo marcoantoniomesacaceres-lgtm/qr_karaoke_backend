@@ -67,6 +67,7 @@ class ProductoBase(BaseModel):
     nombre: str
     categoria: str
     valor: Decimal
+    stock: int
 
 class ProductoCreate(ProductoBase):
     pass

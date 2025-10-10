@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from typing import List
 from decimal import Decimal
@@ -29,13 +29,36 @@ def create_product(producto: schemas.ProductoCreate, db: Session = Depends(get_d
     crud.create_admin_log_entry(db, action="CREATE_PRODUCT", details=f"Producto '{new_product.nombre}' creado.")
     return new_product
 
-@router.get("/", response_model=List[schemas.Producto], summary="Obtener el catálogo de productos")
+@router.get("/", response_model=List[schemas.Producto], summary="Obtener el catálogo de productos (para admin y usuarios)")
 def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """
-    **[Admin]** Devuelve una lista de todos los productos disponibles en el catálogo.
+    Devuelve una lista de todos los productos disponibles en el catálogo.
+    Los usuarios verán solo los activos. Los admins ven todo.
     """
     productos = crud.get_productos(db, skip=skip, limit=limit)
     return productos
+
+@router.put("/{producto_id}", response_model=schemas.Producto, summary="Actualizar un producto existente")
+def update_product(producto_id: int, producto: schemas.ProductoCreate, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Actualiza todos los detalles de un producto existente en el catálogo.
+    """
+    db_producto = crud.update_producto(db, producto_id=producto_id, producto_update=producto)
+    if not db_producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado.")
+    crud.create_admin_log_entry(db, action="UPDATE_PRODUCT", details=f"Producto '{db_producto.nombre}' (ID: {producto_id}) actualizado.")
+    return db_producto
+
+@router.delete("/{producto_id}", status_code=204, summary="Eliminar un producto del catálogo")
+def delete_product(producto_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Elimina un producto del catálogo permanentemente.
+    """
+    deleted_product = crud.delete_producto(db, producto_id=producto_id)
+    if not deleted_product:
+        raise HTTPException(status_code=404, detail="Producto no encontrado.")
+    crud.create_admin_log_entry(db, action="DELETE_PRODUCT", details=f"Producto '{deleted_product.nombre}' (ID: {producto_id}) eliminado.")
+    return Response(status_code=204)
 
 @router.put("/{producto_id}/edit-price", response_model=schemas.Producto, summary="Editar el precio de un producto")
 def edit_product_price(producto_id: int, valor_update: schemas.ProductoValorUpdate, db: Session = Depends(get_db)):
