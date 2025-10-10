@@ -20,8 +20,8 @@ def get_db():
         db.close()
 
 @router.post("/{usuario_id}", response_model=schemas.Cancion, summary="Añadir una canción a la lista de un usuario")
-def anadir_cancion(
-    usuario_id: int, cancion: schemas.CancionCreate, db: Session = Depends(get_db)
+async def anadir_cancion(
+    usuario_id: int, cancion: schemas.CancionCreate, db: Session = Depends(get_db) # Convertido a async
 ):
     """
     Añade una nueva canción a la lista personal de un usuario, si hay tiempo.
@@ -40,6 +40,13 @@ def anadir_cancion(
         h, m = map(int, hora_cierre_str.split(':'))
         ahora = datetime.datetime.now()
         hora_cierre = ahora.replace(hour=h, minute=m, second=0, microsecond=0)
+
+        # --- INICIO DE LA CORRECCIÓN ---
+        # Si la hora de cierre calculada es anterior a la hora actual,
+        # significa que el cierre es al día siguiente.
+        if hora_cierre < ahora:
+            hora_cierre += datetime.timedelta(days=1)
+        # --- FIN DE LA CORRECCIÓN ---
     except (ValueError, TypeError):
         raise HTTPException(status_code=500, detail="Formato de hora de cierre inválido en la configuración.")
 
@@ -69,7 +76,13 @@ def anadir_cancion(
             detail=f"Ya tienes '{cancion.titulo}' en tu lista de espera."
         )
 
-    return crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
+    # 7. Crear la canción (aún en estado 'pendiente' por defecto)
+    db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
+    
+    # 8. Aprobarla inmediatamente y notificar a los clientes
+    cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+    await websocket_manager.manager.broadcast_queue_update()
+    return cancion_aprobada
 
 @router.get("/{usuario_id}/lista", response_model=List[schemas.Cancion], summary="Ver la lista de canciones de un usuario")
 def ver_lista_de_canciones(usuario_id: int, db: Session = Depends(get_db)):

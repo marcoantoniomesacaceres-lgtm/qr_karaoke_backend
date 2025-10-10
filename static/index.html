@@ -287,6 +287,8 @@
                 const data = JSON.parse(event.data);
                 if (data.type === 'notification') {
                     showNotification(data.payload.mensaje);
+                } else if (data.type === 'product_update') {
+                    fetchProducts(); // Recargamos el catálogo de productos
                 } else {
                     // Asumimos que es una actualización de la cola
                     renderQueue(data);
@@ -353,7 +355,7 @@
             resultsContainer.innerHTML = '<p>Buscando...</p>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/youtube/search?q=${encodeURIComponent(query)}`);
+                const response = await fetch(`${API_BASE_URL}/youtube/public-search?q=${encodeURIComponent(query)}`);
                 // Si la respuesta no es OK (ej: 403, 500), leemos el error y lo lanzamos
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -461,7 +463,7 @@
             button.textContent = 'Pidiendo...';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/consumos/${state.user.id}`, {
+                const response = await fetch(`${API_BASE_URL}/consumos/pedir/${state.user.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(orderData)

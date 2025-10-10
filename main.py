@@ -12,7 +12,7 @@ load_dotenv()
 print("YOUTUBE_API_KEY cargada:", os.getenv("YOUTUBE_API_KEY"))
 
 from database import engine
-import models
+import models, crud
 import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 
 # --- Configuración de Logging a un archivo ---
@@ -21,7 +21,7 @@ import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocke
 log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Handler para el archivo
-file_handler = logging.FileHandler("karaoke_debug.log", mode='w') # 'w' para reescribir el log cada vez que se inicia
+file_handler = logging.FileHandler("karaoke_debug.log", mode='a', encoding='utf-8') # 'a' para añadir (append), no reescribir.
 file_handler.setFormatter(log_formatter)
 
 # Handler para la consola
@@ -36,6 +36,17 @@ logger = logging.getLogger(__name__)
 # En un entorno de producción, es mejor usar migraciones (ej. Alembic)
 models.Base.metadata.create_all(bind=engine)
 
+# --- Creación de entidades iniciales (como el usuario DJ) ---
+from database import SessionLocal
+
+def setup_initial_data():
+    db = SessionLocal()
+    try:
+        crud.get_or_create_dj_user(db)
+    finally:
+        db.close()
+
+setup_initial_data()
 app = FastAPI(title="Karaoke 'La Rana que Canta'")
 
 @app.get("/", response_class=FileResponse, include_in_schema=False)

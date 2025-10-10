@@ -46,4 +46,12 @@ class ConnectionManager:
         for connection in self.active_connections:
             await connection.send_text(json.dumps(payload))
 
+    async def broadcast_product_update(self):
+        """Envía una notificación para que los clientes recarguen el catálogo de productos."""
+        payload = {
+            "type": "product_update"
+        }
+        for connection in self.active_connections:
+            await connection.send_text(json.dumps(payload))
+
 manager = ConnectionManager()

@@ -29,3 +29,19 @@ async def registrar_consumo(
         raise HTTPException(status_code=400, detail=error_detail)
     await websocket_manager.manager.broadcast_queue_update()
     return db_consumo
+
+@router.post("/pedir/{usuario_id}", response_model=schemas.Consumo, summary="Un usuario pide un producto para sí mismo")
+async def usuario_pide_producto(
+    usuario_id: int, consumo: schemas.ConsumoCreate, db: Session = Depends(get_db)
+):
+    """
+    **[Público]** Permite que un usuario registrado en una mesa pida un producto.
+    No requiere clave de API de administrador.
+    """
+    # La lógica es la misma que para el admin, solo que sin la autenticación de admin
+    db_consumo, error_detail = crud.create_consumo_para_usuario(db=db, consumo=consumo, usuario_id=usuario_id)
+    if error_detail:
+        raise HTTPException(status_code=400, detail=error_detail)
+    # Notificamos a todos para que la cola se actualice (por si cambia la prioridad)
+    await websocket_manager.manager.broadcast_queue_update()
+    return db_consumo

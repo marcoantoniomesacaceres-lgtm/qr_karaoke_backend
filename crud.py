@@ -30,6 +30,10 @@ def get_usuario_by_id(db: Session, usuario_id: int):
     """Busca un usuario por su ID."""
     return db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
 
+def get_usuario_by_nick(db: Session, nick: str):
+    """Busca un usuario por su nick (case-insensitive)."""
+    return db.query(models.Usuario).filter(func.lower(models.Usuario.nick) == func.lower(nick)).first()
+
 def get_total_consumido_por_usuario(db: Session, usuario_id: int):
     """Calcula el total consumido por un usuario."""
     return db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
@@ -1100,3 +1104,16 @@ def get_consumo_por_mesa(db: Session, mesa_id: int):
         .order_by(models.Consumo.created_at.desc())
         .all()
     )
+
+def get_or_create_dj_user(db: Session) -> models.Usuario:
+    """
+    Busca al usuario 'DJ'. Si no existe, lo crea sin asociarlo a una mesa.
+    Este usuario se usa para las canciones añadidas por el administrador.
+    """
+    dj_user = db.query(models.Usuario).filter(models.Usuario.nick == "DJ").first()
+    if not dj_user:
+        dj_user = models.Usuario(nick="DJ", mesa_id=None) # No pertenece a ninguna mesa
+        db.add(dj_user)
+        db.commit()
+        db.refresh(dj_user)
+    return dj_user

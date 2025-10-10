@@ -40,6 +40,14 @@ def set_closing_time(closing_time: schemas.ClosingTimeUpdate, db: Session = Depe
     crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}")
     return {"mensaje": f"La hora de cierre ha sido actualizada a {config.settings.KARAOKE_CIERRE}"}
 
+@router.get("/get-closing-time", response_model=schemas.ClosingTimeUpdate, summary="Obtener la hora de cierre actual")
+def get_closing_time(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve la hora de cierre del karaoke actualmente configurada.
+    """
+    return schemas.ClosingTimeUpdate(hora_cierre=config.settings.KARAOKE_CIERRE)
+
+
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")
 def get_top_songs_report(db: Session = Depends(get_db), limit: int = 10):
     """

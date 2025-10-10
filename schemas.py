@@ -20,6 +20,7 @@ class Cancion(CancionBase):
 # --- Schemas para Usuario (necesario para mostrar usuarios en una mesa) ---
 class UsuarioBase(BaseModel):
     nick: str
+    model_config = ConfigDict(from_attributes=True)
 
 class UsuarioCreate(UsuarioBase):
     pass
@@ -61,6 +62,7 @@ class MesaInfo(BaseModel):
 class CancionAdminView(Cancion):
     # Hereda de Cancion y añade la información del usuario
     usuario: UsuarioBase
+    model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Producto ---
 class ProductoBase(BaseModel):

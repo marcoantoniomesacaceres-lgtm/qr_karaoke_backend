@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from security import api_key_auth # Importamos la seguridad
 
 import crud, schemas
 from database import SessionLocal
@@ -14,6 +15,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@router.get("/by-nick/{nick}", response_model=schemas.UsuarioPublico, summary="Buscar un usuario por su nick")
+def get_user_by_nick(nick: str, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Busca y devuelve un usuario específico por su nick.
+    Es útil para encontrar usuarios del sistema como 'DJ'.
+    """
+    db_usuario = crud.get_usuario_by_nick(db, nick=nick)
+    if not db_usuario:
+        raise HTTPException(status_code=404, detail=f"Usuario con nick '{nick}' no encontrado.")
+    
+    return db_usuario
 
 @router.get("/{usuario_id}", response_model=schemas.UsuarioPublico, summary="Ver el perfil público de un usuario")
 def ver_perfil_usuario(usuario_id: int, db: Session = Depends(get_db)):

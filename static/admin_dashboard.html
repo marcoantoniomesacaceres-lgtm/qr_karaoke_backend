@@ -163,10 +163,6 @@
         <div id="youtube-search" class="tab-content">
             <h2>Buscar y Añadir Canción</h2>
             <p>Busca una canción en YouTube y añádela a la lista de un usuario. La canción se añadirá como 'pendiente'.</p>
-            <div class="form-group">
-                <label for="youtube-search-user-id">ID del Usuario que pide la canción:</label>
-                <input type="number" id="youtube-search-user-id" placeholder="Introduce el ID del usuario" class="form-group input">
-            </div>
             <form id="youtube-search-form" class="form-group">
                 <input type="text" id="youtube-search-input" placeholder="Artista o título de la canción" required class="form-group input">
                 <button type="submit" id="youtube-search-button" class="btn-primary">Buscar</button>
@@ -208,6 +204,17 @@
         <div id="gestion" class="tab-content">
             <h2>Gestión del Sistema</h2>
             <div class="grid">
+                <div class="card">
+                    <h3>Horario de Funcionamiento</h3>
+                    <form id="closing-time-form">
+                        <div class="form-group">
+                            <label for="closing-time-input">Hora de Cierre (formato 24h, ej: 03:00):</label>
+                            <input type="time" id="closing-time-input" required>
+                        </div>
+                        <input type="submit" class="btn-primary" value="Actualizar Hora de Cierre">
+                    </form>
+                    <p id="closing-time-status"></p>
+                </div>
                 <div class="card">
                     <h3>Claves de API</h3>
                     <form id="create-api-key-form">
@@ -415,6 +422,41 @@
             }
         }
 
+        // --- Lógica de Horario ---
+        const closingTimeForm = document.getElementById('closing-time-form');
+        const closingTimeInput = document.getElementById('closing-time-input');
+        const closingTimeStatus = document.getElementById('closing-time-status');
+
+        async function fetchClosingTime() {
+            try {
+                const response = await fetch('/api/v1/admin/get-closing-time', { headers: HEADERS });
+                const data = await response.json();
+                closingTimeInput.value = data.hora_cierre;
+                closingTimeStatus.textContent = `La hora de cierre actual es a las ${data.hora_cierre}.`;
+                closingTimeStatus.style.color = '#e0e0e0';
+            } catch (error) {
+                closingTimeStatus.textContent = 'No se pudo obtener la hora de cierre.';
+                closingTimeStatus.style.color = '#f44336';
+            }
+        }
+
+        closingTimeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newTime = closingTimeInput.value;
+            try {
+                const response = await fetch('/api/v1/admin/set-closing-time', {
+                    method: 'POST',
+                    headers: HEADERS,
+                    body: JSON.stringify({ hora_cierre: newTime })
+                });
+                await response.json();
+                fetchClosingTime(); // Refrescar para mostrar la nueva hora
+                alert(`Hora de cierre actualizada a las ${newTime}.`);
+            } catch (error) {
+                alert('Error al actualizar la hora de cierre.');
+            }
+        });
+
         // --- Lógica de Búsqueda en YouTube ---
         const youtubeSearchForm = document.getElementById('youtube-search-form');
         const youtubeSearchInput = document.getElementById('youtube-search-input');
@@ -466,12 +508,6 @@
             if (!e.target.classList.contains('add-song-btn')) return;
 
             const button = e.target;
-            const userId = document.getElementById('youtube-search-user-id').value;
-
-            if (!userId) {
-                alert('Por favor, introduce el ID del usuario antes de añadir una canción.');
-                return;
-            }
 
             button.disabled = true;
             button.textContent = 'Añadiendo...';
@@ -483,10 +519,17 @@
             };
 
             try {
+                // 1. Obtener el ID del usuario "DJ"
+                const userResponse = await fetch('/api/v1/usuarios/by-nick/DJ', { headers: HEADERS });
+                if (!userResponse.ok) throw new Error('No se pudo encontrar al usuario DJ del sistema.');
+                const djUser = await userResponse.json();
+                const userId = djUser.id;
+
+                // 2. Añadir la canción para el usuario DJ
                 const response = await fetch(`/api/v1/canciones/${userId}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(songData) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.detail || 'Error al añadir la canción.');
-                alert(`'${songData.titulo}' añadida a la lista del usuario ${userId}.`);
+                alert(`'${songData.titulo}' añadida a la cola.`);
                 fetchPendingSongs(); // Refrescar la lista de pendientes
             } catch (error) {
                 alert(`Error: ${error.message}`);
@@ -595,6 +638,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             fetchPendingSongs();
             connectWebSocket();
+            fetchClosingTime();
             fetchApiKeys();
         });
     </script>
