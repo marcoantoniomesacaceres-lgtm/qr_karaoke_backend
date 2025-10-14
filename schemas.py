@@ -70,6 +70,7 @@ class ProductoBase(BaseModel):
     categoria: str
     valor: Decimal
     stock: int
+    is_active: bool = True
 
 class ProductoCreate(ProductoBase):
     pass

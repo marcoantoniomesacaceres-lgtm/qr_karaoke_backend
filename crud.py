@@ -127,7 +127,10 @@ def get_productos(db: Session, skip: int = 0, limit: int = 100):
 
 def create_producto(db: Session, producto: schemas.ProductoCreate):
     """Crea un nuevo producto en el catálogo."""
-    db_producto = models.Producto(**producto.dict())
+    # Aseguramos que el producto se cree como activo por defecto.
+    # Aunque el schema tiene un valor por defecto, es más robusto establecerlo aquí.
+    producto_data = producto.dict()
+    db_producto = models.Producto(**producto_data, is_active=True)
     db.add(db_producto)
     db.commit()
     db.refresh(db_producto)

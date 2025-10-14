@@ -131,6 +131,10 @@
                         <div id="now-playing-content">
                             <p>No hay ninguna canción sonando.</p>
                         </div>
+                        <!-- Contenedor para el reproductor de YouTube (se gestiona desde JS) -->
+                        <div id="yt-player-container" style="display:none;">
+                            <div id="yt-player"></div>
+                        </div>
                     </div>
                     <h3 style="margin-top: 20px;">Próximas Canciones</h3>
                     <ul id="upcoming-songs-list">
@@ -342,6 +346,18 @@
 
                 // Refrescar también la lista de pendientes
                 fetchPendingSongs();
+
+                // Intentar reproducir si recibimos un youtube_id
+                try {
+                    if (data.now_playing && data.now_playing.youtube_id) {
+                        ensureYouTubeAPI();
+                        playYouTubeVideo(data.now_playing.youtube_id);
+                    } else {
+                        stopYouTubePlayer();
+                    }
+                } catch (err) {
+                    console.warn('No se pudo controlar el reproductor de YouTube:', err);
+                }
             };
 
             ws.onclose = function() {
@@ -538,6 +554,81 @@
                 button.textContent = 'Añadir';
             }
         });
+
+        // --- YouTube player integration (minimal) ---
+        let YT_API_LOADED = false;
+        let ytPlayer = null;
+        let pendingYtId = null;
+
+        function ensureYouTubeAPI() {
+            if (YT_API_LOADED) return;
+            // Insert script tag for IFrame API
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            tag.async = true;
+            document.head.appendChild(tag);
+
+            // The API will call window.onYouTubeIframeAPIReady when ready
+            window.onYouTubeIframeAPIReady = function() {
+                YT_API_LOADED = true;
+                if (pendingYtId) {
+                    createOrLoadPlayer(pendingYtId);
+                    pendingYtId = null;
+                }
+            };
+        }
+
+        function createOrLoadPlayer(videoId) {
+            const container = document.getElementById('yt-player-container');
+            container.style.display = '';
+
+            if (ytPlayer) {
+                try { ytPlayer.loadVideoById(videoId); } catch (e) { console.warn(e); }
+                return;
+            }
+
+            // Create player in hidden container id 'yt-player'
+            ytPlayer = new YT.Player('yt-player', {
+                height: '360',
+                width: '640',
+                videoId: videoId,
+                playerVars: { 'autoplay': 1, 'controls': 1 },
+                events: {
+                    'onReady': function(event) { try { event.target.playVideo(); } catch(e){} },
+                    'onStateChange': function(e) {
+                        // If video ended, notify server to advance the queue
+                        if (e.data === YT.PlayerState.ENDED) {
+                            // Fire and forget; server will broadcast updated queue
+                            fetch('/api/v1/canciones/siguiente', { method: 'POST', headers: HEADERS }).catch(console.error);
+                        }
+                    }
+                }
+            });
+        }
+
+        function playYouTubeVideo(videoId) {
+            if (!videoId) return;
+            if (!YT_API_LOADED) {
+                // Defer until API is loaded
+                pendingYtId = videoId;
+                ensureYouTubeAPI();
+                return;
+            }
+            createOrLoadPlayer(videoId);
+        }
+
+        function stopYouTubePlayer() {
+            try {
+                const container = document.getElementById('yt-player-container');
+                if (ytPlayer) {
+                    try { ytPlayer.stopVideo(); } catch(e){}
+                    // Optionally destroy to free resources
+                    try { ytPlayer.destroy(); } catch(e){}
+                    ytPlayer = null;
+                }
+                if (container) container.style.display = 'none';
+            } catch (e) { console.warn(e); }
+        }
 
         // --- Lógica de Productos ---
         const productList = document.getElementById('product-list');

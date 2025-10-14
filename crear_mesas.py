@@ -1,17 +1,28 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+# Carga las variables de entorno desde el archivo .env
+load_dotenv()
 
 # --- CONFIGURACIÓN ---
 # Asegúrate de que esta URL coincida con la de tu servidor local
 API_URL = "http://127.0.0.1:8000/api/v1/mesas/"
 NUMERO_DE_MESAS = 30
-# ---------------------
 
 def crear_mesas():
     """
     Script para crear múltiples mesas en el sistema de karaoke.
     """
     print(f"Iniciando la creación de {NUMERO_DE_MESAS} mesas...")
+
+    # Obtenemos la clave de API de las variables de entorno
+    ADMIN_API_KEY = os.getenv("ADMIN_API_KEY")
+    if not ADMIN_API_KEY:
+        print("\n[ERROR] La variable de entorno ADMIN_API_KEY no está configurada.")
+        print("Asegúrate de tener un archivo .env con ADMIN_API_KEY='tu_clave_aqui'.")
+        return
 
     # Primero, asegúrate de que el servidor esté corriendo.
     try:
@@ -33,8 +44,11 @@ def crear_mesas():
         }
 
         try:
-            # Para este endpoint no se necesita API Key
-            response = requests.post(API_URL, data=json.dumps(payload), headers={"Content-Type": "application/json"})
+            headers = {
+                "Content-Type": "application/json",
+                "X-API-Key": ADMIN_API_KEY
+            }
+            response = requests.post(API_URL, data=json.dumps(payload), headers=headers)
 
             if response.status_code in [200, 201]:
                 print(f"✅ Mesa '{nombre_mesa}' creada con éxito. QR Code: '{qr_code_mesa}'")
