@@ -3,735 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin - La Rana que Canta</title>
+    <title>Panel de Administración - La Rana que Canta</title>
     <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #4CAF50;
+            --primary-variant: #45a049;
+            --secondary-color: #bb86fc;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --error-color: #cf6679;
+            --success-color: #66bb6a;
+            --warning-color: #ffc107;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
             margin: 0;
-            padding: 1em;
+            background-color: var(--bg-color);
+            color: var(--text-color);
         }
-        .container { max-width: 1200px; margin: auto; }
-        h1, h2 {
-            color: #f44336;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+        .container { max-width: 960px; margin: 20px auto; padding: 20px; }
+        h1, h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
         }
-        .tabs { display: flex; border-bottom: 1px solid #444; margin-bottom: 20px; }
-        .tab-button {
-            padding: 10px 20px;
+        .card {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        .product-list { list-style: none; padding: 0; }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+        .product-item:last-child { border-bottom: none; }
+        .product-item.inactive { background-color: rgba(207, 102, 121, 0.1); opacity: 0.6; }
+        .product-details { flex-grow: 1; }
+        .product-name { font-weight: bold; font-size: 1.1em; }
+        .product-meta { font-size: 0.9em; color: var(--text-secondary); }
+        .product-stock { font-weight: bold; }
+        .stock-low { color: var(--warning-color); }
+        .stock-out { color: var(--error-color); }
+        .product-actions button {
+            margin-left: 10px;
+            padding: 8px 12px;
+            font-size: 0.8em;
             cursor: pointer;
-            background-color: transparent;
             border: none;
-            color: #aaa;
-            font-size: 1.1em;
+            border-radius: 5px;
+            color: white;
         }
-        .tab-button.active { color: #f44336; border-bottom: 2px solid #f44336; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-        .card { background-color: #1e1e1e; padding: 15px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-        .card h3 { margin-top: 0; color: #bb86fc; }
-
-        ul { list-style: none; padding: 0; }
-        li { background-color: #2a2a2a; margin-bottom: 10px; padding: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .song-info { flex-grow: 1; }
-        .song-info span { display: block; }
-        .song-info .title { font-weight: bold; color: #fff; }
-        .song-info .user { font-size: 0.9em; color: #aaa; }
-        .song-item-info { display: flex; align-items: center; gap: 15px; }
-        .song-item-info img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
-        .song-duration { font-size: 0.8em; color: #aaa; }
-
-        .actions button { margin-left: 10px; }
-        button, input[type="submit"] {
-            padding: 10px 15px;
+        .btn-activate { background-color: var(--success-color); }
+        .btn-deactivate { background-color: var(--error-color); }
+        
+        form label { display: block; margin-bottom: 5px; color: var(--text-secondary); }
+        form input, form select {
+            width: calc(100% - 24px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #fff;
+            font-size: 1em;
+        }
+        form button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
             color: #ffffff;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.2s;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
-        .btn-approve { background-color: #4CAF50; }
-        .btn-approve:hover { background-color: #45a049; }
-        .btn-reject { background-color: #f44336; }
-        .btn-reject:hover { background-color: #d32f2f; }
-        .btn-primary { background-color: #bb86fc; }
-        .btn-primary:hover { background-color: #a76ef4; }
-        .btn-secondary { background-color: #555; }
-        .btn-secondary:hover { background-color: #666; }
-        .btn-delete { background-color: #b00020; }
-        .btn-delete:hover { background-color: #90001a; }
-
-        #now-playing-card { border: 2px solid #4CAF50; }
-        #now-playing-card .title { font-size: 1.5em; color: #4CAF50; }
-
-        #reports-container select, #reports-container button { margin-bottom: 10px; }
-        #report-output { white-space: pre-wrap; background-color: #2a2a2a; padding: 15px; border-radius: 5px; font-family: monospace; }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; }
-        .form-group input {
-            width: calc(100% - 22px);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #555;
-            background-color: #333;
-            color: #fff;
-            font-size: 1em;
+        form button:hover { background-color: var(--primary-variant); }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: var(--bg-color);
         }
-        #new-api-key-display {
-            background-color: #333;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 10px;
-            word-break: break-all;
-            color: #4CAF50;
-            font-family: monospace;
+        .status-active { background-color: var(--success-color); }
+        .status-inactive { background-color: var(--text-secondary); }
+        #notification {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 1000;
+            text-align: center;
         }
-        .hidden { display: none; }
-        #product-form-card {
-            background-color: #2a2a2a;
-            margin-bottom: 20px;
-        }
-        .product-stock { font-weight: bold; }
-        .stock-low { color: #f4b400; } /* Amarillo */
-        .stock-out { color: #f44336; } /* Rojo */
+        #notification.show { bottom: 20px; }
+        #notification.success { background-color: var(--success-color); color: var(--bg-color); }
+        #notification.error { background-color: var(--error-color); color: var(--bg-color); }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Panel de Administración <button id="logout-button" class="btn-secondary" style="float: right;">Cerrar Sesión</button></h1>
-
-        <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'cola')">Cola y Pendientes</button>
-            <button class="tab-button" onclick="openTab(event, 'reportes')">Reportes</button>
-            <button class="tab-button" onclick="openTab(event, 'youtube-search')">Buscar en YouTube</button>
-            <button class="tab-button" onclick="openTab(event, 'productos')">Productos</button>
-            <button class="tab-button" onclick="openTab(event, 'gestion')">Gestión</button>
-        </div>
-
-        <!-- Pestaña de Cola y Pendientes -->
-        <div id="cola" class="tab-content active">
-            <div class="grid">
-                <div class="card">
-                    <h3>Canciones Pendientes</h3>
-                    <ul id="pending-songs-list">
-                        <!-- Las canciones pendientes se cargarán aquí -->
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3>Cola de Reproducción</h3>
-                    <button id="next-song-button" class="btn-primary" style="width: 100%; margin-bottom: 20px;">Siguiente Canción</button>
-                    <div id="now-playing-card" class="card">
-                        <h3>Sonando Ahora</h3>
-                        <div id="now-playing-content">
-                            <p>No hay ninguna canción sonando.</p>
-                        </div>
-                        <!-- Contenedor para el reproductor de YouTube (se gestiona desde JS) -->
-                        <div id="yt-player-container" style="display:none;">
-                            <div id="yt-player"></div>
-                        </div>
-                    </div>
-                    <h3 style="margin-top: 20px;">Próximas Canciones</h3>
-                    <ul id="upcoming-songs-list">
-                        <!-- Las próximas canciones se cargarán aquí -->
-                    </ul>
-                </div>
+        <h1>Panel de Productos</h1>
+        <div class="grid">
+            <div class="card">
+                <h2>Inventario de Productos</h2>
+                <ul id="product-list" class="product-list">
+                    <!-- Los productos se cargarán aquí -->
+                    <p>Cargando inventario...</p>
+                </ul>
             </div>
-        </div>
+            <div class="card">
+                <h2>Crear Nuevo Producto</h2>
+                <form id="create-product-form">
+                    <label for="nombre">Nombre del Producto</label>
+                    <input type="text" id="nombre" name="nombre" required>
 
-        <!-- Pestaña de Reportes -->
-        <div id="reportes" class="tab-content">
-            <h2>Generar Reporte</h2>
-            <div class="form-group">
-                <select id="report-selector" class="form-group input">
-                    <option value="">-- Selecciona un reporte --</option>
-                    <option value="/api/v1/admin/summary">Resumen de la Noche</option>
-                    <option value="/api/v1/admin/reports/total-income">Ingresos Totales</option>
-                    <option value="/api/v1/admin/reports/top-songs">Top 10 Canciones Más Cantadas</option>
-                    <option value="/api/v1/admin/reports/top-products">Top 10 Productos Más Consumidos</option>
-                    <option value="/api/v1/admin/reports/income-by-table">Ingresos por Mesa</option>
-                    <option value="/api/v1/admin/banned-nicks">Ver Nicks Baneados</option>
-                </select>
-            </div>
-            <button id="generate-report-button" class="btn-primary">Generar</button>
-            <h3>Resultado:</h3>
-            <pre id="report-output">Selecciona un reporte y pulsa "Generar".</pre>
-        </div>
+                    <label for="categoria">Categoría</label>
+                    <input type="text" id="categoria" name="categoria" required>
 
-        <!-- Pestaña de Búsqueda en YouTube -->
-        <div id="youtube-search" class="tab-content">
-            <h2>Buscar y Añadir Canción</h2>
-            <p>Busca una canción en YouTube y añádela a la lista de un usuario. La canción se añadirá como 'pendiente'.</p>
-            <form id="youtube-search-form" class="form-group">
-                <input type="text" id="youtube-search-input" placeholder="Artista o título de la canción" required class="form-group input">
-                <button type="submit" id="youtube-search-button" class="btn-primary">Buscar</button>
-            </form>
-            <ul id="youtube-search-results" class="song-list"></ul>
-        </div>
+                    <label for="valor">Precio ($)</label>
+                    <input type="number" id="valor" name="valor" step="0.01" min="0" required>
 
-        <!-- Pestaña de Productos -->
-        <div id="productos" class="tab-content">
-            <h2>Gestión de Productos</h2>
-            <div id="product-form-card" class="card">
-                <h3 id="product-form-title">Añadir Nuevo Producto</h3>
-                <form id="product-form">
-                    <input type="hidden" id="product-id">
-                    <div class="form-group">
-                        <label for="product-name">Nombre:</label>
-                        <input type="text" id="product-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-category">Categoría:</label>
-                        <input type="text" id="product-category" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-price">Precio:</label>
-                        <input type="number" id="product-price" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="product-stock">Stock (Cantidad):</label>
-                        <input type="number" id="product-stock" step="1" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Guardar Producto</button>
-                    <button type="button" id="cancel-edit-product" class="btn-secondary hidden">Cancelar Edición</button>
+                    <label for="stock">Stock Inicial</label>
+                    <input type="number" id="stock" name="stock" min="0" required>
+
+                    <button type="submit">Crear Producto</button>
                 </form>
-            </div>
-            <ul id="product-list" class="song-list"></ul>
-        </div>
-
-        <!-- Pestaña de Gestión -->
-        <div id="gestion" class="tab-content">
-            <h2>Gestión del Sistema</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>Horario de Funcionamiento</h3>
-                    <form id="closing-time-form">
-                        <div class="form-group">
-                            <label for="closing-time-input">Hora de Cierre (formato 24h, ej: 03:00):</label>
-                            <input type="time" id="closing-time-input" required>
-                        </div>
-                        <input type="submit" class="btn-primary" value="Actualizar Hora de Cierre">
-                    </form>
-                    <p id="closing-time-status"></p>
-                </div>
-                <div class="card">
-                    <h3>Claves de API</h3>
-                    <form id="create-api-key-form">
-                        <div class="form-group">
-                            <label for="api-key-description">Descripción de la nueva clave:</label>
-                            <input type="text" id="api-key-description" placeholder="Ej: Clave para el DJ" required>
-                        </div>
-                        <input type="submit" class="btn-primary" value="Crear Nueva Clave">
-                    </form>
-                    <div id="new-api-key-display" class="hidden"></div>
-                    <h4 style="margin-top: 20px;">Claves Existentes</h4>
-                    <ul id="api-keys-list">
-                        <!-- Lista de claves de API -->
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
 
+    <div id="notification"></div>
+
     <script>
-        const API_KEY = localStorage.getItem('adminApiKey');
-        if (!API_KEY) {
-            window.location.href = '/admin';
-        }
-
-        const HEADERS = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
-
-        // --- Lógica de Pestañas ---
-        function openTab(evt, tabName) {
-            let i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tab-content");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tab-button");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-
-        // --- Lógica de Canciones Pendientes ---
-        const pendingList = document.getElementById('pending-songs-list');
-
-        async function fetchPendingSongs() {
-            try {
-                const response = await fetch('/api/v1/canciones/pendientes', { headers: HEADERS });
-                if (!response.ok) throw new Error('Error al cargar canciones pendientes.');
-                const songs = await response.json();
-                
-                pendingList.innerHTML = '';
-                if (songs.length === 0) {
-                    pendingList.innerHTML = '<p>No hay canciones pendientes.</p>';
-                } else {
-                    songs.forEach(song => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <div class="song-info">
-                                <span class="title">${song.titulo}</span>
-                                <span class="user">de: ${song.usuario.nick}</span>
-                            </div>
-                            <div class="actions">
-                                <button class="btn-approve" onclick="approveSong(${song.id})">Aprobar</button>
-                                <button class="btn-reject" onclick="rejectSong(${song.id})">Rechazar</button>
-                            </div>
-                        `;
-                        pendingList.appendChild(li);
-                    });
-                }
-            } catch (error) {
-                console.error(error);
-                pendingList.innerHTML = `<p style="color: #f44336;">${error.message}</p>`;
-            }
-        }
-
-        async function approveSong(songId) {
-            await fetch(`/api/v1/canciones/${songId}/aprobar`, { method: 'POST', headers: HEADERS });
-            // El WebSocket se encargará de refrescar la lista
-        }
-
-        async function rejectSong(songId) {
-            await fetch(`/api/v1/canciones/${songId}/rechazar`, { method: 'POST', headers: HEADERS });
-            // El WebSocket se encargará de refrescar la lista
-        }
-
-        // --- Lógica de la Cola (WebSocket) ---
-        const nowPlayingContent = document.getElementById('now-playing-content');
-        const upcomingList = document.getElementById('upcoming-songs-list');
-
-        function connectWebSocket() {
-            const ws = new WebSocket(`ws://${window.location.host}/ws/cola`);
-
-            ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                
-                // Actualizar "Sonando Ahora"
-                if (data.now_playing) {
-                    nowPlayingContent.innerHTML = `
-                        <div class="song-info">
-                            <span class="title">${data.now_playing.titulo}</span>
-                            <span class="user">de: ${data.now_playing.usuario.nick}</span>
-                        </div>
-                    `;
-                } else {
-                    nowPlayingContent.innerHTML = '<p>No hay ninguna canción sonando.</p>';
-                }
-
-                // Actualizar "Próximas"
-                upcomingList.innerHTML = '';
-                if (data.upcoming.length === 0) {
-                    upcomingList.innerHTML = '<p>La cola está vacía.</p>';
-                } else {
-                    data.upcoming.forEach(song => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <div class="song-info">
-                                <span class="title">${song.titulo}</span>
-                                <span class="user">de: ${song.usuario.nick}</span>
-                            </div>
-                        `;
-                        upcomingList.appendChild(li);
-                    });
-                }
-
-                // Refrescar también la lista de pendientes
-                fetchPendingSongs();
-
-                // Intentar reproducir si recibimos un youtube_id
-                try {
-                    if (data.now_playing && data.now_playing.youtube_id) {
-                        ensureYouTubeAPI();
-                        playYouTubeVideo(data.now_playing.youtube_id);
-                    } else {
-                        stopYouTubePlayer();
-                    }
-                } catch (err) {
-                    console.warn('No se pudo controlar el reproductor de YouTube:', err);
-                }
-            };
-
-            ws.onclose = function() {
-                console.log('WebSocket desconectado. Intentando reconectar en 3 segundos...');
-                setTimeout(connectWebSocket, 3000);
-            };
-
-            ws.onerror = function(err) {
-                console.error('Error de WebSocket:', err);
-                ws.close();
-            };
-        }
-
-        document.getElementById('next-song-button').addEventListener('click', async () => {
-            await fetch('/api/v1/canciones/siguiente', { method: 'POST', headers: HEADERS });
-        });
-
-        // --- Lógica de Reportes ---
-        const reportOutput = document.getElementById('report-output');
-        document.getElementById('generate-report-button').addEventListener('click', async () => {
-            const endpoint = document.getElementById('report-selector').value;
-            if (!endpoint) {
-                reportOutput.textContent = 'Por favor, selecciona un reporte.';
-                return;
-            }
-            reportOutput.textContent = 'Generando...';
-            try {
-                const response = await fetch(endpoint, { headers: HEADERS });
-                const data = await response.json();
-                reportOutput.textContent = JSON.stringify(data, null, 2);
-            } catch (error) {
-                reportOutput.textContent = `Error al generar el reporte: ${error.message}`;
-            }
-        });
-
-        // --- Lógica de Gestión (API Keys) ---
-        const apiKeyForm = document.getElementById('create-api-key-form');
-        const apiKeyList = document.getElementById('api-keys-list');
-        const newApiKeyDisplay = document.getElementById('new-api-key-display');
-
-        async function fetchApiKeys() {
-            const response = await fetch('/api/v1/admin/api-keys', { headers: HEADERS });
-            const keys = await response.json();
-            apiKeyList.innerHTML = '';
-            keys.forEach(key => {
-                const li = document.createElement('li');
-                const lastUsed = key.last_used ? new Date(key.last_used).toLocaleString() : 'Nunca';
-                li.innerHTML = `
-                    <div class="song-info">
-                        <span class="title">${key.description || 'Sin descripción'}</span>
-                        <span class="user">Creada: ${new Date(key.created_at).toLocaleDateString()} | Último uso: ${lastUsed}</span>
-                    </div>
-                    <button class="btn-delete" onclick="deleteApiKey(${key.id}, '${key.description}')">Eliminar</button>
-                `;
-                apiKeyList.appendChild(li);
-            });
-        }
-
-        apiKeyForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const description = document.getElementById('api-key-description').value;
-            const response = await fetch('/api/v1/admin/api-keys', {
-                method: 'POST',
-                headers: HEADERS,
-                body: JSON.stringify({ description })
-            });
-            const newKey = await response.json();
-            newApiKeyDisplay.textContent = `¡Clave creada! Guárdala en un lugar seguro: ${newKey.key}`;
-            newApiKeyDisplay.classList.remove('hidden');
-            apiKeyForm.reset();
-            fetchApiKeys();
-        });
-
-        async function deleteApiKey(keyId, description) {
-            if (confirm(`¿Estás seguro de que quieres eliminar la clave "${description}"? Esta acción no se puede deshacer.`)) {
-                await fetch(`/api/v1/admin/api-keys/${keyId}`, { method: 'DELETE', headers: HEADERS });
-                fetchApiKeys();
-            }
-        }
-
-        // --- Lógica de Horario ---
-        const closingTimeForm = document.getElementById('closing-time-form');
-        const closingTimeInput = document.getElementById('closing-time-input');
-        const closingTimeStatus = document.getElementById('closing-time-status');
-
-        async function fetchClosingTime() {
-            try {
-                const response = await fetch('/api/v1/admin/get-closing-time', { headers: HEADERS });
-                const data = await response.json();
-                closingTimeInput.value = data.hora_cierre;
-                closingTimeStatus.textContent = `La hora de cierre actual es a las ${data.hora_cierre}.`;
-                closingTimeStatus.style.color = '#e0e0e0';
-            } catch (error) {
-                closingTimeStatus.textContent = 'No se pudo obtener la hora de cierre.';
-                closingTimeStatus.style.color = '#f44336';
-            }
-        }
-
-        closingTimeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const newTime = closingTimeInput.value;
-            try {
-                const response = await fetch('/api/v1/admin/set-closing-time', {
-                    method: 'POST',
-                    headers: HEADERS,
-                    body: JSON.stringify({ hora_cierre: newTime })
-                });
-                await response.json();
-                fetchClosingTime(); // Refrescar para mostrar la nueva hora
-                alert(`Hora de cierre actualizada a las ${newTime}.`);
-            } catch (error) {
-                alert('Error al actualizar la hora de cierre.');
-            }
-        });
-
-        // --- Lógica de Búsqueda en YouTube ---
-        const youtubeSearchForm = document.getElementById('youtube-search-form');
-        const youtubeSearchInput = document.getElementById('youtube-search-input');
-        const youtubeSearchButton = document.getElementById('youtube-search-button');
-        const youtubeSearchResults = document.getElementById('youtube-search-results');
-
-        youtubeSearchForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const query = youtubeSearchInput.value.trim();
-            if (!query) return;
-
-            youtubeSearchButton.disabled = true;
-            youtubeSearchButton.textContent = 'Buscando...';
-            youtubeSearchResults.innerHTML = '<p>Buscando...</p>';
-
-            try {
-                const response = await fetch(`/api/v1/youtube/search?q=${encodeURIComponent(query)}`, { headers: HEADERS });
-                if (!response.ok) throw new Error('Error en la búsqueda.');
-                const results = await response.json();
-
-                youtubeSearchResults.innerHTML = '';
-                if (results.length > 0) {
-                    results.forEach(song => {
-                        youtubeSearchResults.innerHTML += `
-                            <li class="song-item">
-                                <div class="song-item-info">
-                                    <img src="${song.thumbnail}" alt="Miniatura">
-                                    <div>
-                                        <div class="title">${song.title}</div>
-                                        <div class="song-duration">${Math.floor(song.duration_seconds / 60)}:${(song.duration_seconds % 60).toString().padStart(2, '0')}</div>
-                                    </div>
-                                </div>
-                                <button class="btn-primary add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
-                            </li>
-                        `;
-                    });
-                } else {
-                    youtubeSearchResults.innerHTML = '<p>No se encontraron resultados.</p>';
-                }
-            } catch (error) {
-                youtubeSearchResults.innerHTML = `<p style="color: #f44336;">${error.message}</p>`;
-            } finally {
-                youtubeSearchButton.disabled = false;
-                youtubeSearchButton.textContent = 'Buscar';
-            }
-        });
-
-        youtubeSearchResults.addEventListener('click', async (e) => {
-            if (!e.target.classList.contains('add-song-btn')) return;
-
-            const button = e.target;
-
-            button.disabled = true;
-            button.textContent = 'Añadiendo...';
-
-            const songData = {
-                titulo: button.dataset.title,
-                youtube_id: button.dataset.youtubeId,
-                duracion_seconds: parseInt(button.dataset.duration, 10)
-            };
-
-            try {
-                // 1. Obtener el ID del usuario "DJ"
-                const userResponse = await fetch('/api/v1/usuarios/by-nick/DJ', { headers: HEADERS });
-                if (!userResponse.ok) throw new Error('No se pudo encontrar al usuario DJ del sistema.');
-                const djUser = await userResponse.json();
-                const userId = djUser.id;
-
-                // 2. Añadir la canción para el usuario DJ
-                const response = await fetch(`/api/v1/canciones/${userId}`, { method: 'POST', headers: HEADERS, body: JSON.stringify(songData) });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Error al añadir la canción.');
-                alert(`'${songData.titulo}' añadida a la cola.`);
-                fetchPendingSongs(); // Refrescar la lista de pendientes
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Añadir';
-            }
-        });
-
-        // --- YouTube player integration (minimal) ---
-        let YT_API_LOADED = false;
-        let ytPlayer = null;
-        let pendingYtId = null;
-
-        function ensureYouTubeAPI() {
-            if (YT_API_LOADED) return;
-            // Insert script tag for IFrame API
-            const tag = document.createElement('script');
-            tag.src = 'https://www.youtube.com/iframe_api';
-            tag.async = true;
-            document.head.appendChild(tag);
-
-            // The API will call window.onYouTubeIframeAPIReady when ready
-            window.onYouTubeIframeAPIReady = function() {
-                YT_API_LOADED = true;
-                if (pendingYtId) {
-                    createOrLoadPlayer(pendingYtId);
-                    pendingYtId = null;
-                }
-            };
-        }
-
-        function createOrLoadPlayer(videoId) {
-            const container = document.getElementById('yt-player-container');
-            container.style.display = '';
-
-            if (ytPlayer) {
-                try { ytPlayer.loadVideoById(videoId); } catch (e) { console.warn(e); }
-                return;
-            }
-
-            // Create player in hidden container id 'yt-player'
-            ytPlayer = new YT.Player('yt-player', {
-                height: '360',
-                width: '640',
-                videoId: videoId,
-                playerVars: { 'autoplay': 1, 'controls': 1 },
-                events: {
-                    'onReady': function(event) { try { event.target.playVideo(); } catch(e){} },
-                    'onStateChange': function(e) {
-                        // If video ended, notify server to advance the queue
-                        if (e.data === YT.PlayerState.ENDED) {
-                            // Fire and forget; server will broadcast updated queue
-                            fetch('/api/v1/canciones/siguiente', { method: 'POST', headers: HEADERS }).catch(console.error);
-                        }
-                    }
-                }
-            });
-        }
-
-        function playYouTubeVideo(videoId) {
-            if (!videoId) return;
-            if (!YT_API_LOADED) {
-                // Defer until API is loaded
-                pendingYtId = videoId;
-                ensureYouTubeAPI();
-                return;
-            }
-            createOrLoadPlayer(videoId);
-        }
-
-        function stopYouTubePlayer() {
-            try {
-                const container = document.getElementById('yt-player-container');
-                if (ytPlayer) {
-                    try { ytPlayer.stopVideo(); } catch(e){}
-                    // Optionally destroy to free resources
-                    try { ytPlayer.destroy(); } catch(e){}
-                    ytPlayer = null;
-                }
-                if (container) container.style.display = 'none';
-            } catch (e) { console.warn(e); }
-        }
-
-        // --- Lógica de Productos ---
+        const API_BASE_URL = '/api/v1';
         const productList = document.getElementById('product-list');
-        const productForm = document.getElementById('product-form');
-        const productFormTitle = document.getElementById('product-form-title');
-        const productIdInput = document.getElementById('product-id');
-        const productNameInput = document.getElementById('product-name');
-        const productCategoryInput = document.getElementById('product-category');
-        const productPriceInput = document.getElementById('product-price');
-        const productStockInput = document.getElementById('product-stock');
-        const cancelEditBtn = document.getElementById('cancel-edit-product');
+        const createForm = document.getElementById('create-product-form');
+        const notification = document.getElementById('notification');
+        let apiKey = '';
+
+        function showNotification(message, type = 'success', duration = 3000) {
+            notification.textContent = message;
+            notification.className = type; // 'success' or 'error'
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+
+        function renderProducts(products) {
+            productList.innerHTML = '';
+            if (products.length === 0) {
+                productList.innerHTML = '<p>No hay productos en el inventario. ¡Crea el primero!</p>';
+                return;
+            }
+
+            // Ordenamos: activos primero, luego por nombre
+            products.sort((a, b) => {
+                if (a.is_active === b.is_active) {
+                    return a.nombre.localeCompare(b.nombre);
+                }
+                return a.is_active ? -1 : 1;
+            });
+
+            products.forEach(product => {
+                const stockClass = product.stock === 0 ? 'stock-out' : (product.stock < 10 ? 'stock-low' : '');
+                const itemClass = product.is_active ? '' : 'inactive';
+                const statusBadge = product.is_active 
+                    ? '<span class="status-badge status-active">Activo</span>'
+                    : '<span class="status-badge status-inactive">Inactivo</span>';
+
+                const actionButton = product.is_active
+                    ? `<button class="btn-deactivate" data-id="${product.id}">Desactivar</button>`
+                    : `<button class="btn-activate" data-id="${product.id}">Activar</button>`;
+
+                const li = document.createElement('li');
+                li.className = `product-item ${itemClass}`;
+                li.innerHTML = `
+                    <div class="product-details">
+                        <div class="product-name">${product.nombre}</div>
+                        <div class="product-meta">
+                            ${product.categoria} &bull; $${product.valor} &bull; Stock: <span class="product-stock ${stockClass}">${product.stock}</span>
+                        </div>
+                    </div>
+                    <div class="product-status">
+                        ${statusBadge}
+                    </div>
+                    <div class="product-actions">
+                        ${actionButton}
+                    </div>
+                `;
+                productList.appendChild(li);
+            });
+        }
 
         async function fetchProducts() {
-            const response = await fetch('/api/v1/productos', { headers: HEADERS });
-            const products = await response.json();
-            productList.innerHTML = '';
-            products.forEach(product => {
-                let stockClass = '';
-                if (product.stock <= 0) stockClass = 'stock-out';
-                else if (product.stock <= 5) stockClass = 'stock-low';
-
-                productList.innerHTML += `
-                    <li class="song-item">
-                        <div class="song-item-info">
-                            <div>
-                                <div class="title">${product.nombre} <span class="user">(${product.categoria})</span></div>
-                                <div>Precio: $${product.valor} | Stock: <span class="product-stock ${stockClass}">${product.stock}</span></div>
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <button class="btn-secondary" onclick='editProduct(${JSON.stringify(product)})'>Editar</button>
-                            <button class="btn-delete" onclick="deleteProduct(${product.id}, '${product.nombre}')">Eliminar</button>
-                        </div>
-                    </li>
-                `;
-            });
-        }
-
-        function editProduct(product) {
-            productFormTitle.textContent = 'Editando Producto';
-            productIdInput.value = product.id;
-            productNameInput.value = product.nombre;
-            productCategoryInput.value = product.categoria;
-            productPriceInput.value = product.valor;
-            productStockInput.value = product.stock;
-            cancelEditBtn.classList.remove('hidden');
-            window.scrollTo(0, 0); // Scroll to top to see the form
-        }
-
-        function resetProductForm() {
-            productForm.reset();
-            productIdInput.value = '';
-            productFormTitle.textContent = 'Añadir Nuevo Producto';
-            cancelEditBtn.classList.add('hidden');
-        }
-
-        cancelEditBtn.addEventListener('click', resetProductForm);
-
-        productForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const productData = {
-                nombre: productNameInput.value,
-                categoria: productCategoryInput.value,
-                valor: parseFloat(productPriceInput.value),
-                stock: parseInt(productStockInput.value, 10)
-            };
-
-            const id = productIdInput.value;
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/api/v1/productos/${id}` : '/api/v1/productos';
-
-            await fetch(url, {
-                method: method,
-                headers: HEADERS,
-                body: JSON.stringify(productData)
-            });
-
-            resetProductForm();
-            fetchProducts();
-        });
-
-        async function deleteProduct(id, name) {
-            if (confirm(`¿Estás seguro de que quieres eliminar el producto "${name}"?`)) {
-                await fetch(`/api/v1/productos/${id}`, { method: 'DELETE', headers: HEADERS });
-                fetchProducts();
+            try {
+                const response = await fetch(`${API_BASE_URL}/productos/`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar el inventario. Verifica tu clave de API.');
+                }
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                productList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
             }
         }
 
-        // --- Inicialización ---
-        document.getElementById('logout-button').addEventListener('click', () => {
-            localStorage.removeItem('adminApiKey');
-            window.location.href = '/admin';
-        });
+        async function handleCreateProduct(event) {
+            event.preventDefault();
+            const formData = new FormData(createForm);
+            const productData = Object.fromEntries(formData.entries());
+            
+            // Convertir a tipos correctos
+            productData.valor = parseFloat(productData.valor);
+            productData.stock = parseInt(productData.stock, 10);
 
-        document.querySelector('button[onclick*="productos"]').addEventListener('click', fetchProducts);
+            try {
+                const response = await fetch(`${API_BASE_URL}/productos/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': apiKey
+                    },
+                    body: JSON.stringify(productData)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Error al crear el producto.');
+                }
+                showNotification(`Producto '${result.nombre}' creado con éxito.`);
+                createForm.reset();
+                fetchProducts(); // Recargar la lista
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
 
-        // Cargar datos iniciales al entrar
+        async function handleToggleActive(event) {
+            const button = event.target;
+            if (!button.matches('.btn-activate, .btn-deactivate')) return;
+
+            const productId = button.dataset.id;
+            const activate = button.classList.contains('btn-activate');
+            const endpoint = activate ? 'activate' : 'deactivate';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/productos/${productId}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey }
+                });
+                const result = await response.json();
+                 if (!response.ok) {
+                    throw new Error(result.detail || 'Error al actualizar el producto.');
+                }
+                showNotification(`Producto '${result.nombre}' ${activate ? 'activado' : 'desactivado'}.`);
+                fetchProducts(); // Recargar la lista para ver el cambio
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        // --- INICIALIZACIÓN ---
         window.addEventListener('DOMContentLoaded', () => {
-            fetchPendingSongs();
-            connectWebSocket();
-            fetchClosingTime();
-            fetchApiKeys();
+                // Try to read the admin API key from localStorage (set by /admin login)
+                apiKey = localStorage.getItem('adminApiKey');
+            if (!apiKey) {
+                // Si no hay clave, redirigimos al login de admin
+                window.location.href = '/admin';
+                return;
+            }
+
+            fetchProducts();
+
+            createForm.addEventListener('submit', handleCreateProduct);
+            productList.addEventListener('click', handleToggleActive);
         });
     </script>
+
 </body>
 </html>

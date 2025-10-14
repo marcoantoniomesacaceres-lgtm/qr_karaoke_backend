@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from decimal import Decimal
 
 import crud, schemas, models
 from database import SessionLocal
-from security import api_key_auth
+from security import api_key_auth, optional_api_key_auth
 import websocket_manager # Importamos el gestor de websockets
 
 router = APIRouter()
@@ -32,18 +32,16 @@ async def create_product(producto: schemas.ProductoCreate, db: Session = Depends
     return new_product
 
 @router.get("/", response_model=List[schemas.Producto], summary="Obtener el catálogo de productos (para admin y usuarios)")
-def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth, use_cache=False)):
+def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), api_key: Optional[str] = Depends(optional_api_key_auth)):
     """
     Devuelve una lista de todos los productos disponibles en el catálogo.
     - Si se provee una API Key de admin válida, devuelve todos los productos.
     - Si no, devuelve solo los productos activos y con stock.
     """
-    # Si no se proporciona una clave de API (o es inválida, aunque api_key_auth ya lo manejaría),
-    # asumimos que es un usuario normal y filtramos los productos.
+    # If api_key is provided and valid (admin), return full catalog; otherwise return only active items with stock
     if not api_key:
         productos = db.query(models.Producto).filter(models.Producto.is_active == True, models.Producto.stock > 0).offset(skip).limit(limit).all()
     else:
-        # Si hay una API Key, es un admin, devolvemos todo.
         productos = crud.get_productos(db, skip=skip, limit=limit)
 
     return productos

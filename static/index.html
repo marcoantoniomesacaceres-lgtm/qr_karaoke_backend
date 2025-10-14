@@ -90,6 +90,46 @@
             transition: top 0.5s ease-in-out;
             z-index: 1000;
         }
+        /* Estilos para el Catálogo de Productos */
+        .product-catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .product-card img { width: 100%; height: 150px; object-fit: cover; background-color: #333; }
+        .product-card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .product-card-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; }
+        .product-card-category { font-size: 0.8em; color: #aaa; margin-bottom: 10px; }
+        .product-card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+        .product-price { font-size: 1.2em; font-weight: bold; color: #bb86fc; }
+        .product-card .order-btn { background-color: #bb86fc; font-size: 0.9em; padding: 8px 16px; }
+
+        /* Estilos para el Modal de Confirmación */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: #1e1e1e; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
+        .modal-content h3 { margin-top: 0; color: #bb86fc; }
+        .modal-content label { display: block; margin: 15px 0 5px 0; }
+        .modal-content input[type="number"] { text-align: center; width: 80px; }
+        .modal-actions { margin-top: 20px; display: flex; justify-content: space-around; }
+        .modal-actions button { width: 120px; }
+        .btn-confirm { background-color: #4CAF50; }
+        .btn-cancel { background-color: #6c757d; }
+        #notification.error {
+            background-color: #cf6679;
+            color: #121212;
+        }
+        #notification.success {
+            background-color: #66bb6a;
+            color: #121212;
+        }
     </style>
 </head>
 <body>
@@ -150,7 +190,7 @@
         <!-- Pestaña de Catálogo de Productos -->
         <div id="tab-catalog" class="tab-content">
             <h2>Catálogo de Productos</h2>
-            <ul id="product-catalog-list" class="song-list">
+            <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
             </ul>
         </div>
@@ -161,6 +201,20 @@
             <ul id="my-song-list" class="song-list">
                 <!-- Las canciones del usuario se insertarán aquí -->
             </ul>
+        </div>
+    </div>
+
+    <!-- Modal para confirmar pedido -->
+    <div id="order-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-product-name"></h3>
+            <p>¿Cuántas unidades deseas pedir?</p>
+            <label for="quantity-input">Cantidad</label>
+            <input type="number" id="quantity-input" value="1" min="1" max="10">
+            <div class="modal-actions">
+                <button id="confirm-order-btn" class="btn-confirm">Confirmar Pedido</button>
+                <button id="cancel-order-btn" class="btn-cancel">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -186,6 +240,13 @@
         const welcomeMessage = document.getElementById('welcome-message');
         const logoutButton = document.getElementById('logout-button');
         const notificationBanner = document.getElementById('notification-banner');
+        const orderModal = document.getElementById('order-modal');
+        const modalProductName = document.getElementById('modal-product-name');
+        const quantityInput = document.getElementById('quantity-input');
+        const confirmOrderBtn = document.getElementById('confirm-order-btn');
+        const cancelOrderBtn = document.getElementById('cancel-order-btn');
+        const catalogList = document.getElementById('product-catalog-list');
+
 
         // --- FUNCIONES DE RENDERIZADO ---
 
@@ -247,32 +308,40 @@
         }
 
         function renderCatalog(products) {
-            const catalogList = document.getElementById('product-catalog-list');
             catalogList.innerHTML = '';
             const availableProducts = products.filter(p => p.is_active && p.stock > 0);
 
             if (availableProducts.length > 0) {
                 availableProducts.forEach(product => {
-                    catalogList.innerHTML += `
-                        <li class="song-item">
-                            <div class="song-item-info">
-                                <div>
-                                    <div class="song-title">${product.nombre}</div>
-                                    <div class="song-user">${product.categoria} - $${product.valor}</div>
-                                </div>
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <img src="https://via.placeholder.com/300x200.png?text=${encodeURIComponent(product.nombre)}" alt="${product.nombre}">
+                        <div class="product-card-body">
+                            <h3 class="product-card-title">${product.nombre}</h3>
+                            <p class="product-card-category">${product.categoria}</p>
+                            <div class="product-card-footer">
+                                <span class="product-price">$${product.valor}</span>
+                                <button class="order-btn" data-product-id="${product.id}" data-product-name="${product.nombre}" data-product-stock="${product.stock}">Pedir</button>
                             </div>
-                            <button class="order-product-btn" data-product-id="${product.id}" style="background-color: #bb86fc;">Pedir</button>
-                        </li>
+                        </div>
                     `;
+                    catalogList.appendChild(productCard);
                 });
             } else {
-                catalogList.innerHTML = '<li><p>No hay productos disponibles en este momento.</p></li>';
+                catalogList.innerHTML = '<p>No hay productos disponibles en este momento.</p>';
             }
         }
 
-        function showNotification(message, duration = 3000) {
+        function showNotification(message, type = 'success', duration = 3000) {
             notificationBanner.textContent = message;
+            // Remove previous classes
+            notificationBanner.classList.remove('success', 'error');
+            // Add new class
+            notificationBanner.classList.add(type);
+
             notificationBanner.style.top = '20px';
+
             setTimeout(() => {
                 notificationBanner.style.top = '-100px';
             }, duration);
@@ -285,7 +354,7 @@
 
             state.websocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if (data.type === 'notification') {
+                if (data.type === 'notification' || data.type === 'admin_notification') {
                     showNotification(data.payload.mensaje);
                 } else if (data.type === 'product_update') {
                     fetchProducts(); // Recargamos el catálogo de productos
@@ -448,42 +517,57 @@
         }
 
         async function handleOrderProduct(event) {
-            if (!event.target.classList.contains('order-product-btn')) return;
+            if (!event.target.classList.contains('order-btn')) return;
 
             const button = event.target;
             const productId = button.dataset.productId;
+            const productName = button.dataset.productName;
+            const productStock = parseInt(button.dataset.productStock, 10);
 
-            // Podríamos añadir un input de cantidad, pero por simplicidad pedimos de 1 en 1.
-            const orderData = {
-                producto_id: parseInt(productId, 10),
-                cantidad: 1
+            modalProductName.textContent = productName;
+            quantityInput.value = 1;
+            quantityInput.max = productStock;
+            orderModal.style.display = 'flex';
+
+            confirmOrderBtn.onclick = async () => {
+                const cantidad = parseInt(quantityInput.value, 10);
+                if (cantidad <= 0 || cantidad > productStock) {
+                    showNotification(`Cantidad inválida. Stock disponible: ${productStock}`, 'error');
+                    return;
+                }
+
+                const orderData = {
+                    producto_id: parseInt(productId, 10),
+                    cantidad: cantidad
+                };
+
+                confirmOrderBtn.disabled = true;
+                confirmOrderBtn.textContent = 'Pidiendo...';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/consumos/pedir/${state.user.id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData)
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.detail || 'Error al procesar el pedido.');
+
+                    showNotification(`¡Pedido de ${cantidad}x ${productName} realizado!`, 'success');
+                    fetchUserProfile();
+                    fetchProducts();
+                } catch (error) {
+                    showNotification(`Error: ${error.message}`, 'error', 5000);
+                } finally {
+                    orderModal.style.display = 'none';
+                    confirmOrderBtn.disabled = false;
+                    confirmOrderBtn.textContent = 'Confirmar Pedido';
+                }
             };
-
-            button.disabled = true;
-            button.textContent = 'Pidiendo...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/consumos/pedir/${state.user.id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Error al procesar el pedido.');
-
-                showNotification('¡Pedido realizado con éxito! Se han sumado puntos a tu perfil.');
-                // Actualizamos el perfil para reflejar los nuevos puntos y posible cambio de nivel
-                fetchUserProfile();
-                fetchProducts(); // Volvemos a cargar los productos para actualizar el stock visualmente
-            } catch (error) {
-                showNotification(`Error: ${error.message}`, 5000);
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Pedir';
-            }
         }
 
         async function fetchProducts() {
+            catalogList.innerHTML = '<p>Cargando catálogo...</p>';
             const response = await fetch(`${API_BASE_URL}/productos/`);
             const products = await response.json();
             renderCatalog(products);
@@ -587,8 +671,12 @@
             document.querySelector('.tabs').addEventListener('click', handleTabClick);
             document.getElementById('search-form').addEventListener('submit', handleSearch);
             document.getElementById('search-results').addEventListener('click', handleAddSong);
-            document.getElementById('product-catalog-list').addEventListener('click', handleOrderProduct);
+            catalogList.addEventListener('click', handleOrderProduct);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
+            cancelOrderBtn.addEventListener('click', () => {
+                orderModal.style.display = 'none';
+            });
+
         });
     </script>
 </body>
