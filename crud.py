@@ -128,9 +128,12 @@ def get_productos(db: Session, skip: int = 0, limit: int = 100):
 def create_producto(db: Session, producto: schemas.ProductoCreate):
     """Crea un nuevo producto en el catálogo."""
     # Aseguramos que el producto se cree como activo por defecto.
-    # Aunque el schema tiene un valor por defecto, es más robusto establecerlo aquí.
     producto_data = producto.dict()
-    db_producto = models.Producto(**producto_data, is_active=True)
+    # El schema ProductoCreate ya tiene `is_active` con un valor por defecto.
+    # Al pasarlo directamente, evitamos el error de "multiple values for keyword argument".
+    # Si el schema no lo tuviera, podríamos hacer `producto_data.pop('is_active', None)`
+    # antes de pasarlo como argumento extra.
+    db_producto = models.Producto(**producto_data)
     db.add(db_producto)
     db.commit()
     db.refresh(db_producto)

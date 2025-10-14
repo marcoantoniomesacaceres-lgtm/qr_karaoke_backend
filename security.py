@@ -28,19 +28,21 @@ def get_db():
 def api_key_auth(api_key: str = Security(api_key_header), db: Session = Depends(get_db)):
     """
     Dependencia que valida la API Key.
-    Verifica si la clave coincide con la MAESTRA o si es una clave válida
-    y activa en la base de datos.
+    Verifica si la clave coincide con la MAESTRA (acceso inmediato) o si es una
+    clave válida y activa en la base de datos.
     """
-    # 1. Comprobar si es la clave maestra
+    # 1. Comprobar si es la clave maestra. Esta validación es independiente de la base de datos.
     if api_key == MASTER_API_KEY:
         return api_key
 
-    # 2. Si no es la maestra, buscar en la base de datos si es una clave válida
+    # 2. Si no es la maestra, ahora sí buscamos en la base de datos.
+    #    La conexión a la BBDD solo se usa si la clave no es la maestra.
     db_api_key = crud.get_admin_api_key(db, key=api_key)
     if not db_api_key:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Clave de API inválida o ausente."
         )
+
     # Devuelve la clave válida para que los endpoints puedan saber que es admin
     return api_key
 

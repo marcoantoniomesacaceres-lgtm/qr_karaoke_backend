@@ -110,8 +110,8 @@
                 if (response.status === 403) throw new Error('Clave de API incorrecta o inválida.');
                 if (!response.ok) throw new Error('Error de autenticación en el servidor.');
 
-                // Si la clave es correcta, la guardamos y redirigimos
-                localStorage.setItem('adminApiKey', apiKey);
+                // Si la clave es correcta, la guardamos en sessionStorage y redirigimos
+                sessionStorage.setItem('adminApiKey', apiKey);
                 window.location.href = '/admin/dashboard';
             } catch (error) {
                 errorMessage.textContent = error.message;

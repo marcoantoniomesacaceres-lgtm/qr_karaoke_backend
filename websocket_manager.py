@@ -14,7 +14,11 @@ class ConnectionManager:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        try:
+            self.active_connections.remove(websocket)
+        except ValueError:
+            # already removed
+            pass
 
     async def broadcast_queue_update(self):
         """Obtiene la cola actualizada y la envía a todos los clientes."""
@@ -32,8 +36,29 @@ class ConnectionManager:
             cola_view = schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
 
             # Enviamos el JSON a todos los clientes conectados
-            for connection in self.active_connections:
-                await connection.send_text(cola_view.json())
+            # Si una conexión falla, la eliminamos para evitar que futuras emisiones fallen.
+            dead = []
+            for connection in list(self.active_connections):
+                try:
+                    await connection.send_text(cola_view.json())
+                except Exception:
+                    # Intentamos desconectar y marcamos como muerta
+                    try:
+                        # close() is async on WebSocket so await it if possible
+                        await connection.close()
+                    except Exception:
+                        pass
+                    dead.append(connection)
+            # Remove any dead connections from the active list
+            for d in dead:
+                if d in self.active_connections:
+                    try:
+                        self.active_connections.remove(d)
+                    except ValueError:
+                        pass
+
+            # return number removed for observability (not required)
+            return len(dead)
         finally:
             db.close()
 
@@ -43,15 +68,45 @@ class ConnectionManager:
             "type": "notification",
             "payload": {"mensaje": mensaje}
         }
-        for connection in self.active_connections:
-            await connection.send_text(json.dumps(payload))
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
 
     async def broadcast_product_update(self):
         """Envía una notificación para que los clientes recarguen el catálogo de productos."""
         payload = {
             "type": "product_update"
         }
-        for connection in self.active_connections:
-            await connection.send_text(json.dumps(payload))
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
 
 manager = ConnectionManager()

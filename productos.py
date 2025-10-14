@@ -22,14 +22,38 @@ async def create_product(producto: schemas.ProductoCreate, db: Session = Depends
     """
     **[Admin]** Añade un nuevo producto al catálogo del karaoke.
     """
-    db_producto = crud.get_producto_by_nombre(db, nombre=producto.nombre)
-    if db_producto:
-        raise HTTPException(status_code=400, detail="Un producto con este nombre ya existe.")
-    
-    new_product = crud.create_producto(db=db, producto=producto)
-    crud.create_admin_log_entry(db, action="CREATE_PRODUCT", details=f"Producto '{new_product.nombre}' creado.")
-    await websocket_manager.manager.broadcast_product_update() # Notificamos
-    return new_product
+    try:
+        db_producto = crud.get_producto_by_nombre(db, nombre=producto.nombre)
+        if db_producto:
+            raise HTTPException(status_code=400, detail="Un producto con este nombre ya existe.")
+
+        new_product = crud.create_producto(db=db, producto=producto)
+        crud.create_admin_log_entry(db, action="CREATE_PRODUCT", details=f"Producto '{new_product.nombre}' creado.")
+        # Lanzamos el broadcast como tarea de fondo para evitar que fallos en WS provoquen 500s
+        try:
+            import asyncio
+            asyncio.create_task(websocket_manager.manager.broadcast_product_update())
+        except Exception:
+            # Si no es posible programar la tarea, lo registramos y seguimos
+            import logging
+            logging.getLogger(__name__).exception("No se pudo programar broadcast de producto")
+        return new_product
+    except HTTPException:
+        # Re-raise HTTP exceptions (client errors)
+        raise
+    except Exception as e:
+        # Log and return a JSON-friendly error so the frontend can parse it
+        import logging, traceback
+        logging.getLogger(__name__).exception("Error creando producto")
+        # As a fallback, also dump the full traceback to a dedicated file so it's easier to find.
+        try:
+            with open("product_errors.log", "a", encoding="utf-8") as f:
+                f.write("--- Product creation exception ---\n")
+                traceback.print_exc(file=f)
+                f.write("\n")
+        except Exception:
+            pass
+        raise HTTPException(status_code=500, detail="Error interno al crear el producto.")
 
 @router.get("/", response_model=List[schemas.Producto], summary="Obtener el catálogo de productos (para admin y usuarios)")
 def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), api_key: Optional[str] = Depends(optional_api_key_auth)):

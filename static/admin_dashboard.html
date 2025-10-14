@@ -8,36 +8,90 @@
         :root {
             --bg-color: #121212;
             --surface-color: #1e1e1e;
-            --primary-color: #4CAF50;
-            --primary-variant: #45a049;
+            --primary-color: #f44336; /* Rojo Admin */
+            --primary-variant: #d32f2f;
             --secondary-color: #bb86fc;
             --text-color: #e0e0e0;
             --text-secondary: #b0b0b0;
             --error-color: #cf6679;
             --success-color: #66bb6a;
             --warning-color: #ffc107;
+            --info-color: #2196F3;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             background-color: var(--bg-color);
             color: var(--text-color);
+            display: flex;
         }
-        .container { max-width: 960px; margin: 20px auto; padding: 20px; }
-        h1, h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
+        .sidebar {
+            width: 240px;
+            background-color: var(--surface-color);
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            overflow-y: auto;
         }
+        .sidebar h1 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+        .sidebar .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar .nav-menu li a {
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sidebar .nav-menu li a:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--primary-color);
+        }
+        .sidebar .nav-menu li a.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        .main-content {
+            margin-left: 240px;
+            flex-grow: 1;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 0;}
+        .grid { display: grid; gap: 20px; }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
         .card {
             background-color: var(--surface-color);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
-        .product-list { list-style: none; padding: 0; }
-        .product-item {
+        .card h3 { margin-top: 0; color: var(--secondary-color); }
+
+        /* Estilos de listas y tablas */
+        .item-list { list-style: none; padding: 0; }
+        .item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -45,15 +99,15 @@
             border-bottom: 1px solid #333;
             transition: background-color 0.2s;
         }
-        .product-item:last-child { border-bottom: none; }
-        .product-item.inactive { background-color: rgba(207, 102, 121, 0.1); opacity: 0.6; }
-        .product-details { flex-grow: 1; }
-        .product-name { font-weight: bold; font-size: 1.1em; }
-        .product-meta { font-size: 0.9em; color: var(--text-secondary); }
-        .product-stock { font-weight: bold; }
+        .item:last-child { border-bottom: none; }
+        .item.inactive { background-color: rgba(207, 102, 121, 0.1); opacity: 0.6; }
+        .item-details { flex-grow: 1; }
+        .item-title { font-weight: bold; font-size: 1.1em; }
+        .item-meta { font-size: 0.9em; color: var(--text-secondary); }
+        .item-stock { font-weight: bold; }
         .stock-low { color: var(--warning-color); }
         .stock-out { color: var(--error-color); }
-        .product-actions button {
+        .item-actions button {
             margin-left: 10px;
             padding: 8px 12px;
             font-size: 0.8em;
@@ -61,22 +115,30 @@
             border: none;
             border-radius: 5px;
             color: white;
+            transition: opacity 0.2s;
+        }
+        .item-actions button:hover {
+            opacity: 0.8;
         }
         .btn-activate { background-color: var(--success-color); }
         .btn-deactivate { background-color: var(--error-color); }
+        .btn-approve { background-color: var(--success-color); }
+        .btn-reject { background-color: var(--error-color); }
+        .btn-action { background-color: var(--info-color); }
         
-        form label { display: block; margin-bottom: 5px; color: var(--text-secondary); }
-        form input, form select {
+        /* Estilos de Formularios */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); }
+        .form-group input, .form-group select {
             width: calc(100% - 24px);
             padding: 10px;
-            margin-bottom: 15px;
             border-radius: 5px;
             border: 1px solid #444;
             background-color: #333;
             color: #fff;
             font-size: 1em;
         }
-        form button {
+        button.form-btn {
             width: 100%;
             padding: 12px;
             background-color: var(--primary-color);
@@ -88,16 +150,24 @@
             font-weight: bold;
             transition: background-color 0.3s;
         }
-        form button:hover { background-color: var(--primary-variant); }
+        button.form-btn:hover { background-color: var(--primary-variant); }
+        
+        /* Badges de estado */
         .status-badge {
             padding: 4px 8px;
             border-radius: 12px;
             font-size: 0.8em;
             font-weight: bold;
             color: var(--bg-color);
+            text-transform: capitalize;
         }
         .status-active { background-color: var(--success-color); }
         .status-inactive { background-color: var(--text-secondary); }
+        .status-pendiente { background-color: var(--warning-color); }
+        .status-aprobado { background-color: var(--success-color); }
+        .status-reproduciendo { background-color: var(--info-color); }
+
+        /* Notificaciones */
         #notification {
             position: fixed;
             bottom: -100px;
@@ -109,41 +179,190 @@
             transition: bottom 0.5s ease-in-out;
             z-index: 1000;
             text-align: center;
+            min-width: 250px;
         }
         #notification.show { bottom: 20px; }
         #notification.success { background-color: var(--success-color); color: var(--bg-color); }
         #notification.error { background-color: var(--error-color); color: var(--bg-color); }
+        #notification.info { background-color: var(--info-color); color: var(--bg-color); }
+
+        /* Componentes específicos */
+        .summary-card { text-align: center; }
+        .summary-value { font-size: 2.5em; font-weight: bold; color: var(--primary-color); margin: 10px 0; }
+        .dangerous-zone button { background-color: var(--error-color); }
+        .dangerous-zone button:hover { background-color: #a04f5b; }
+
+        .song-item-info { display: flex; align-items: center; gap: 15px; }
+        .song-item-info img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        th {
+            background-color: #2a2a2a;
+        }
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            background: none;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: var(--surface-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
+    <div class="sidebar">
+        <h1>La Rana que Canta</h1>
+        <ul class="nav-menu">
+            <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+            <li><a href="#queue" class="nav-link">Cola de Canciones</a></li>
+            <li><a href="#inventory" class="nav-link">Inventario</a></li>
+            <li><a href="#reports" class="nav-link">Reportes</a></li>
+            <li><a href="#settings" class="nav-link">Configuración</a></li>
+        </ul>
+        <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
+    </div>
 
-    <div class="container">
-        <h1>Panel de Productos</h1>
-        <div class="grid">
-            <div class="card">
-                <h2>Inventario de Productos</h2>
-                <ul id="product-list" class="product-list">
-                    <!-- Los productos se cargarán aquí -->
-                    <p>Cargando inventario...</p>
-                </ul>
+    <div class="main-content">
+        <!-- PÁGINA: DASHBOARD -->
+        <div id="dashboard" class="page active">
+            <h2>Dashboard</h2>
+            <div class="grid grid-3" id="summary-container">
+                <div class="card summary-card">
+                    <h3>Ingresos Totales</h3>
+                    <p class="summary-value" id="summary-income">$0.00</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>Canciones Cantadas</h3>
+                    <p class="summary-value" id="summary-songs">0</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>Usuarios Activos</h3>
+                    <p class="summary-value" id="summary-users">0</p>
+                </div>
             </div>
+            <div class="card" style="margin-top: 30px;">
+                <h3>Acciones Rápidas</h3>
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="broadcast-message-input">Enviar Mensaje Global</label>
+                        <input type="text" id="broadcast-message-input" placeholder="Ej: ¡Oferta en cervezas!">
+                        <button class="form-btn" id="broadcast-btn" style="margin-top: 10px; background-color: var(--info-color);">Enviar a todos</button>
+                    </div>
+                    <div class="dangerous-zone">
+                        <label>Zona Peligrosa</label>
+                        <button class="form-btn" id="reset-night-btn">Reiniciar Noche (Borrar Todo)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA: COLA DE CANCIONES -->
+        <div id="queue" class="page">
+            <h2>Cola de Canciones</h2>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Pendientes de Aprobación</h3>
+                    <ul id="pending-songs-list" class="item-list"></ul>
+                </div>
+                <div class="card">
+                    <h3>Cola Aprobada</h3>
+                    <ul id="approved-songs-list" class="item-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA: INVENTARIO -->
+        <div id="inventory" class="page">
+            <h2>Gestión de Inventario</h2>
+            <div class="grid" style="grid-template-columns: 1fr 350px;">
+                <div class="card">
+                    <h3>Productos</h3>
+                    <ul id="product-list" class="item-list">
+                        <p>Cargando inventario...</p>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Crear Nuevo Producto</h3>
+                    <form id="create-product-form">
+                        <div class="form-group">
+                            <label for="nombre">Nombre del Producto</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <input type="text" id="categoria" name="categoria" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="valor">Precio ($)</label>
+                            <input type="number" id="valor" name="valor" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stock">Stock Inicial</label>
+                            <input type="number" id="stock" name="stock" min="0" required>
+                        </div>
+                        <button type="submit" class="form-btn">Crear Producto</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA: REPORTES -->
+        <div id="reports" class="page">
+            <h2>Reportes de la Noche</h2>
             <div class="card">
-                <h2>Crear Nuevo Producto</h2>
-                <form id="create-product-form">
-                    <label for="nombre">Nombre del Producto</label>
-                    <input type="text" id="nombre" name="nombre" required>
+                <h3>Reportes Disponibles</h3>
+                <p>Esta sección puede ser expandida para mostrar gráficos y tablas con los datos de los reportes.</p>
+                <select id="report-selector" class="form-group">
+                    <option value="">Selecciona un reporte...</option>
+                    <option value="top-songs">Top Canciones Más Cantadas</option>
+                    <option value="top-products">Top Productos Más Consumidos</option>
+                    <option value="total-income">Ingresos Totales</option>
+                    <!-- Agrega más opciones de reportes aquí -->
+                </select>
+                <div id="report-output"></div>
+            </div>
+        </div>
 
-                    <label for="categoria">Categoría</label>
-                    <input type="text" id="categoria" name="categoria" required>
-
-                    <label for="valor">Precio ($)</label>
-                    <input type="number" id="valor" name="valor" step="0.01" min="0" required>
-
-                    <label for="stock">Stock Inicial</label>
-                    <input type="number" id="stock" name="stock" min="0" required>
-
-                    <button type="submit">Crear Producto</button>
-                </form>
+        <!-- PÁGINA: CONFIGURACIÓN -->
+        <div id="settings" class="page">
+            <h2>Configuración</h2>
+            <div class="grid grid-2">
+                <div class="card">
+                    <h3>Hora de Cierre</h3>
+                    <div class="form-group">
+                        <label for="closing-time-input">Hora de cierre (formato HH:MM)</label>
+                        <input type="text" id="closing-time-input" placeholder="23:59">
+                    </div>
+                    <button class="form-btn" id="set-closing-time-btn">Actualizar Hora</button>
+                </div>
+                <div class="card">
+                    <h3>Claves de API</h3>
+                    <div class="form-group">
+                        <label for="api-key-desc-input">Descripción para nueva clave</label>
+                        <input type="text" id="api-key-desc-input" placeholder="Ej: Clave para DJ">
+                    </div>
+                    <button class="form-btn" id="create-api-key-btn">Crear Nueva Clave</button>
+                    <h4 style="margin-top: 20px;">Claves Existentes</h4>
+                    <ul id="api-keys-list" class="item-list"></ul>
+                </div>
             </div>
         </div>
     </div>
@@ -152,21 +371,34 @@
 
     <script>
         const API_BASE_URL = '/api/v1';
-        const productList = document.getElementById('product-list');
-        const createForm = document.getElementById('create-product-form');
         const notification = document.getElementById('notification');
         let apiKey = '';
 
-        function showNotification(message, type = 'success', duration = 3000) {
+        // --- UTILS ---
+        function showNotification(message, type = 'success', duration = 4000) {
             notification.textContent = message;
-            notification.className = type; // 'success' or 'error'
+            notification.className = ''; // Limpiar clases previas
             notification.classList.add('show');
+            notification.classList.add(type);
             setTimeout(() => {
                 notification.classList.remove('show');
             }, duration);
         }
 
-        function renderProducts(products) {
+        async function apiFetch(endpoint, options = {}) {
+            options.headers = { ...options.headers, 'X-API-Key': apiKey, 'Content-Type': 'application/json' };
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+            if (response.status === 204) return null; // No content
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.detail || `Error ${response.status}`);
+            }
+            return data;
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderProducts(products, productList) {
             productList.innerHTML = '';
             if (products.length === 0) {
                 productList.innerHTML = '<p>No hay productos en el inventario. ¡Crea el primero!</p>';
@@ -193,18 +425,18 @@
                     : `<button class="btn-activate" data-id="${product.id}">Activar</button>`;
 
                 const li = document.createElement('li');
-                li.className = `product-item ${itemClass}`;
+                li.className = `item ${itemClass}`;
                 li.innerHTML = `
-                    <div class="product-details">
-                        <div class="product-name">${product.nombre}</div>
-                        <div class="product-meta">
-                            ${product.categoria} &bull; $${product.valor} &bull; Stock: <span class="product-stock ${stockClass}">${product.stock}</span>
+                    <div class="item-details">
+                        <div class="item-title">${product.nombre}</div>
+                        <div class="item-meta">
+                            ${product.categoria} &bull; $${product.valor} &bull; Stock: <span class="item-stock ${stockClass}">${product.stock}</span>
                         </div>
                     </div>
-                    <div class="product-status">
+                    <div class="item-status">
                         ${statusBadge}
                     </div>
-                    <div class="product-actions">
+                    <div class="item-actions">
                         ${actionButton}
                     </div>
                 `;
@@ -212,89 +444,281 @@
             });
         }
 
-        async function fetchProducts() {
+        function renderPendingSongs(songs, listElement) {
+            listElement.innerHTML = '';
+            if (songs.length === 0) {
+                listElement.innerHTML = '<p>No hay canciones pendientes.</p>';
+                return;
+            }
+            songs.forEach(song => {
+                const li = document.createElement('li');
+                li.className = 'item';
+                li.innerHTML = `
+                    <div class="item-details song-item-info">
+                        <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
+                        <div>
+                            <div class="item-title">${song.titulo}</div>
+                            <div class="item-meta">Por: ${song.usuario.nick}</div>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-approve" data-id="${song.id}">Aprobar</button>
+                        <button class="btn-reject" data-id="${song.id}">Rechazar</button>
+                    </div>
+                `;
+                listElement.appendChild(li);
+            });
+        }
+
+        function renderApiKeys(keys, listElement) {
+            listElement.innerHTML = '';
+            if (keys.length === 0) {
+                listElement.innerHTML = '<p>No hay claves de API creadas.</p>';
+                return;
+            }
+            keys.forEach(key => {
+                const li = document.createElement('li');
+                li.className = `item ${key.is_active ? '' : 'inactive'}`;
+                li.innerHTML = `
+                    <div class="item-details">
+                        <div class="item-title">${key.description || 'Sin descripción'}</div>
+                        <div class="item-meta">Creada: ${new Date(key.created_at).toLocaleString()}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-deactivate" data-id="${key.id}">Eliminar</button>
+                    </div>
+                `;
+                listElement.appendChild(li);
+            });
+        }
+
+        // --- PAGE LOADERS ---
+
+        async function loadDashboardPage() {
             try {
-                const response = await fetch(`${API_BASE_URL}/productos/`, {
-                    headers: { 'X-API-Key': apiKey }
-                });
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar el inventario. Verifica tu clave de API.');
-                }
-                const products = await response.json();
-                renderProducts(products);
+                const summary = await apiFetch('/admin/summary');
+                document.getElementById('summary-income').textContent = `$${summary.ingresos_totales.toFixed(2)}`;
+                document.getElementById('summary-songs').textContent = summary.canciones_cantadas;
+                document.getElementById('summary-users').textContent = summary.usuarios_activos;
+            } catch (error) {
+                showNotification(`Error al cargar resumen: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadQueuePage() {
+            try {
+                const pendingSongs = await apiFetch('/canciones/pendientes');
+                renderPendingSongs(pendingSongs, document.getElementById('pending-songs-list'));
+                // Aquí podrías cargar también la cola aprobada si lo necesitas
+            } catch (error) {
+                showNotification(`Error al cargar cola: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadInventoryPage() {
+            const productList = document.getElementById('product-list');
+            try {
+                const products = await apiFetch('/productos/');
+                renderProducts(products, productList);
             } catch (error) {
                 productList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
             }
         }
 
-        async function handleCreateProduct(event) {
+        async function loadSettingsPage() {
+            try {
+                const closingTime = await apiFetch('/admin/get-closing-time');
+                document.getElementById('closing-time-input').value = closingTime.hora_cierre;
+
+                const apiKeys = await apiFetch('/admin/api-keys');
+                renderApiKeys(apiKeys, document.getElementById('api-keys-list'));
+            } catch (error) {
+                showNotification(`Error al cargar configuración: ${error.message}`, 'error');
+            }
+        }
+
+
+        // --- EVENT HANDLERS ---
+
+        function handleNavigation(event) {
             event.preventDefault();
-            const formData = new FormData(createForm);
+            const link = event.target.closest('.nav-link');
+            if (!link) return;
+
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+
+            link.classList.add('active');
+            const pageId = link.getAttribute('href').substring(1);
+            document.getElementById(pageId).classList.add('active');
+
+            // Cargar datos de la página activa
+            switch (pageId) {
+                case 'dashboard': loadDashboardPage(); break;
+                case 'queue': loadQueuePage(); break;
+                case 'inventory': loadInventoryPage(); break;
+                case 'settings': loadSettingsPage(); break;
+            }
+        }
+
+        async function handleCreateProduct(event, form) {
+            event.preventDefault();
+            const formData = new FormData(form);
             const productData = Object.fromEntries(formData.entries());
             
-            // Convertir a tipos correctos
             productData.valor = parseFloat(productData.valor);
             productData.stock = parseInt(productData.stock, 10);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/productos/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': apiKey
-                    },
-                    body: JSON.stringify(productData)
-                });
-                const result = await response.json();
-                if (!response.ok) {
-                    throw new Error(result.detail || 'Error al crear el producto.');
-                }
+                const result = await apiFetch('/productos/', { method: 'POST', body: JSON.stringify(productData) });
                 showNotification(`Producto '${result.nombre}' creado con éxito.`);
-                createForm.reset();
-                fetchProducts(); // Recargar la lista
+                form.reset();
+                loadInventoryPage();
             } catch (error) {
                 showNotification(error.message, 'error');
             }
         }
 
-        async function handleToggleActive(event) {
+        async function handleToggleProductActive(event) {
             const button = event.target;
             if (!button.matches('.btn-activate, .btn-deactivate')) return;
 
             const productId = button.dataset.id;
             const activate = button.classList.contains('btn-activate');
-            const endpoint = activate ? 'activate' : 'deactivate';
+            const endpoint = `/productos/${productId}/${activate ? 'activate' : 'deactivate'}`;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/productos/${productId}/${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'X-API-Key': apiKey }
-                });
-                const result = await response.json();
-                 if (!response.ok) {
-                    throw new Error(result.detail || 'Error al actualizar el producto.');
-                }
+                const result = await apiFetch(endpoint, { method: 'POST' });
                 showNotification(`Producto '${result.nombre}' ${activate ? 'activado' : 'desactivado'}.`);
-                fetchProducts(); // Recargar la lista para ver el cambio
+                loadInventoryPage();
             } catch (error) {
                 showNotification(error.message, 'error');
             }
         }
 
-        // --- INICIALIZACIÓN ---
+        async function handleSongApproval(event) {
+            const button = event.target;
+            if (!button.matches('.btn-approve, .btn-reject')) return;
+
+            const songId = button.dataset.id;
+            const approve = button.classList.contains('btn-approve');
+            const endpoint = `/canciones/${songId}/${approve ? 'aprobar' : 'rechazar'}`;
+
+            try {
+                const result = await apiFetch(endpoint, { method: 'POST' });
+                showNotification(`Canción '${result.titulo}' ${approve ? 'aprobada' : 'rechazada'}.`, 'info');
+                loadQueuePage();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleSetClosingTime() {
+            const time = document.getElementById('closing-time-input').value;
+            if (!/^\d{2}:\d{2}$/.test(time)) {
+                showNotification('Formato de hora inválido. Usa HH:MM.', 'error');
+                return;
+            }
+            try {
+                await apiFetch('/admin/set-closing-time', { method: 'POST', body: JSON.stringify({ hora_cierre: time }) });
+                showNotification(`Hora de cierre actualizada a ${time}.`);
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleCreateApiKey() {
+            const description = document.getElementById('api-key-desc-input').value.trim();
+            if (!description) {
+                showNotification('Por favor, introduce una descripción para la clave.', 'error');
+                return;
+            }
+            try {
+                const newKey = await apiFetch('/admin/api-keys', { method: 'POST', body: JSON.stringify({ description }) });
+                alert(`¡Clave creada con éxito! Guárdala en un lugar seguro, no se mostrará de nuevo:\n\n${newKey.key}`);
+                document.getElementById('api-key-desc-input').value = '';
+                loadSettingsPage();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleDeleteApiKey(event) {
+            const button = event.target;
+            if (!button.matches('.btn-deactivate')) return;
+            if (!confirm('¿Estás seguro de que quieres eliminar esta clave de API permanentemente?')) return;
+
+            const keyId = button.dataset.id;
+            try {
+                await apiFetch(`/admin/api-keys/${keyId}`, { method: 'DELETE' });
+                showNotification('Clave de API eliminada.', 'info');
+                loadSettingsPage();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleBroadcast() {
+            const message = document.getElementById('broadcast-message-input').value.trim();
+            if (!message) {
+                showNotification('El mensaje no puede estar vacío.', 'error');
+                return;
+            }
+            try {
+                await apiFetch('/admin/broadcast-message', { method: 'POST', body: JSON.stringify({ mensaje: message }) });
+                showNotification('Mensaje enviado a todos los usuarios.', 'success');
+                document.getElementById('broadcast-message-input').value = '';
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleResetNight() {
+            if (!confirm('¡ACCIÓN DESTRUCTIVA!\n\n¿Estás seguro de que quieres reiniciar la noche? Se borrarán TODAS las mesas, usuarios, canciones y consumos.')) return;
+            try {
+                await apiFetch('/admin/reset-night', { method: 'POST' });
+                showNotification('El sistema ha sido reiniciado para una nueva noche.', 'info');
+                loadDashboardPage(); // Recargar datos
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('adminApiKey');
+            window.location.href = '/admin';
+        }
+
+        // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
-                // Try to read the admin API key from localStorage (set by /admin login)
-                apiKey = localStorage.getItem('adminApiKey');
+            apiKey = sessionStorage.getItem('adminApiKey');
             if (!apiKey) {
-                // Si no hay clave, redirigimos al login de admin
                 window.location.href = '/admin';
                 return;
             }
 
-            fetchProducts();
+            // Cargar datos de la página inicial
+            loadDashboardPage();
 
-            createForm.addEventListener('submit', handleCreateProduct);
-            productList.addEventListener('click', handleToggleActive);
+            // Event Listeners
+            document.querySelector('.nav-menu').addEventListener('click', handleNavigation);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+            // Dashboard Page
+            document.getElementById('broadcast-btn').addEventListener('click', handleBroadcast);
+            document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
+
+            // Queue Page
+            document.getElementById('pending-songs-list').addEventListener('click', handleSongApproval);
+
+            // Inventory Page
+            document.getElementById('create-product-form').addEventListener('submit', (e) => handleCreateProduct(e, e.target));
+            document.getElementById('product-list').addEventListener('click', handleToggleProductActive);
+
+            // Settings Page
+            document.getElementById('set-closing-time-btn').addEventListener('click', handleSetClosingTime);
+            document.getElementById('create-api-key-btn').addEventListener('click', handleCreateApiKey);
+            document.getElementById('api-keys-list').addEventListener('click', handleDeleteApiKey);
         });
     </script>
 
