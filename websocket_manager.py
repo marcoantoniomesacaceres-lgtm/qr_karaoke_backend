@@ -109,4 +109,85 @@ class ConnectionManager:
                     pass
         return len(dead)
 
+    async def broadcast_consumo_created(self, consumo_payload: dict):
+        """
+        Envía un evento indicando que se creó un nuevo consumo.
+        El payload debe ser un diccionario serializable que contenga
+        fields como producto_nombre, usuario_nick, mesa_nombre, cantidad, created_at, etc.
+        """
+        payload = {
+            "type": "consumo_created",
+            "payload": consumo_payload
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
+
+    async def broadcast_consumo_deleted(self, consumo_payload: dict):
+        """
+        Envía un evento indicando que un consumo fue eliminado.
+        El payload típicamente contiene al menos {'id': consumo_id}.
+        """
+        payload = {
+            "type": "consumo_deleted",
+            "payload": consumo_payload
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
+
+    async def broadcast_consumo_deleted(self, consumo_id: int):
+        """
+        Envía un evento indicando que se eliminó un consumo.
+        """
+        payload = {
+            "type": "consumo_deleted",
+            "payload": {"id": consumo_id}
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
+
 manager = ConnectionManager()

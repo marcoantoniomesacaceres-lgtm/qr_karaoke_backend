@@ -908,6 +908,45 @@ def get_consumos_por_usuario(db: Session, usuario_id: int):
     """
     return db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).order_by(models.Consumo.created_at.desc()).all()
 
+
+def get_recent_consumos(db: Session, limit: int = 10):
+    """
+    Devuelve los consumos más recientes junto con el nombre del producto,
+    nick del usuario y nombre de la mesa (si existe).
+    """
+    # Hacemos las uniones necesarias para obtener la info deseada
+    rows = (
+        db.query(
+            models.Consumo.id,
+            models.Consumo.cantidad,
+            models.Consumo.valor_total,
+            models.Producto.nombre.label('producto_nombre'),
+            models.Usuario.nick.label('usuario_nick'),
+            models.Mesa.nombre.label('mesa_nombre'),
+            models.Consumo.created_at
+        )
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+        .outerjoin(models.Mesa, models.Usuario.mesa_id == models.Mesa.id)
+        .order_by(models.Consumo.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    # Mapear a diccionarios/objetos que Pydantic pueda serializar fácilmente
+    result = []
+    for r in rows:
+        result.append({
+            'id': r.id,
+            'cantidad': r.cantidad,
+            'valor_total': r.valor_total,
+            'producto_nombre': r.producto_nombre,
+            'usuario_nick': r.usuario_nick,
+            'mesa_nombre': r.mesa_nombre,
+            'created_at': r.created_at,
+        })
+    return result
+
 def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: int = 10):
     """
     Obtiene un reporte de los usuarios que más han gastado en una categoría de producto específica.
@@ -1110,6 +1149,48 @@ def get_consumo_por_mesa(db: Session, mesa_id: int):
         .order_by(models.Consumo.created_at.desc())
         .all()
     )
+
+
+def delete_consumo(db: Session, consumo_id: int):
+    """
+    Elimina un consumo, restaura el stock del producto asociado y recalcula
+    los puntos y nivel del usuario correspondiente.
+    Devuelve True si se eliminó, o None si no se encontró.
+    """
+    SILVER_THRESHOLD = 50.0
+    GOLD_THRESHOLD = 150.0
+
+    db_consumo = db.query(models.Consumo).filter(models.Consumo.id == consumo_id).first()
+    if not db_consumo:
+        return None
+
+    # Restaurar stock del producto
+    if db_consumo.producto:
+        try:
+            db_consumo.producto.stock += db_consumo.cantidad
+        except Exception:
+            # En casos raros, ignoramos
+            pass
+
+    usuario = db_consumo.usuario
+
+    # Borramos el registro de consumo
+    db.delete(db_consumo)
+    db.commit()
+
+    # Recalcular puntos y nivel del usuario
+    if usuario:
+        total_consumido = db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario.id).scalar() or 0
+        usuario.puntos = int(total_consumido / 10)
+        if total_consumido >= GOLD_THRESHOLD:
+            usuario.nivel = 'oro'
+        elif total_consumido >= SILVER_THRESHOLD:
+            usuario.nivel = 'plata'
+        else:
+            usuario.nivel = 'bronce'
+        db.commit()
+
+    return True
 
 def get_or_create_dj_user(db: Session) -> models.Usuario:
     """

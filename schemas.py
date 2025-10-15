@@ -96,6 +96,18 @@ class Consumo(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# --- Schema para consumo reciente (para el dashboard de admin) ---
+class ConsumoReciente(BaseModel):
+    id: int
+    cantidad: int
+    valor_total: Decimal
+    producto_nombre: str
+    usuario_nick: str
+    mesa_nombre: Optional[str] = None
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
 # --- Schema para el Perfil de Usuario ---
 class UsuarioPerfil(Usuario):
     total_consumido: Decimal = Decimal("0.0")

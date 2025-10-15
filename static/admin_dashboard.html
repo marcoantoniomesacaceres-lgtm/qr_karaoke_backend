@@ -258,6 +258,13 @@
                     <p class="summary-value" id="summary-users">0</p>
                 </div>
             </div>
+            <!-- Últimos pedidos -->
+            <div class="card" style="margin-top:20px;" id="recent-orders-card">
+                <h3>Últimos Pedidos</h3>
+                <ul id="recent-orders-list" class="item-list">
+                    <li><p>Cargando últimos pedidos...</p></li>
+                </ul>
+            </div>
             <div class="card" style="margin-top: 30px;">
                 <h3>Acciones Rápidas</h3>
                 <div class="grid grid-2">
@@ -496,12 +503,139 @@
 
         async function loadDashboardPage() {
             try {
-                const summary = await apiFetch('/admin/summary');
-                document.getElementById('summary-income').textContent = `$${summary.ingresos_totales.toFixed(2)}`;
-                document.getElementById('summary-songs').textContent = summary.canciones_cantadas;
-                document.getElementById('summary-users').textContent = summary.usuarios_activos;
+                    const summary = await apiFetch('/admin/summary');
+                    // Defensive coercion: backend may return Decimal/strings for numeric values
+                    const ingresosRaw = summary.ingresos_totales;
+                    const ingresosNum = (typeof ingresosRaw === 'number') ? ingresosRaw : Number(ingresosRaw);
+                    const ingresos = Number.isFinite(ingresosNum) ? ingresosNum : 0;
+                    document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
+                    document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
+                    document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
+                // Cargar últimos pedidos también
+                loadRecentOrders();
             } catch (error) {
                 showNotification(`Error al cargar resumen: ${error.message}`, 'error');
+            }
+        }
+
+        // CARGA Y RENDER DE ÚLTIMOS PEDIDOS
+        async function loadRecentOrders() {
+            const listEl = document.getElementById('recent-orders-list');
+            try {
+                const items = await apiFetch('/admin/recent-consumos?limit=10');
+                listEl.innerHTML = '';
+                if (!items || items.length === 0) {
+                    listEl.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
+                    return;
+                }
+                items.forEach(it => {
+                    const li = document.createElement('li');
+                    li.className = 'item';
+                    li.dataset.consumoId = it.id;
+                    const mesaText = it.mesa_nombre ? `Mesa ${it.mesa_nombre}` : '';
+                    // Mensaje: "Mesa X pidió 2x Papas de todito" + botón cancelar
+                    li.innerHTML = `
+                        <div class="item-details">
+                            <div class="item-title">${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}</div>
+                            <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-deactivate cancel-order-btn" data-id="${it.id}" title="Cancelar pedido">Cancelar</button>
+                        </div>
+                    `;
+                    listEl.appendChild(li);
+                });
+            } catch (error) {
+                listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando pedidos: ${error.message}</p></li>`;
+            }
+        }
+
+        // WEBSOCKET: Conexión para actualizaciones en tiempo real (cola, notificaciones, consumos)
+        let adminSocket = null;
+        function setupAdminWebSocket() {
+            try {
+                const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                const wsUrl = `${wsScheme}://${window.location.host}/ws/cola`;
+                adminSocket = new WebSocket(wsUrl);
+
+                adminSocket.addEventListener('open', () => {
+                    console.info('Admin websocket conectado');
+                });
+
+                adminSocket.addEventListener('message', (evt) => {
+                    try {
+                        const data = JSON.parse(evt.data);
+                        if (!data || !data.type) return;
+                        switch (data.type) {
+                            case 'consumo_created':
+                                // Prepend nuevo pedido a la lista
+                                const it = data.payload;
+                                const listEl = document.getElementById('recent-orders-list');
+                                if (listEl) {
+                                    const li = document.createElement('li');
+                                    li.className = 'item';
+                                    const mesaText = it.mesa_nombre ? `Mesa ${it.mesa_nombre}` : '';
+                                    li.dataset.consumoId = it.id;
+                                    li.innerHTML = `
+                                        <div class="item-details">
+                                            <div class="item-title">${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}</div>
+                                            <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
+                                        </div>
+                                        <div class="item-actions">
+                                            <button class="btn-deactivate cancel-order-btn" data-id="${it.id}" title="Cancelar pedido">Cancelar</button>
+                                        </div>
+                                    `;
+                                    // Prepend and keep max 10 items
+                                    listEl.insertBefore(li, listEl.firstChild);
+                                    while (listEl.children.length > 10) listEl.removeChild(listEl.lastChild);
+                                }
+                                break;
+                            case 'consumo_deleted':
+                                // payload: {id: consumo_id}
+                                const deletedId = data.payload && data.payload.id;
+                                if (deletedId) {
+                                    const listEl2 = document.getElementById('recent-orders-list');
+                                    if (listEl2) {
+                                        const child = listEl2.querySelector(`li[data-consumo-id="${deletedId}"]`);
+                                        if (child) child.remove();
+                                    }
+                                }
+                                break;
+                            case 'notification':
+                                showNotification(data.payload?.mensaje || 'Notificación', 'info');
+                                break;
+                            case 'product_update':
+                                // Re-fetch products if inventory page is active
+                                if (document.getElementById('inventory').classList.contains('active')) {
+                                    loadInventoryPage();
+                                }
+                                break;
+                            case 'queue_update':
+                                // If queue page active, reload it
+                                if (document.getElementById('queue').classList.contains('active')) {
+                                    loadQueuePage();
+                                }
+                                break;
+                            default:
+                                // unknown type: ignore
+                                break;
+                        }
+                    } catch (err) {
+                        console.error('Error procesando mensaje WS:', err);
+                    }
+                });
+
+                adminSocket.addEventListener('close', () => {
+                    console.warn('Admin websocket desconectado, reintentando en 3s...');
+                    adminSocket = null;
+                    setTimeout(setupAdminWebSocket, 3000);
+                });
+                adminSocket.addEventListener('error', (e) => {
+                    console.error('WebSocket error', e);
+                    try { adminSocket.close(); } catch (er) {}
+                });
+            } catch (e) {
+                console.error('No se pudo establecer websocket:', e);
             }
         }
 
@@ -700,6 +834,9 @@
             // Cargar datos de la página inicial
             loadDashboardPage();
 
+            // Setup WebSocket for realtime updates (consume events and others)
+            setupAdminWebSocket();
+
             // Event Listeners
             document.querySelector('.nav-menu').addEventListener('click', handleNavigation);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
@@ -719,6 +856,30 @@
             document.getElementById('set-closing-time-btn').addEventListener('click', handleSetClosingTime);
             document.getElementById('create-api-key-btn').addEventListener('click', handleCreateApiKey);
             document.getElementById('api-keys-list').addEventListener('click', handleDeleteApiKey);
+
+            // Poll recent orders every 5 seconds while admin is on dashboard
+            setInterval(() => {
+                const dashboardActive = document.getElementById('dashboard').classList.contains('active');
+                if (dashboardActive) loadRecentOrders();
+            }, 5000);
+
+            // Delegated handler for cancel buttons on recent orders
+            document.getElementById('recent-orders-list').addEventListener('click', async (e) => {
+                const btn = e.target.closest('.cancel-order-btn');
+                if (!btn) return;
+                const consumoId = btn.dataset.id;
+                if (!consumoId) return;
+                if (!confirm('¿Confirmas cancelar este pedido?')) return;
+                try {
+                    await apiFetch(`/admin/consumos/${consumoId}`, { method: 'DELETE' });
+                    // Remove from DOM
+                    const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
+                    if (li) li.remove();
+                    showNotification('Pedido cancelado.', 'info');
+                } catch (err) {
+                    showNotification(`Error cancelando pedido: ${err.message}`, 'error');
+                }
+            });
         });
     </script>
 

@@ -596,6 +596,37 @@ def get_unsold_products_report(db: Session = Depends(get_db)):
     unsold_products = crud.get_productos_no_consumidos(db)
     return unsold_products
 
+
+@router.get("/recent-consumos", response_model=List[schemas.ConsumoReciente], summary="Obtener consumos recientes")
+def get_recent_consumos_endpoint(db: Session = Depends(get_db), limit: int = 10):
+    """
+    **[Admin]** Devuelve los consumos más recientes (últimos N) para mostrar
+    en el dashboard del administrador.
+    """
+    recent = crud.get_recent_consumos(db, limit=limit)
+    return recent
+
+
+@router.delete('/consumos/{consumo_id}', status_code=204, summary='Eliminar un consumo')
+async def admin_delete_consumo(consumo_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Permite al administrador cancelar un consumo previamente registrado.
+    Restaura el stock y recalcula puntos del usuario.
+    Notifica vía WebSocket a los clientes sobre la eliminación.
+    """
+    deleted = crud.delete_consumo(db, consumo_id=consumo_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail='Consumo no encontrado')
+
+    # Notificar a los clientes que un consumo fue eliminado
+    try:
+        await websocket_manager.manager.broadcast_consumo_deleted({'id': consumo_id})
+    except Exception:
+        # No romper la respuesta si la notificación falla
+        pass
+
+    return Response(status_code=204)
+
 @router.post("/broadcast-message", status_code=200, summary="Enviar un mensaje a todas las pantallas")
 async def broadcast_message(notificacion: schemas.Notificacion, db: Session = Depends(get_db)):
     """
@@ -622,7 +653,30 @@ def get_night_summary(db: Session = Depends(get_db)):
     ingresos totales, total de canciones cantadas y número de usuarios activos.
     """
     summary_data = crud.get_resumen_noche(db)
-    return summary_data
+    # Aseguramos que los tipos sean primitivos JSON-serializables (float/int)
+    ingresos = summary_data.get('ingresos_totales', 0)
+    try:
+        ingresos_val = float(ingresos)
+    except Exception:
+        ingresos_val = 0.0
+
+    canciones = summary_data.get('canciones_cantadas', 0)
+    try:
+        canciones_val = int(canciones)
+    except Exception:
+        canciones_val = 0
+
+    usuarios = summary_data.get('usuarios_activos', 0)
+    try:
+        usuarios_val = int(usuarios)
+    except Exception:
+        usuarios_val = 0
+
+    return {
+        'ingresos_totales': ingresos_val,
+        'canciones_cantadas': canciones_val,
+        'usuarios_activos': usuarios_val,
+    }
 
 @router.get("/tables/{mesa_id}/summary", response_model=schemas.ResumenMesa, summary="Obtener resumen de una mesa específica")
 def get_table_summary(mesa_id: int, db: Session = Depends(get_db)):
