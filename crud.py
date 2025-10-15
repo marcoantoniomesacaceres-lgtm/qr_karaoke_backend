@@ -1204,3 +1204,16 @@ def get_or_create_dj_user(db: Session) -> models.Usuario:
         db.commit()
         db.refresh(dj_user)
     return dj_user
+
+def get_cola_completa(db: Session):
+    """
+    Obtiene la cola completa, incluyendo la canción que está sonando y las próximas.
+    """
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    upcoming = get_cola_priorizada(db)
+
+    # Si la canción que se está reproduciendo sigue en la lista de 'upcoming', la quitamos.
+    if now_playing:
+        upcoming = [song for song in upcoming if song.id != now_playing.id]
+
+    return {"now_playing": now_playing, "upcoming": upcoming}

@@ -284,14 +284,25 @@
         <!-- PÁGINA: COLA DE CANCIONES -->
         <div id="queue" class="page">
             <h2>Cola de Canciones</h2>
-            <div class="grid grid-2">
-                <div class="card">
-                    <h3>Pendientes de Aprobación</h3>
-                    <ul id="pending-songs-list" class="item-list"></ul>
-                </div>
+            <div class="grid" style="grid-template-columns: 1fr 350px;">
                 <div class="card">
                     <h3>Cola Aprobada</h3>
-                    <ul id="approved-songs-list" class="item-list"></ul>
+                    <ul id="approved-songs-list" class="item-list">
+                        <p>Cargando cola de canciones...</p>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Añadir Canción (DJ)</h3>
+                    <form id="admin-search-form">
+                        <div class="form-group">
+                            <label for="admin-search-input">Buscar en YouTube</label>
+                            <input type="text" id="admin-search-input" placeholder="Artista, canción o URL de YouTube" required>
+                        </div>
+                        <button type="submit" class="form-btn" id="admin-search-btn">Buscar</button>
+                    </form>
+                    <div id="admin-search-results" class="item-list" style="margin-top: 20px; max-height: 400px; overflow-y: auto;">
+                        <!-- Resultados de búsqueda del admin -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -451,26 +462,29 @@
             });
         }
 
-        function renderPendingSongs(songs, listElement) {
+        function renderApprovedSongs(songs, listElement) {
             listElement.innerHTML = '';
             if (songs.length === 0) {
-                listElement.innerHTML = '<p>No hay canciones pendientes.</p>';
+                listElement.innerHTML = '<p>La cola de canciones está vacía.</p>';
                 return;
             }
             songs.forEach(song => {
                 const li = document.createElement('li');
                 li.className = 'item';
+                const userNick = song.usuario ? song.usuario.nick : 'N/A';
+                const isDJ = userNick === 'DJ';
+
                 li.innerHTML = `
                     <div class="item-details song-item-info">
                         <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
                         <div>
                             <div class="item-title">${song.titulo}</div>
-                            <div class="item-meta">Por: ${song.usuario.nick}</div>
+                            <div class="item-meta">Por: ${userNick}</div>
                         </div>
                     </div>
                     <div class="item-actions">
-                        <button class="btn-approve" data-id="${song.id}">Aprobar</button>
-                        <button class="btn-reject" data-id="${song.id}">Rechazar</button>
+                        <button class="btn-action" data-id="${song.id}" data-action="move-top">Subir</button>
+                        <button class="btn-reject" data-id="${song.id}" data-action="remove">Eliminar</button>
                     </div>
                 `;
                 listElement.appendChild(li);
@@ -641,9 +655,18 @@
 
         async function loadQueuePage() {
             try {
-                const pendingSongs = await apiFetch('/canciones/pendientes');
-                renderPendingSongs(pendingSongs, document.getElementById('pending-songs-list'));
-                // Aquí podrías cargar también la cola aprobada si lo necesitas
+                // La cola ahora viene del websocket, pero hacemos una carga inicial
+                const queueData = await apiFetch('/canciones/cola');
+                const approvedSongsList = document.getElementById('approved-songs-list');
+                
+                let allSongs = [];
+                if (queueData.now_playing) {
+                    allSongs.push(queueData.now_playing);
+                }
+                if (queueData.upcoming) {
+                    allSongs = allSongs.concat(queueData.upcoming);
+                }
+                renderApprovedSongs(allSongs, approvedSongsList);
             } catch (error) {
                 showNotification(`Error al cargar cola: ${error.message}`, 'error');
             }
@@ -730,23 +753,6 @@
             }
         }
 
-        async function handleSongApproval(event) {
-            const button = event.target;
-            if (!button.matches('.btn-approve, .btn-reject')) return;
-
-            const songId = button.dataset.id;
-            const approve = button.classList.contains('btn-approve');
-            const endpoint = `/canciones/${songId}/${approve ? 'aprobar' : 'rechazar'}`;
-
-            try {
-                const result = await apiFetch(endpoint, { method: 'POST' });
-                showNotification(`Canción '${result.titulo}' ${approve ? 'aprobada' : 'rechazada'}.`, 'info');
-                loadQueuePage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
         async function handleSetClosingTime() {
             const time = document.getElementById('closing-time-input').value;
             if (!/^\d{2}:\d{2}$/.test(time)) {
@@ -818,6 +824,78 @@
             }
         }
 
+        // --- NUEVAS FUNCIONES PARA GESTIÓN DE COLA DEL ADMIN ---
+
+        async function handleAdminSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('admin-search-input').value.trim();
+            if (!query) return;
+
+            const searchButton = document.getElementById('admin-search-btn');
+            searchButton.disabled = true;
+            searchButton.textContent = 'Buscando...';
+
+            const resultsContainer = document.getElementById('admin-search-results');
+            resultsContainer.innerHTML = '<p>Buscando...</p>';
+
+            try {
+                const results = await apiFetch(`/youtube/search?q=${encodeURIComponent(query)}`);
+                resultsContainer.innerHTML = '';
+                if (results.length > 0) {
+                    results.forEach(song => {
+                        resultsContainer.innerHTML += `
+                            <li class="item">
+                                <div class="item-details song-item-info">
+                                    <img src="${song.thumbnail}" alt="Miniatura">
+                                    <div>
+                                        <div class="item-title">${song.title}</div>
+                                    </div>
+                                </div>
+                                <button class="btn-approve admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+                }
+            } catch (error) {
+                resultsContainer.innerHTML = `<p class="error-msg">Error: ${error.message}</p>`;
+            } finally {
+                searchButton.disabled = false;
+                searchButton.textContent = 'Buscar';
+            }
+        }
+
+        async function handleAdminAddSong(event) {
+            if (!event.target.classList.contains('admin-add-song-btn')) return;
+
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Añadiendo...';
+
+            const songData = {
+                titulo: button.dataset.title,
+                youtube_id: button.dataset.youtubeId,
+                duracion_seconds: parseInt(button.dataset.duration, 10)
+            };
+
+            try {
+                // Usamos un endpoint específico para el admin
+                const response = await apiFetch(`/canciones/admin/add`, {
+                    method: 'POST',
+                    body: JSON.stringify(songData)
+                });
+                showNotification(`'${songData.titulo}' añadida a la cola por el DJ.`);
+                document.getElementById('admin-search-results').innerHTML = ''; // Limpiar resultados
+                // La cola se actualizará por websocket
+            } catch (error) {
+                showNotification(error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Añadir';
+            }
+        }
+
         function handleLogout() {
             sessionStorage.removeItem('adminApiKey');
             window.location.href = '/admin';
@@ -846,7 +924,10 @@
             document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
 
             // Queue Page
-            document.getElementById('pending-songs-list').addEventListener('click', handleSongApproval);
+            document.getElementById('admin-search-form').addEventListener('submit', handleAdminSearch);
+            document.getElementById('admin-search-results').addEventListener('click', handleAdminAddSong);
+            // document.getElementById('approved-songs-list').addEventListener('click', handleQueueActions);
+
 
             // Inventory Page
             document.getElementById('create-product-form').addEventListener('submit', (e) => handleCreateProduct(e, e.target));

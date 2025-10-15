@@ -79,7 +79,7 @@ async def anadir_cancion(
     # 7. Crear la canción (aún en estado 'pendiente' por defecto)
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
     
-    # 8. Aprobarla inmediatamente y notificar a los clientes
+    # 8. Aprobarla inmediatamente y notificar a los clientes para que la cola se actualice
     cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
     await websocket_manager.manager.broadcast_queue_update()
     return cancion_aprobada
@@ -126,18 +126,32 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
     await websocket_manager.manager.broadcast_queue_update()
     return db_cancion
 
-@router.get("/cola", response_model=schemas.ColaView, summary="Ver la cola de canciones priorizada")
+@router.post("/admin/add", response_model=schemas.Cancion, summary="[Admin] Añadir una canción como DJ")
+async def admin_anadir_cancion(
+    cancion: schemas.CancionCreate, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)
+):
+    """
+    **[Admin]** Añade una canción directamente a la cola de aprobados.
+    La canción se asigna al usuario especial 'DJ'.
+    """
+    # 1. Obtener o crear el usuario 'DJ'
+    dj_user = crud.get_or_create_dj_user(db)
+
+    # 2. Crear y aprobar la canción inmediatamente
+    db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=dj_user.id)
+    cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+
+    # 3. Notificar a todos los clientes
+    await websocket_manager.manager.broadcast_queue_update()
+    return cancion_aprobada
+
+@router.get("/cola", response_model=schemas.ColaView, summary="Ver la cola de canciones (público y admin)")
 def ver_cola_de_canciones(db: Session = Depends(get_db)):
     """
-    Devuelve la canción que está sonando y la lista de las próximas,
-    ordenadas según la prioridad del usuario.
+    Devuelve la canción que está sonando y la lista de las próximas.
     """
-    cola_completa = crud.get_cola_priorizada(db=db)
-    
-    now_playing = cola_completa[0] if cola_completa else None
-    upcoming = cola_completa[1:] if len(cola_completa) > 1 else []
-
-    return schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
+    cola_data = crud.get_cola_completa(db)
+    return schemas.ColaView(now_playing=cola_data["now_playing"], upcoming=cola_data["upcoming"])
 
 @router.post("/siguiente", 
              response_model=schemas.Cancion, 

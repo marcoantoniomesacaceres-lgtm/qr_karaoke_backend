@@ -316,7 +316,7 @@
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
                     productCard.innerHTML = `
-                        <img src="https://via.placeholder.com/300x200.png?text=${encodeURIComponent(product.nombre)}" alt="${product.nombre}">
+                        <img src="https://placehold.co/300x200/1e1e1e/e0e0e0.png?text=${encodeURIComponent(product.nombre)}" alt="${product.nombre}">
                         <div class="product-card-body">
                             <h3 class="product-card-title">${product.nombre}</h3>
                             <p class="product-card-category">${product.categoria}</p>
@@ -586,11 +586,6 @@
         async function fetchUserProfile() {
             try {
                 const response = await fetch(`${API_BASE_URL}/usuarios/${state.user.id}/perfil`);
-                // --- INICIO DE LA CORRECCIÓN ---
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status} al obtener el perfil.`);
-                }
-                // --- FIN DE LA CORRECCIÓN ---
                 const profile = await response.json();
                 state.user = profile; // Actualizamos el estado local del usuario
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
