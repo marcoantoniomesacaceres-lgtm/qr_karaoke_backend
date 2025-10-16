@@ -315,8 +315,9 @@
                 availableProducts.forEach(product => {
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
+                    const imageUrl = product.imagen_url || `https://via.placeholder.com/300x200.png?text=${encodeURIComponent(product.nombre)}`;
                     productCard.innerHTML = `
-                        <img src="https://via.placeholder.com/300x200.png?text=${encodeURIComponent(product.nombre)}" alt="${product.nombre}">
+                        <img src="${imageUrl}" alt="${product.nombre}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200.png?text=Imagen+no+disponible';">
                         <div class="product-card-body">
                             <h3 class="product-card-title">${product.nombre}</h3>
                             <p class="product-card-category">${product.categoria}</p>
@@ -354,12 +355,17 @@
 
             state.websocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                if (data.type === 'notification' || data.type === 'admin_notification') {
+                
+                // CORRECCIÓN: Verificamos si el mensaje tiene un campo 'type' para manejar
+                // notificaciones y otros eventos estructurados.
+                if (data.type) {
+                  if (data.type === 'notification' || data.type === 'admin_notification') {
                     showNotification(data.payload.mensaje);
-                } else if (data.type === 'product_update') {
-                    fetchProducts(); // Recargamos el catálogo de productos
+                  } else if (data.type === 'product_update') {
+                      fetchProducts(); // Recargamos el catálogo de productos
+                  }
                 } else {
-                    // Asumimos que es una actualización de la cola
+                    // Si no tiene 'type', asumimos que es la actualización de la cola.
                     renderQueue(data);
                 }
             };
@@ -483,7 +489,7 @@
                     throw new Error(data.detail || 'Error al añadir la canción.');
                 }
                 showNotification(`'${songData.titulo}' añadida a tu lista.`);
-                fetchMyList(); // Actualizar la lista personal
+                fetchMyList(); // CORRECCIÓN: Actualiza "Mi Lista" inmediatamente después de añadir.
             } catch (error) {
                 showNotification(error.message, 5000);
             } finally {

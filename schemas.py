@@ -15,6 +15,7 @@ class CancionCreate(CancionBase):
 class Cancion(CancionBase):
     id: int
     estado: str
+    created_at: datetime # Añadimos este campo
     model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Usuario (necesario para mostrar usuarios en una mesa) ---
@@ -70,6 +71,7 @@ class ProductoBase(BaseModel):
     categoria: str
     valor: Decimal
     stock: int
+    imagen_url: Optional[str] = None
     is_active: bool = True
 
 class ProductoCreate(ProductoBase):

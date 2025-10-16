@@ -170,12 +170,19 @@ async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api
     # Luego, marcamos la siguiente en la cola como 'reproduciendo'
     nueva_cancion_reproduciendo = crud.marcar_siguiente_como_reproduciendo(db)
 
+    # Notificamos a todos los clientes (móviles, dashboard) que la cola ha cambiado
     await websocket_manager.manager.broadcast_queue_update()
     
+    # Si hay una nueva canción, enviamos una orden específica al reproductor
+    if nueva_cancion_reproduciendo:
+        await websocket_manager.manager.broadcast_play_song(
+            youtube_id=nueva_cancion_reproduciendo.youtube_id
+        )
+
     if not nueva_cancion_reproduciendo:
         # Si no hay más canciones, podemos devolver la última que se cantó o un mensaje.
         return cancion_cantada or Response(status_code=204)
-
+        
     return nueva_cancion_reproduciendo
 
 @router.get("/{cancion_id}/tiempo-espera", response_model=dict, summary="Calcular tiempo de espera para una canción")

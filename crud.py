@@ -139,6 +139,19 @@ def create_producto(db: Session, producto: schemas.ProductoCreate):
     db.refresh(db_producto)
     return db_producto
 
+def get_producto_by_id(db: Session, producto_id: int):
+    """Busca un producto por su ID."""
+    return db.query(models.Producto).filter(models.Producto.id == producto_id).first()
+
+def update_producto_imagen(db: Session, producto_id: int, imagen_url: str):
+    """Actualiza solo la URL de la imagen de un producto."""
+    db_producto = get_producto_by_id(db, producto_id)
+    if db_producto:
+        db_producto.imagen_url = imagen_url
+        db.commit()
+        db.refresh(db_producto)
+    return db_producto
+
 def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usuario_id: int):
     """Crea un nuevo consumo, lo asocia a un usuario y actualiza su nivel."""
     # Definimos los umbrales para cada nivel

@@ -385,6 +385,10 @@
         </div>
     </div>
 
+    <!-- Input oculto para la subida de archivos -->
+    <input type="file" id="product-image-upload" accept="image/png, image/jpeg, image/webp" style="display: none;">
+
+
     <div id="notification"></div>
 
     <script>
@@ -456,6 +460,7 @@
                     </div>
                     <div class="item-actions">
                         ${actionButton}
+                        <button class="btn-action upload-img-btn" data-id="${product.id}">Imagen</button>
                     </div>
                 `;
                 productList.appendChild(li);
@@ -483,8 +488,10 @@
                         </div>
                     </div>
                     <div class="item-actions">
-                        <button class="btn-action" data-id="${song.id}" data-action="move-top">Subir</button>
-                        <button class="btn-reject" data-id="${song.id}" data-action="remove">Eliminar</button>
+                        <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
+                        <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
+                        <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
+                        <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
                     </div>
                 `;
                 listElement.appendChild(li);
@@ -625,12 +632,13 @@
                                 }
                                 break;
                             case 'queue_update':
-                                // If queue page active, reload it
-                                if (document.getElementById('queue').classList.contains('active')) {
-                                    loadQueuePage();
-                                }
+                                // CORRECCIÓN: La cola se actualiza siempre, no solo si la pestaña está activa.
+                                // Esto asegura que si el admin cambia de pestaña, verá la cola más reciente.
+                                loadQueuePage();
                                 break;
                             default:
+                                // Si el mensaje no tiene un 'type' conocido, podría ser la actualización de la cola.
+                                loadQueuePage();
                                 // unknown type: ignore
                                 break;
                         }
@@ -750,6 +758,43 @@
                 loadInventoryPage();
             } catch (error) {
                 showNotification(error.message, 'error');
+            }
+        }
+
+        async function handleProductImageUpload(event) {
+            const fileInput = event.target;
+            const productId = fileInput.dataset.productId;
+            if (!fileInput.files || fileInput.files.length === 0 || !productId) {
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Mostramos una notificación de carga
+            showNotification('Subiendo imagen...', 'info', 10000);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/productos/${productId}/upload-image`, {
+                    method: 'POST',
+                    headers: { 'X-API-Key': apiKey },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Error al subir la imagen.');
+                }
+
+                showNotification('Imagen actualizada con éxito.', 'success');
+                loadInventoryPage(); // Recargar para ver la nueva imagen (si la mostráramos)
+
+            } catch (error) {
+                showNotification(error.message, 'error');
+            } finally {
+                // Limpiar el input para permitir subir el mismo archivo de nuevo
+                fileInput.value = '';
             }
         }
 
@@ -896,6 +941,61 @@
             }
         }
 
+        async function handleQueueActions(event) {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+
+            const songId = button.dataset.id;
+            const action = button.dataset.action;
+
+            if (!songId || !action) return;
+
+            button.disabled = true;
+
+            try {
+                if (action === 'play') {
+                    // CORRECCIÓN: Se realiza una llamada fetch directa sin usar apiFetch
+                    // para evitar que se añada el header 'Content-Type: application/json',
+                    // que es lo que causa el error 422, ya que este endpoint no espera un body.
+                    const response = await fetch(`${API_BASE_URL}/canciones/siguiente`, {
+                        method: 'POST',
+                        headers: { 'X-API-Key': apiKey }
+                    });
+                    if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
+                    // El websocket se encargará de recargar la cola
+                } else if (action === 'remove') {
+                    if (confirm('¿Seguro que quieres eliminar esta canción de la cola?')) {
+                        // Usamos el endpoint de rechazar que la saca de la cola
+                        await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
+                        showNotification('Canción eliminada de la cola.', 'info');
+                    }
+                } else if (action === 'move-up' || action === 'move-down') {
+                    // Obtenemos el orden actual de la cola desde el DOM
+                    const listElement = document.getElementById('approved-songs-list');
+                    const songItems = Array.from(listElement.querySelectorAll('li.item'));
+                    const songIds = songItems.map(item => item.querySelector('button').dataset.id);
+                    const currentIndex = songIds.indexOf(songId);
+
+                    if (action === 'move-up' && currentIndex > 0) {
+                        [songIds[currentIndex - 1], songIds[currentIndex]] = [songIds[currentIndex], songIds[currentIndex - 1]];
+                    } else if (action === 'move-down' && currentIndex < songIds.length - 1) {
+                        [songIds[currentIndex], songIds[currentIndex + 1]] = [songIds[currentIndex + 1], songIds[currentIndex]];
+                    } else {
+                        button.disabled = false; // No se puede mover más
+                        return;
+                    }
+
+                    // Enviamos el nuevo orden al backend
+                    await apiFetch('/admin/reorder-queue', { method: 'POST', body: JSON.stringify({ canciones_ids: songIds }) });
+                    showNotification('Cola reordenada.', 'info');
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                // El websocket recargará la lista, por lo que no es necesario re-habilitar el botón aquí.
+            }
+        }
+
         function handleLogout() {
             sessionStorage.removeItem('adminApiKey');
             window.location.href = '/admin';
@@ -926,12 +1026,23 @@
             // Queue Page
             document.getElementById('admin-search-form').addEventListener('submit', handleAdminSearch);
             document.getElementById('admin-search-results').addEventListener('click', handleAdminAddSong);
-            // document.getElementById('approved-songs-list').addEventListener('click', handleQueueActions);
+            document.getElementById('approved-songs-list').addEventListener('click', handleQueueActions);
 
 
             // Inventory Page
             document.getElementById('create-product-form').addEventListener('submit', (e) => handleCreateProduct(e, e.target));
             document.getElementById('product-list').addEventListener('click', handleToggleProductActive);
+
+            // Listener para el botón de subir imagen (delegado)
+            document.getElementById('product-list').addEventListener('click', (e) => {
+                if (e.target.classList.contains('upload-img-btn')) {
+                    const productId = e.target.dataset.id;
+                    const fileInput = document.getElementById('product-image-upload');
+                    fileInput.dataset.productId = productId; // Guardamos el ID en el input
+                    fileInput.click(); // Abrimos el selector de archivos
+                }
+            });
+            document.getElementById('product-image-upload').addEventListener('change', handleProductImageUpload);
 
             // Settings Page
             document.getElementById('set-closing-time-btn').addEventListener('click', handleSetClosingTime);
