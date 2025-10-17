@@ -124,6 +124,12 @@ class ColaView(BaseModel):
     now_playing: Optional[CancionAdminView] = None
     upcoming: List[CancionAdminView] = []
 
+# --- Schema para la respuesta de "siguiente canción" ---
+class PlayNextResponse(BaseModel):
+    play_url: str
+    cancion: CancionAdminView
+
+
 # --- Schema para la configuración ---
 class ClosingTimeUpdate(BaseModel):
     hora_cierre: str

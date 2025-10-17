@@ -154,9 +154,9 @@ def ver_cola_de_canciones(db: Session = Depends(get_db)):
     return schemas.ColaView(now_playing=cola_data["now_playing"], upcoming=cola_data["upcoming"])
 
 @router.post("/siguiente", 
-             response_model=schemas.Cancion, 
+             response_model=schemas.PlayNextResponse, 
              responses={204: {"description": "No hay más canciones en la cola."}},
-             summary="Marcar la siguiente canción como 'cantada' y avanzar la cola")
+             summary="Avanzar la cola y obtener la siguiente canción para reproducir")
 async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
     """
     **[Admin/Player]** Orquesta el avance de la cola:
@@ -173,17 +173,17 @@ async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api
     # Notificamos a todos los clientes (móviles, dashboard) que la cola ha cambiado
     await websocket_manager.manager.broadcast_queue_update()
     
-    # Si hay una nueva canción, enviamos una orden específica al reproductor
-    if nueva_cancion_reproduciendo:
-        await websocket_manager.manager.broadcast_play_song(
-            youtube_id=nueva_cancion_reproduciendo.youtube_id
-        )
-
     if not nueva_cancion_reproduciendo:
         # Si no hay más canciones, podemos devolver la última que se cantó o un mensaje.
-        return cancion_cantada or Response(status_code=204)
-        
-    return nueva_cancion_reproduciendo
+        return Response(status_code=204)
+
+    # Construimos la URL de YouTube en modo embed para pantalla completa
+    youtube_url = f"https://www.youtube.com/embed/{nueva_cancion_reproduciendo.youtube_id}?autoplay=1&fs=1"
+    
+    return schemas.PlayNextResponse(
+        play_url=youtube_url,
+        cancion=nueva_cancion_reproduciendo
+    )
 
 @router.get("/{cancion_id}/tiempo-espera", response_model=dict, summary="Calcular tiempo de espera para una canción")
 def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):
