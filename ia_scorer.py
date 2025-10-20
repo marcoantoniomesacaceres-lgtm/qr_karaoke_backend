@@ -5,7 +5,6 @@ import subprocess
 from typing import List, Tuple
 
 # --- Importaciones de las nuevas librerías ---
-from basic_pitch.inference import predict
 from basic_pitch.inference import predict, predict_and_save
 from basic_pitch import ICASSP_2022_MODEL_PATH
 import yt_dlp
@@ -56,7 +55,6 @@ def _get_pitch_sequence(audio_path: str) -> List[Tuple[float, float, int]]:
     if not basic_pitch_model or not os.path.exists(audio_path):
         return []
     try:
-        model_output, _, notes = predict(audio_path, basic_pitch_model)
         model_output, _, notes = predict(audio_path, basic_pitch_model, False, False, False, False)
         # Devolvemos una tupla simple: (inicio, fin, nota_midi)
         return [(note['start_time_s'], note['end_time_s'], note['pitch_midi']) for note in notes]
