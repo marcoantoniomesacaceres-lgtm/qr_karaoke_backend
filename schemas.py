@@ -7,6 +7,7 @@ from datetime import datetime
 class CancionBase(BaseModel):
     titulo: str
     youtube_id: str
+    puntuacion_ia: Optional[int] = None # Nuevo campo
     duracion_seconds: Optional[int] = 0
 
 class CancionCreate(CancionBase):
@@ -16,6 +17,7 @@ class Cancion(CancionBase):
     id: int
     estado: str
     created_at: datetime # Añadimos este campo
+    puntuacion_ia: Optional[int] = None # Aseguramos que esté aquí también
     model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Usuario (necesario para mostrar usuarios en una mesa) ---

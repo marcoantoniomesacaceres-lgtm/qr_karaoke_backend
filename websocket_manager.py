@@ -1,6 +1,8 @@
 import json
 from typing import List
 from fastapi import WebSocket
+import models
+from fastapi.encoders import jsonable_encoder
 
 import schemas, crud
 from database import SessionLocal
@@ -35,12 +37,16 @@ class ConnectionManager:
             # Creamos el objeto de respuesta
             cola_view = schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
 
+            # CORRECCIÓN: Usamos jsonable_encoder para convertir el objeto a un diccionario serializable
+            # y luego json.dumps para crear la cadena JSON. Esto maneja correctamente los objetos de la DB.
+            json_payload = json.dumps(jsonable_encoder(cola_view))
+
             # Enviamos el JSON a todos los clientes conectados
             # Si una conexión falla, la eliminamos para evitar que futuras emisiones fallen.
             dead = []
             for connection in list(self.active_connections):
                 try:
-                    await connection.send_text(cola_view.json())
+                    await connection.send_text(json_payload)
                 except Exception:
                     # Intentamos desconectar y marcamos como muerta
                     try:
@@ -164,30 +170,27 @@ class ConnectionManager:
                     pass
         return len(dead)
 
-    async def broadcast_consumo_deleted(self, consumo_id: int):
+    async def broadcast_song_finished(self, cancion: models.Cancion):
         """
-        Envía un evento indicando que se eliminó un consumo.
+        Envía un evento indicando que una canción ha terminado y su puntuación.
         """
         payload = {
-            "type": "consumo_deleted",
-            "payload": {"id": consumo_id}
+            "type": "song_finished",
+            "payload": {
+                "titulo": cancion.titulo,
+                "usuario_nick": cancion.usuario.nick if cancion.usuario else "N/A",
+                "puntuacion_ia": cancion.puntuacion_ia
+            }
         }
         dead = []
         for connection in list(self.active_connections):
             try:
                 await connection.send_text(json.dumps(payload))
             except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
+                try: await connection.close()
+                except Exception: pass
                 dead.append(connection)
         for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+            if d in self.active_connections: self.active_connections.remove(d)
 
 manager = ConnectionManager()

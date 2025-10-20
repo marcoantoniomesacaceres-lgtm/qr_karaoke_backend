@@ -288,6 +288,7 @@
         function createSongItemHTML(song, isMyList) {
             const statusClass = `status-${song.estado}`;
             const canDelete = isMyList && song.estado === 'pendiente';
+            const scoreInfo = isMyList && song.estado === 'cantada' && song.puntuacion_ia ? `<div class="song-score">Puntaje: <strong>${song.puntuacion_ia}</strong></div>` : '';
             const deleteButton = `<button class="delete-song-btn" data-song-id="${song.id}" style="background-color: #dc3545;">Eliminar</button>`;
 
             return `
@@ -300,6 +301,7 @@
                         </div>
                     </div>
                     <div>
+                        ${scoreInfo}
                         ${isMyList ? `<span class="song-status ${statusClass}">${song.estado}</span>` : ''}
                         ${canDelete ? deleteButton : ''}
                     </div>
@@ -363,6 +365,8 @@
                     showNotification(data.payload.mensaje);
                   } else if (data.type === 'product_update') {
                       fetchProducts(); // Recargamos el catálogo de productos
+                  } else if (data.type === 'song_finished') {
+                      fetchMyList(); // Recargamos la lista para ver el puntaje
                   }
                 } else {
                     // Si no tiene 'type', asumimos que es la actualización de la cola.

@@ -214,20 +214,41 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
 def marcar_cancion_actual_como_cantada(db: Session):
     """
     Busca la canción que se está reproduciendo, la marca como 'cantada' y le da puntos al usuario.
+    Simula una puntuación de IA.
     """
+    import os
+    import ia_scorer # Importamos nuestro nuevo módulo de IA
+
     # 1. Buscar la canción que está actualmente en estado 'reproduciendo'
     cancion_actual = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     
     if not cancion_actual:
         return None  # No hay ninguna canción reproduciéndose
+    
+    # --- INICIO DE LA INTEGRACIÓN CON IA ---
+    # 2. Calcular el puntaje usando el módulo de IA.
+    #    Asumimos que el audio del usuario se sube a una carpeta temporal con el ID de la canción.
+    #    Este es un paso que el frontend deberá implementar en el futuro.
+    user_audio_path = os.path.join(ia_scorer.TEMP_DIR, f"user_recording_{cancion_actual.id}.wav")
+    
+    if os.path.exists(user_audio_path):
+        puntuacion = ia_scorer.calculate_score(cancion_actual.youtube_id, user_audio_path)
+        # Opcional: eliminar el audio del usuario después de procesarlo
+        # os.remove(user_audio_path)
+    else:
+        # Si no se subió audio, la puntuación es 0.
+        puntuacion = 0
+    # --- FIN DE LA INTEGRACIÓN CON IA ---
+    
+    cancion_actual.puntuacion_ia = puntuacion
 
-    # 2. Actualizar el estado de la canción a 'cantada'
+    # 3. Actualizar el estado de la canción a 'cantada'
     cancion_actual.estado = "cantada"
     cancion_actual.finished_at = datetime.datetime.utcnow()
 
-    # 3. Dar puntos al usuario por cantar
+    # 4. Dar puntos al usuario por cantar (puntos base + puntaje de IA)
     if cancion_actual.usuario:
-        cancion_actual.usuario.puntos += 10  # Otorgamos 10 puntos por canción
+        cancion_actual.usuario.puntos += (10 + puntuacion) # 10 puntos base + el puntaje de la IA
 
     db.commit()
     db.refresh(cancion_actual)

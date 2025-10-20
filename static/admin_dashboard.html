@@ -258,6 +258,14 @@
                     <p class="summary-value" id="summary-users">0</p>
                 </div>
             </div>
+            <!-- Última canción cantada -->
+            <div class="card" style="margin-top:20px;" id="last-sung-card">
+                <h3>Última Canción Cantada</h3>
+                <div id="last-sung-info">
+                    <p>Aún no se ha cantado ninguna canción.</p>
+                </div>
+            </div>
+
             <!-- Últimos pedidos -->
             <div class="card" style="margin-top:20px;" id="recent-orders-card">
                 <h3>Últimos Pedidos</h3>
@@ -620,6 +628,17 @@
                                         const child = listEl2.querySelector(`li[data-consumo-id="${deletedId}"]`);
                                         if (child) child.remove();
                                     }
+                                }
+                                break;
+                            case 'song_finished':
+                                const songInfo = data.payload;
+                                const lastSungContainer = document.getElementById('last-sung-info');
+                                if (lastSungContainer) {
+                                    lastSungContainer.innerHTML = `
+                                        <p style="font-size: 1.2em;"><strong>${songInfo.titulo}</strong></p>
+                                        <p>Cantada por: <strong>${songInfo.usuario_nick}</strong></p>
+                                        <p style="font-size: 1.5em; color: var(--secondary-color);">Puntaje: <strong>${songInfo.puntuacion_ia}</strong></p>
+                                    `;
                                 }
                                 break;
                             case 'notification':

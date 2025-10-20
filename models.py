@@ -41,6 +41,7 @@ class Cancion(Base):
     estado = Column(String, default="pendiente")  # pendiente, aprobado, reproduciendo, cantada, rechazada
     started_at = Column(DateTime, nullable=True)  # Hora en que empieza a sonar
     orden_manual = Column(Integer, nullable=True)  # Posición manual establecida por el admin
+    puntuacion_ia = Column(Integer, nullable=True) # Nuevo campo para el puntaje de la IA
     created_at = Column(DateTime, default=datetime.datetime.utcnow)  # Hora en que se añade
     finished_at = Column(DateTime, nullable=True) # Hora en que se termina de cantar
     
