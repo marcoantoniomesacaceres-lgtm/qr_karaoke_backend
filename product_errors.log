@@ -1,0 +1,42 @@
+--- Product creation exception ---
+Traceback (most recent call last):
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\productos.py", line 30, in create_product
+    new_product = crud.create_producto(db=db, producto=producto)
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\crud.py", line 136, in create_producto
+    db_producto = models.Producto(**producto_data)
+  File "<string>", line 4, in __init__
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 571, in _initialize_instance
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 569, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2179, in _declarative_constructor
+    raise TypeError(
+        "%r is an invalid keyword argument for %s" % (k, cls_.__name__)
+    )
+TypeError: 'imagen_url' is an invalid keyword argument for Producto
+
+--- Product creation exception ---
+Traceback (most recent call last):
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\productos.py", line 30, in create_product
+    new_product = crud.create_producto(db=db, producto=producto)
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\crud.py", line 136, in create_producto
+    db_producto = models.Producto(**producto_data)
+  File "<string>", line 4, in __init__
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 571, in _initialize_instance
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 569, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\MARCO_MESA\Documents\qr_karaoke_backend\.venv\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2179, in _declarative_constructor
+    raise TypeError(
+        "%r is an invalid keyword argument for %s" % (k, cls_.__name__)
+    )
+TypeError: 'imagen_url' is an invalid keyword argument for Producto
+

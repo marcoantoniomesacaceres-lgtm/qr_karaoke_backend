@@ -225,6 +225,27 @@
             border-color: var(--primary-color);
             color: var(--primary-color);
         }
+
+        /* Estilos para las reacciones con emoticonos */
+        .reaction-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Para que no interfiera con los clics */
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .reaction-emoji {
+            position: absolute;
+            bottom: -50px; /* Empieza fuera de la pantalla */
+            font-size: 3rem;
+            animation: float-up 5s ease-out forwards;
+        }
+        @keyframes float-up {
+            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -286,6 +307,19 @@
                         <button class="form-btn" id="reset-night-btn">Reiniciar Noche (Borrar Todo)</button>
                     </div>
                 </div>
+            </div>
+            <!-- NUEVA SECCIÓN DE REACCIONES -->
+            <div class="card" style="margin-top: 30px;">
+                <h3>Enviar Reacción</h3>
+                <div id="reaction-buttons" style="display: flex; gap: 15px; font-size: 1.5em; cursor: pointer;">
+                    <span title="¡Genial!">😊</span>
+                    <span title="¡Me gusta!">👍</span>
+                    <span title="¡Fuego!">🔥</span>
+                    <span title="¡Increíble!">🤩</span>
+                    <span title="¡Buena voz!">🎤</span>
+                    <span title="¡Salud!">🍻</span>
+                </div>
+                <p class="item-meta">Haz clic en un emoticono para enviarlo a todos.</p>
             </div>
         </div>
 
@@ -395,6 +429,9 @@
 
     <!-- Input oculto para la subida de archivos -->
     <input type="file" id="product-image-upload" accept="image/png, image/jpeg, image/webp" style="display: none;">
+
+    <!-- Contenedor para mostrar las reacciones flotantes -->
+    <div id="reaction-container" class="reaction-container"></div>
 
 
     <div id="notification"></div>
@@ -659,6 +696,21 @@
                                 // Si el mensaje no tiene un 'type' conocido, podría ser la actualización de la cola.
                                 loadQueuePage();
                                 // unknown type: ignore
+                                break;
+                            case 'reaction':
+                                const reactionPayload = data.payload;
+                                if (reactionPayload && reactionPayload.reaction) {
+                                    const emoji = document.createElement('div');
+                                    emoji.className = 'reaction-emoji';
+                                    emoji.textContent = reactionPayload.reaction;
+                                    
+                                    // Posición horizontal aleatoria y animación
+                                    emoji.style.left = `${Math.random() * 90 + 5}%`;
+                                    emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 100}px`);
+                                    
+                                    document.getElementById('reaction-container').appendChild(emoji);
+                                    setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
+                                }
                                 break;
                         }
                     } catch (err) {
@@ -1026,6 +1078,23 @@
             }
         }
 
+        // --- NUEVA FUNCIÓN PARA ENVIAR REACCIONES ---
+        async function handleSendReaction(event) {
+            const emojiSpan = event.target.closest('#reaction-buttons span');
+            if (!emojiSpan) return;
+
+            const reaction = emojiSpan.textContent;
+            const payload = {
+                reaction: reaction,
+                sender: "Admin" // El admin siempre envía como "Admin"
+            };
+            try {
+                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            } catch (error) {
+                console.error("Error enviando reacción:", error);
+            }
+        }
+
         function handleLogout() {
             sessionStorage.removeItem('adminApiKey');
             window.location.href = '/admin';
@@ -1052,6 +1121,7 @@
             // Dashboard Page
             document.getElementById('broadcast-btn').addEventListener('click', handleBroadcast);
             document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
+            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
 
             // Queue Page
             document.getElementById('admin-search-form').addEventListener('submit', handleAdminSearch);

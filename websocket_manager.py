@@ -170,6 +170,30 @@ class ConnectionManager:
                     pass
         return len(dead)
 
+    async def broadcast_reaction(self, reaction_payload: dict):
+        """
+        Envía una reacción (emoticono) a todos los clientes.
+        El payload debe ser un diccionario con 'reaction' y 'sender'.
+        """
+        payload = {
+            "type": "reaction",
+            "payload": reaction_payload
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                self.active_connections.remove(d)
+        return len(dead)
+
     async def broadcast_song_finished(self, cancion: models.Cancion):
         """
         Envía un evento indicando que una canción ha terminado y su puntuación.

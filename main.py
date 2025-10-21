@@ -12,8 +12,8 @@ load_dotenv()
 print("YOUTUBE_API_KEY cargada:", os.getenv("YOUTUBE_API_KEY"))
 
 from database import engine
-import models, crud
-import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
+import models, crud, broadcast
+import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager, broadcast
 
 # --- Configuración de Logging a un archivo ---
 # Esto crea un logger que guarda todo en 'karaoke_debug.log'
@@ -91,6 +91,7 @@ app.include_router(consumos.router, prefix="/api/v1/consumos", tags=["Consumos"]
 app.include_router(usuarios.router, prefix="/api/v1/usuarios", tags=["Usuarios"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administración"])
 app.include_router(productos.router, prefix="/api/v1/productos", tags=["Productos"])
+app.include_router(broadcast.router, prefix="/api/v1/broadcast", tags=["Broadcast"])
 
 # Monta la carpeta 'static' (sirve archivos estáticos en /static)
 app.mount("/static", StaticFiles(directory="static"), name="static")

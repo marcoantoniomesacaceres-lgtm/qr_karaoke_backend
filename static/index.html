@@ -400,7 +400,7 @@
             errorMessage.textContent = '';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/mesas/${state.tableQrCode}/conectar`, {
+                const response = await fetch(`${API_BASE_URL}/mesas/${encodeURIComponent(state.tableQrCode)}/conectar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nick: nick }),

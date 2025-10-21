@@ -5,7 +5,7 @@ import subprocess
 from typing import List, Tuple
 
 # --- Importaciones de las nuevas librerías ---
-from basic_pitch.inference import predict, predict_and_save
+from basic_pitch.inference import predict # predict_and_save fue eliminado en versiones recientes
 from basic_pitch import ICASSP_2022_MODEL_PATH
 import yt_dlp
 
@@ -78,10 +78,14 @@ def _separate_vocals_with_demucs(audio_path: str, output_dir: str) -> str | None
         ]
         subprocess.run(command, check=True, capture_output=True, text=True)
 
-        # Demucs crea una subcarpeta con el nombre del modelo, ej: 'htdemucs'
-        # y dentro el archivo de audio con el nombre original.
-        vocals_path = os.path.join(output_dir, "htdemucs", os.path.basename(audio_path).replace(".mp3", ".wav"))
-        return vocals_path
+        # Demucs crea una subcarpeta con el nombre del modelo, ej: 'htdemucs'.
+        # Dentro de esta, crea otra subcarpeta con el nombre base del archivo de entrada,
+        # y ahí guarda los stems (ej: vocals.wav).
+        # El archivo de audio original sin extensión es la base para el nombre del archivo de salida.
+        base_name = os.path.splitext(os.path.basename(audio_path))[0]
+        # La ruta esperada para las vocales es dentro de la carpeta del modelo.
+        expected_vocals_path = os.path.join(output_dir, "htdemucs", base_name, "vocals.wav")
+        return expected_vocals_path if os.path.exists(expected_vocals_path) else None
     except subprocess.CalledProcessError as e:
         logger.error(f"Error ejecutando Demucs: {e.stderr}")
         return None
@@ -107,6 +111,7 @@ def _get_original_vocals_pitch(youtube_id: str) -> List[Tuple[float, float, int]
         # Separar la voz del instrumental usando Demucs
         vocals_path = _separate_vocals_with_demucs(audio_path, PROCESSED_DIR)
         
+
         if not os.path.exists(vocals_path):
             logger.error(f"Demucs no generó el archivo de vocales para {youtube_id}")
             return []
