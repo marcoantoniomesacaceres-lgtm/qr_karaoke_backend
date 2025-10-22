@@ -12,8 +12,8 @@ load_dotenv()
 print("YOUTUBE_API_KEY cargada:", os.getenv("YOUTUBE_API_KEY"))
 
 from database import engine
-import models, crud, broadcast
-import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager, broadcast
+import models, crud, schemas, broadcast
+import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 
 # --- Configuración de Logging a un archivo ---
 # Esto crea un logger que guarda todo en 'karaoke_debug.log'
@@ -48,6 +48,27 @@ def setup_initial_data():
 
 setup_initial_data()
 app = FastAPI(title="Karaoke 'La Rana que Canta'")
+
+@app.on_event("startup")
+def startup_event():
+    """
+    Asegura que la mesa base 'karaoke-mesa-01' exista al iniciar la aplicación.
+    Ahora crea las primeras 30 mesas si no existen.
+    """
+    db = SessionLocal()
+
+    mesas_a_crear = []
+    for i in range(1, 31): # Crear 30 mesas
+        mesas_a_crear.append({"nombre": f"Mesa {i}", "qr_code": f"karaoke-mesa-{i:02d}"})
+
+    for mesa_data in mesas_a_crear:
+        mesa_existente = crud.get_mesa_by_qr(db, mesa_data["qr_code"])
+        if not mesa_existente:
+            crud.create_mesa(db=db, mesa=schemas.MesaCreate(**mesa_data))
+            print(f"✅ Mesa creada: {mesa_data['nombre']} ({mesa_data['qr_code']})")
+        else:
+            print(f"ℹ️ Mesa ya existente: {mesa_data['nombre']} ({mesa_data['qr_code']})")
+    db.close()
 
 @app.get("/", response_class=FileResponse, include_in_schema=False)
 async def read_index():

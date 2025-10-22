@@ -55,6 +55,7 @@ class Producto(Base):
     categoria = Column(String, index=True, default="General")
     valor = Column(Numeric(10, 2))
     stock = Column(Integer, default=0)
+    imagen_url = Column(String, nullable=True) # Columna para la URL de la imagen
     is_active = Column(Boolean, default=True)
 
     consumos = relationship("Consumo", back_populates="producto")

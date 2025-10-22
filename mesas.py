@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from typing import List
 import crud, schemas
-import crud, schemas, config
 from database import SessionLocal
 from security import api_key_auth
 
@@ -15,6 +14,14 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@router.get("/", response_model=List[schemas.Mesa], summary="Listar todas las mesas", dependencies=[Depends(api_key_auth)])
+def get_mesas(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve una lista de todas las mesas creadas en el sistema.
+    """
+    mesas = crud.get_mesas(db)
+    return mesas
 
 @router.post("/", response_model=schemas.Mesa, status_code=201, summary="Crear una nueva mesa", dependencies=[Depends(api_key_auth)])
 def create_mesa_endpoint(
@@ -41,12 +48,13 @@ def conectar_usuario_a_mesa(
     if not db_mesa:
         raise HTTPException(status_code=404, detail=f"El código QR '{qr_code}' no corresponde a ninguna mesa válida.")
     
-    if crud.is_nick_banned(db, nick=usuario.nick):
-        raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
-
-    # Verificamos si el nick ya está en uso por otro usuario
+    # Verificamos si el nick ya está en uso o baneado en una sola consulta
     db_usuario_existente = crud.get_usuario_by_nick(db, nick=usuario.nick)
     if db_usuario_existente:
         raise HTTPException(status_code=409, detail=f"El apodo '{usuario.nick}' ya está en uso. Por favor, elige otro.")
+
+    # Si el nick no está en uso, verificamos si está en la lista de baneados
+    if crud.is_nick_banned(db, nick=usuario.nick):
+        raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
 
     return crud.create_usuario_en_mesa(db=db, usuario=usuario, mesa_id=db_mesa.id)

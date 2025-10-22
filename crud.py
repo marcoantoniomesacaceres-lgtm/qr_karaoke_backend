@@ -10,6 +10,10 @@ def get_mesa_by_qr(db: Session, qr_code: str):
     """Busca una mesa por su código QR."""
     return db.query(models.Mesa).filter(models.Mesa.qr_code == qr_code).first()
 
+def get_mesas(db: Session):
+    """Devuelve todas las mesas de la base de datos."""
+    return db.query(models.Mesa).order_by(models.Mesa.id).all()
+
 def create_mesa(db: Session, mesa: schemas.MesaCreate):
     """Crea una nueva mesa en la base de datos."""
     db_mesa = models.Mesa(nombre=mesa.nombre, qr_code=mesa.qr_code)
