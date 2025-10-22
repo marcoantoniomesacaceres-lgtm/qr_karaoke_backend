@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from decimal import Decimal
+import os
+from fastapi.responses import JSONResponse
 
 import crud, schemas, models
 from database import SessionLocal
@@ -133,3 +135,57 @@ async def activate_product(producto_id: int, db: Session = Depends(get_db), api_
     crud.create_admin_log_entry(db, action="ACTIVATE_PRODUCT", details=f"Producto '{db_producto.nombre}' (ID: {producto_id}) reactivado.")
     await websocket_manager.manager.broadcast_product_update() # Notificamos
     return db_producto
+
+# 📂 Directorio donde se guardarán las imágenes
+UPLOAD_DIR = "static/images/productos"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post("/{producto_id}/upload-image", summary="Subir imagen de un producto")
+async def upload_product_image(
+    producto_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_auth)
+):
+    """
+    **[Admin]** Permite subir una imagen para un producto específico.
+    Guarda la imagen en /static/images/productos/ y actualiza su ruta en la base de datos.
+    """
+    db_producto = crud.get_producto_by_id(db, producto_id)
+    if not db_producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado.")
+
+    # Validar tipo de archivo
+    extension = os.path.splitext(file.filename)[1].lower()
+    if extension not in [".jpg", ".jpeg", ".png", ".gif", ".webp"]:
+        raise HTTPException(status_code=400, detail="Formato de imagen no permitido.")
+
+    # Guardar archivo con un nombre único
+    filename = f"producto_{producto_id}{extension}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    # Actualizar el producto con la URL de la imagen
+    image_url = f"/static/images/productos/{filename}"
+    db_producto.imagen_url = image_url
+    db.commit()
+    db.refresh(db_producto)
+
+    crud.create_admin_log_entry(db, action="UPLOAD_PRODUCT_IMAGE", details=f"Imagen subida para producto ID {producto_id}")
+
+    # Notificar a los clientes conectados (si usas WebSocket)
+    try:
+        import asyncio
+        asyncio.create_task(websocket_manager.manager.broadcast_product_update())
+    except Exception:
+        pass
+
+    return JSONResponse(
+        content={
+            "message": "Imagen subida correctamente.",
+            "image_url": image_url
+        },
+        status_code=200
+    )
