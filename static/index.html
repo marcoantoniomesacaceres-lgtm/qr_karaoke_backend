@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -130,6 +131,49 @@
             background-color: #66bb6a;
             color: #121212;
         }
+
+        /* Estilos para las reacciones con emoticonos */
+        .reaction-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Para que no interfiera con los clics */
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .reaction-emoji {
+            position: absolute;
+            bottom: -50px; /* Empieza fuera de la pantalla */
+            font-size: 3rem;
+            animation: float-up 5s ease-out forwards;
+        }
+        @keyframes float-up {
+            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
+        }
+    </style>
+    <style>
+        /* Estilos para las reacciones con emoticonos */
+        .reaction-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Para que no interfiera con los clics */
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .reaction-emoji {
+            position: absolute;
+            bottom: -50px; /* Empieza fuera de la pantalla */
+            font-size: 3rem;
+            animation: float-up 5s ease-out forwards;
+        }
+        @keyframes float-up {
+            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -154,6 +198,17 @@
             <p>Puntos: <strong id="user-points">0</strong></p>
             <p>Nivel: <strong id="user-level" class="profile-level"></strong></p>
             <button id="logout-button" style="width: auto; font-size: 0.8em; padding: 8px 12px;">Salir</button>
+            <!-- NUEVA SECCIÓN DE REACCIONES -->
+            <div style="margin-top: 20px;">
+                <h4>Enviar Reacción</h4>
+                <div id="reaction-buttons" style="display: flex; justify-content: center; gap: 15px; font-size: 1.5em; cursor: pointer;">
+                    <span title="¡Genial!">😊</span>
+                    <span title="¡Me gusta!">👍</span>
+                    <span title="¡Fuego!">🔥</span>
+                    <span title="¡Increíble!">🤩</span>
+                    <span title="¡Buena voz!">🎤</span>
+                </div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -217,6 +272,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Contenedor para mostrar las reacciones flotantes -->
+    <div id="reaction-container" class="reaction-container"></div>
 
     <script>
         // --- CONFIGURACIÓN ---
@@ -367,6 +425,21 @@
                       fetchProducts(); // Recargamos el catálogo de productos
                   } else if (data.type === 'song_finished') {
                       fetchMyList(); // Recargamos la lista para ver el puntaje
+                  }
+                  else if (data.type === 'reaction') {
+                      const reactionPayload = data.payload;
+                      if (reactionPayload && reactionPayload.reaction) {
+                          const emoji = document.createElement('div');
+                          emoji.className = 'reaction-emoji';
+                          emoji.textContent = reactionPayload.reaction;
+                          
+                          // Posición horizontal aleatoria y animación
+                          emoji.style.left = `${Math.random() * 90 + 5}%`;
+                          emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 100}px`);
+                          
+                          document.getElementById('reaction-container').appendChild(emoji);
+                          setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
+                      }
                   }
                 } else {
                     // Si no tiene 'type', asumimos que es la actualización de la cola.
@@ -659,6 +732,22 @@
             }
         }
 
+        async function handleSendReaction(event) {
+            const emojiSpan = event.target.closest('#reaction-buttons span');
+            if (!emojiSpan) return;
+
+            const reaction = emojiSpan.textContent;
+            const payload = {
+                reaction: reaction,
+                sender: state.user ? state.user.nick : "Anónimo" // Usar el nick del usuario si está logueado
+            };
+            try {
+                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            } catch (error) {
+                console.error("Error enviando reacción:", error);
+            }
+        }
+
         function getQueryParam(param) {
             return new URLSearchParams(window.location.search).get(param);
         }
@@ -687,6 +776,7 @@
             document.getElementById('search-form').addEventListener('submit', handleSearch);
             document.getElementById('search-results').addEventListener('click', handleAddSong);
             catalogList.addEventListener('click', handleOrderProduct);
+            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
             cancelOrderBtn.addEventListener('click', () => {
                 orderModal.style.display = 'none';

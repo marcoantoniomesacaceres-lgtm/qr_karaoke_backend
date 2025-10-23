@@ -1,6 +1,6 @@
 import os
 import datetime
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, Body
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -153,8 +153,8 @@ def ver_cola_de_canciones(db: Session = Depends(get_db)):
     cola_data = crud.get_cola_completa(db)
     return schemas.ColaView(now_playing=cola_data["now_playing"], upcoming=cola_data["upcoming"])
 
-@router.post("/siguiente", 
-             response_model=schemas.PlayNextResponse, 
+@router.post("/siguiente",
+             response_model=schemas.PlayNextResponse,
              responses={204: {"description": "No hay más canciones en la cola."}},
              summary="Avanzar la cola y obtener la siguiente canción para reproducir")
 async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
@@ -176,14 +176,17 @@ async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api
 
     # Notificamos a todos los clientes (móviles, dashboard) que la cola ha cambiado
     await websocket_manager.manager.broadcast_queue_update()
-    
+
     if not nueva_cancion_reproduciendo:
         # Si no hay más canciones, podemos devolver la última que se cantó o un mensaje.
         return Response(status_code=204)
 
+    # Notificamos al reproductor para que reproduzca la canción
+    await websocket_manager.manager.broadcast_play_song(nueva_cancion_reproduciendo.youtube_id)
+
     # Construimos la URL de YouTube en modo embed para pantalla completa
     youtube_url = f"https://www.youtube.com/embed/{nueva_cancion_reproduciendo.youtube_id}?autoplay=1&fs=1"
-    
+
     return schemas.PlayNextResponse(
         play_url=youtube_url,
         cancion=nueva_cancion_reproduciendo

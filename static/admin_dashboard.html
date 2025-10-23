@@ -453,7 +453,12 @@
         }
 
         async function apiFetch(endpoint, options = {}) {
-            options.headers = { ...options.headers, 'X-API-Key': apiKey, 'Content-Type': 'application/json' };
+            const headers = { ...options.headers, 'X-API-Key': apiKey };
+            // Solo añadir Content-Type si hay un body. Evita errores 422 en POSTs vacíos.
+            if (options.body) {
+                headers['Content-Type'] = 'application/json';
+            }
+            options.headers = headers;
             const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
             if (response.status === 204) return null; // No content
             const data = await response.json();
@@ -1025,26 +1030,11 @@
 
             try {
                 if (action === 'play') {
-                    // CORRECCIÓN: Se realiza una llamada fetch directa sin usar apiFetch para evitar
-                    // que se añada el header 'Content-Type: application/json', que causa el error 422.
-                    const response = await fetch(`${API_BASE_URL}/canciones/siguiente`, {
-                        method: 'POST',
-                        headers: { 'X-API-Key': apiKey }
-                    });
-
-                    if (response.status === 204) {
-                        showNotification('No hay más canciones en la cola.', 'info');
-                        return; // Salimos de la función
-                    } else if (response.ok) {
-                        const data = await response.json();
+                    const data = await apiFetch('/canciones/siguiente', { method: 'POST' });
+                    if (data) { // apiFetch devuelve null en 204
                         showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
                         window.open(data.play_url, '_blank');
-                    } else {
-                        // Si la respuesta no es OK, lanzamos un error para que lo capture el catch.
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
                     }
-
                 } else if (action === 'remove') {
                     if (confirm('¿Seguro que quieres eliminar esta canción de la cola?')) {
                         // Usamos el endpoint de rechazar que la saca de la cola

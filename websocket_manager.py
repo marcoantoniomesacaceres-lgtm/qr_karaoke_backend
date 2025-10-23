@@ -217,4 +217,25 @@ class ConnectionManager:
         for d in dead:
             if d in self.active_connections: self.active_connections.remove(d)
 
+    async def broadcast_play_song(self, youtube_id: str):
+        """
+        Envía un evento para reproducir una canción en el reproductor.
+        """
+        payload = {
+            "type": "play_song",
+            "payload": {
+                "youtube_id": youtube_id
+            }
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try: await connection.close()
+                except Exception: pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections: self.active_connections.remove(d)
+
 manager = ConnectionManager()
