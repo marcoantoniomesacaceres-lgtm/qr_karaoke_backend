@@ -4,9 +4,9 @@ import json
 import subprocess
 from typing import List, Tuple
 
-# --- Importaciones de las nuevas librerías ---
-from basic_pitch.inference import predict # predict_and_save fue eliminado en versiones recientes
-from basic_pitch import ICASSP_2022_MODEL_PATH
+# --- Importaciones de librerías ---
+import librosa
+import numpy as np
 import yt_dlp
 
 logger = logging.getLogger(__name__)
@@ -16,13 +16,6 @@ TEMP_DIR = "temp_audio"
 PROCESSED_DIR = "processed_songs"
 os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DIR, exist_ok=True)
-
-# --- Inicialización de modelos (se hace una sola vez) ---
-try:
-    basic_pitch_model = ICASSP_2022_MODEL_PATH
-except Exception as e:
-    logger.error(f"Error inicializando modelo de Basic Pitch. Error: {e}")
-    basic_pitch_model = None
 
 def _download_audio_from_youtube(youtube_id: str) -> str | None:
     """Descarga el audio de un video de YouTube y lo guarda como MP3."""
@@ -50,16 +43,33 @@ def _download_audio_from_youtube(youtube_id: str) -> str | None:
         logger.error(f"Error al descargar audio de YouTube para {youtube_id}: {e}")
         return None
 
-def _get_pitch_sequence(audio_path: str) -> List[Tuple[float, float, int]]:
-    """Analiza un archivo de audio con Basic Pitch y devuelve una secuencia de notas."""
-    if not basic_pitch_model or not os.path.exists(audio_path):
+def _hz_a_nota(frecuencia: float) -> str | None:
+    """Convierte una frecuencia en Hz a una nota musical (ej: A4)."""
+    if not frecuencia or frecuencia <= 0:
+        return None
+    try:
+        return librosa.hz_to_note(frecuencia)
+    except Exception:
+        return None
+
+def _get_pitch_sequence(audio_path: str) -> List[str]:
+    """
+    Analiza un archivo de audio con Librosa (usando YIN) y devuelve una secuencia de notas.
+    """
+    if not os.path.exists(audio_path):
         return []
     try:
-        model_output, _, notes = predict(audio_path, basic_pitch_model, False, False, False, False)
-        # Devolvemos una tupla simple: (inicio, fin, nota_midi)
-        return [(note['start_time_s'], note['end_time_s'], note['pitch_midi']) for note in notes]
+        y, sr = librosa.load(audio_path, sr=None, mono=True)
+        
+        # Obtener el pitch a lo largo del tiempo
+        pitches, _, _ = librosa.pyin(y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'))
+        
+        # Convertir frecuencias a notas y filtrar Nones
+        notes = [_hz_a_nota(p) for p in pitches if not np.isnan(p)]
+        return [n for n in notes if n is not None]
+
     except Exception as e:
-        logger.error(f"Error al procesar el audio '{audio_path}' con Basic Pitch: {e}")
+        logger.error(f"Error al procesar el audio '{audio_path}' con Librosa: {e}")
         return []
 
 def _separate_vocals_with_demucs(audio_path: str, output_dir: str) -> str | None:
@@ -93,7 +103,7 @@ def _separate_vocals_with_demucs(audio_path: str, output_dir: str) -> str | None
         logger.error(f"Error inesperado al separar vocales con Demucs: {e}")
         return None
 
-def _get_original_vocals_pitch(youtube_id: str) -> List[Tuple[float, float, int]]:
+def _get_original_vocals_pitch(youtube_id: str) -> List[str]:
     """
     Procesa la canción original: la descarga, separa la voz y analiza su pitch.
     Usa un sistema de caché para no reprocesar la misma canción.
@@ -142,19 +152,23 @@ def calculate_score(original_youtube_id: str, user_audio_path: str) -> int:
         return 0
 
     # --- Lógica de Comparación Simple ---
-    # Comparamos cuántas notas del usuario coinciden en tiempo y tono con las originales.
+    # Usamos una comparación de secuencias simple.
+    # Esto es una aproximación y puede mejorarse con algoritmos más avanzados
+    # como Dynamic Time Warping (DTW), pero es un buen punto de partida.
     matches = 0
-    for user_note in user_pitch:
-        user_start, user_end, user_midi = user_note
-        for original_note in original_pitch:
-            orig_start, orig_end, orig_midi = original_note
-            # Si la nota del usuario está dentro del rango de una nota original y el tono es el mismo
-            if user_midi == orig_midi and max(user_start, orig_start) < min(user_end, orig_end):
-                matches += 1
-                break # Contamos solo una coincidencia por nota de usuario
+    len_user = len(user_pitch)
+    len_orig = len(original_pitch)
+    
+    # Recorremos la secuencia más corta para evitar IndexError
+    min_len = min(len_user, len_orig)
+    for i in range(min_len):
+        # Comparamos la nota (ej: 'C#4')
+        if user_pitch[i] == original_pitch[i]:
+            matches += 1
 
-    # Calculamos el puntaje como un porcentaje de notas coincidentes sobre el total de notas del usuario
-    score = (matches / len(user_pitch)) * 100 if len(user_pitch) > 0 else 0
+    # El puntaje es el porcentaje de coincidencias sobre la longitud de la secuencia original.
+    # Esto penaliza si el usuario canta mucho menos de lo que debería.
+    score = (matches / len_orig) * 100 if len_orig > 0 else 0
     
     logger.info(f"Puntaje calculado: {int(score)}")
     return int(score)
