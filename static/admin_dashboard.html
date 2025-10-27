@@ -240,6 +240,14 @@
         .reaction-emoji {
             position: absolute;
             bottom: -50px; /* Empieza fuera de la pantalla */
+            font-size: 2.5rem;
+            animation: float-up 5s ease-out forwards;
+        }
+        .qr-code-container canvas {
+            font-size: 2.5rem;
+            animation: float-up 5s ease-out forwards;
+        }
+        .qr-code-container canvas {
             font-size: 3rem;
             animation: float-up 5s ease-out forwards;
         }
@@ -256,6 +264,7 @@
             <li><a href="#queue" class="nav-link">Cola de Canciones</a></li>
             <li><a href="#inventory" class="nav-link">Inventario</a></li>
             <li><a href="#reports" class="nav-link">Reportes</a></li>
+            <li><a href="#tables" class="nav-link">Mesas y QR</a></li>
             <li><a href="#settings" class="nav-link">Configuración</a></li>
         </ul>
         <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
@@ -436,6 +445,7 @@
 
     <div id="notification"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <script>
         const API_BASE_URL = '/api/v1';
         const notification = document.getElementById('notification');
@@ -570,6 +580,42 @@
             });
         }
 
+        function renderTablesForQr(tables, listElement) {
+            listElement.innerHTML = '';
+            if (tables.length === 0) {
+                listElement.innerHTML = '<p>No hay mesas creadas en el sistema.</p>';
+                return;
+            }
+            tables.forEach(table => {
+                const li = document.createElement('li');
+                li.className = 'item';
+                li.style.cursor = 'pointer';
+                li.dataset.qrCode = table.qr_code;
+                li.dataset.tableName = table.nombre;
+                li.innerHTML = `<div class="item-details"><div class="item-title">${table.nombre}</div></div>`;
+                listElement.appendChild(li);
+            });
+        }
+
+        function showQrForTable(tableName, tableQrCode) {
+            const container = document.getElementById('qr-code-container');
+            container.innerHTML = ''; // Limpiar contenido anterior
+
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            // La URL debe apuntar a la IP del servidor, no a localhost, para que los clientes puedan acceder.
+            // Usamos window.location.origin para obtener http://<host>:<port>
+            const url = `${window.location.origin}/?table=${tableQrCode}`;
+
+            QRCode.toCanvas(canvas, url, { width: 256, errorCorrectionLevel: 'H' }, function (error) {
+                if (error) {
+                    console.error(error);
+                    container.innerHTML = '<p style="color: var(--error-color);">Error al generar el QR.</p>';
+                }
+            });
+            container.innerHTML += `<p style="margin-top: 15px; font-weight: bold;">${tableName}</p><p class="item-meta">${url}</p>`;
+        }
         // --- PAGE LOADERS ---
 
         async function loadDashboardPage() {
@@ -778,6 +824,26 @@
             }
         }
 
+        async function loadTablesPage() {
+            const tablesList = document.getElementById('tables-list');
+            try {
+                const tables = await apiFetch('/mesas/');
+                renderTablesForQr(tables, tablesList);
+            } catch (error) {
+                tablesList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
+            }
+        }
+
+        async function loadTablesPage() {
+            const tablesList = document.getElementById('tables-list');
+            try {
+                const tables = await apiFetch('/mesas/');
+                renderTablesForQr(tables, tablesList);
+            } catch (error) {
+                tablesList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
+            }
+        }
+
 
         // --- EVENT HANDLERS ---
 
@@ -799,6 +865,7 @@
                 case 'queue': loadQueuePage(); break;
                 case 'inventory': loadInventoryPage(); break;
                 case 'settings': loadSettingsPage(); break;
+                case 'tables': loadTablesPage(); break;
             }
         }
 
@@ -1078,6 +1145,16 @@
             }
         }
 
+        function handleTableClickForQr(event) {
+            const tableItem = event.target.closest('li[data-qr-code]');
+            if (!tableItem) return;
+
+            const qrCode = tableItem.dataset.qrCode;
+            const tableName = tableItem.dataset.tableName;
+
+            showQrForTable(tableName, qrCode);
+        }
+
         // --- NUEVA FUNCIÓN PARA ENVIAR REACCIONES ---
         async function handleSendReaction(event) {
             const emojiSpan = event.target.closest('#reaction-buttons span');
@@ -1148,6 +1225,9 @@
             document.getElementById('set-closing-time-btn').addEventListener('click', handleSetClosingTime);
             document.getElementById('create-api-key-btn').addEventListener('click', handleCreateApiKey);
             document.getElementById('api-keys-list').addEventListener('click', handleDeleteApiKey);
+
+            // Tables & QR Page
+            document.getElementById('tables-list').addEventListener('click', handleTableClickForQr);
 
             // Poll recent orders every 5 seconds while admin is on dashboard
             setInterval(() => {
