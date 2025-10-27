@@ -1255,3 +1255,14 @@ def get_cola_completa(db: Session):
         upcoming = [song for song in upcoming if song.id != now_playing.id]
 
     return {"now_playing": now_playing, "upcoming": upcoming}
+
+def set_mesa_active_status(db: Session, mesa_id: int, is_active: bool) -> Optional[models.Mesa]:
+    """
+    Actualiza el estado de activación de una mesa.
+    """
+    db_mesa = db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
+    if db_mesa:
+        db_mesa.is_active = is_active
+        db.commit()
+        db.refresh(db_mesa)
+    return db_mesa

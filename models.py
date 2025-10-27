@@ -10,6 +10,7 @@ class Mesa(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True)
     qr_code = Column(String, unique=True, index=True)
+    is_active = Column(Boolean, default=True) # Nuevo campo para activar/desactivar
 
     # Relación: Una mesa puede tener muchos usuarios
     usuarios = relationship("Usuario", back_populates="mesa")

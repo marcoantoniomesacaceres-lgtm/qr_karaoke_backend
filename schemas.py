@@ -47,6 +47,7 @@ class MesaCreate(MesaBase):
 
 class Mesa(MesaBase):
     id: int
+    is_active: bool # Añadir este campo
     usuarios: List[Usuario] = [] # Al pedir una mesa, mostrará la lista de sus usuarios
 
     model_config = ConfigDict(from_attributes=True) # Permite que Pydantic lea datos de objetos SQLAlchemy

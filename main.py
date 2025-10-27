@@ -47,7 +47,7 @@ def setup_initial_data():
         db.close()
 
 setup_initial_data()
-app = FastAPI(title="Karaoke 'La Rana que Canta'")
+app = FastAPI(title="Karaoke 'LA CANTA QUE RANA'")
 
 @app.on_event("startup")
 def startup_event():

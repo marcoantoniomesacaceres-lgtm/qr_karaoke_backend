@@ -47,6 +47,9 @@ def conectar_usuario_a_mesa(
     db_mesa = crud.get_mesa_by_qr(db, qr_code=qr_code)
     if not db_mesa:
         raise HTTPException(status_code=404, detail=f"El código QR '{qr_code}' no corresponde a ninguna mesa válida.")
+
+    if not db_mesa.is_active:
+        raise HTTPException(status_code=403, detail="Esta mesa se encuentra desactivada temporalmente. Por favor, contacta al personal.")
     
     # Verificamos si el nick ya está en uso o baneado en una sola consulta
     db_usuario_existente = crud.get_usuario_by_nick(db, nick=usuario.nick)

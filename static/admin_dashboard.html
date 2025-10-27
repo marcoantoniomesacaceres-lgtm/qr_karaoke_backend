@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - La Rana que Canta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Panel de Administración - LA CANTA QUE RANA</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -123,6 +122,7 @@
         .btn-activate { background-color: var(--success-color); }
         .btn-deactivate { background-color: var(--error-color); }
         .btn-approve { background-color: var(--success-color); }
+        .btn-generate-qr { background-color: var(--success-color) !important; } /* Verde */
         .btn-reject { background-color: var(--error-color); }
         .btn-action { background-color: var(--info-color); }
         
@@ -243,22 +243,30 @@
             font-size: 2.5rem;
             animation: float-up 5s ease-out forwards;
         }
-        .qr-code-container canvas {
-            font-size: 2.5rem;
-            animation: float-up 5s ease-out forwards;
-        }
-        .qr-code-container canvas {
-            font-size: 3rem;
-            animation: float-up 5s ease-out forwards;
-        }
         @keyframes float-up {
             to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
         }
+
+        /* Estilos específicos para el Código QR */
+        #qr-code-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        #qr-code-container canvas {
+            border: 5px solid white;
+            border-radius: 8px;
+            background-color: white;
+        }
+        /* Sobrescribir colores de botones de activar/desactivar mesa */
+        #qr-code-container .btn-deactivate { background-color: var(--error-color); } /* Rojo */
+        #qr-code-container .btn-activate { background-color: var(--info-color); } /* Azul */
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h1>La Rana que Canta</h1>
+        <h1>LA CANTA QUE RANA</h1>
         <ul class="nav-menu">
             <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
             <li><a href="#queue" class="nav-link">Cola de Canciones</a></li>
@@ -389,6 +397,23 @@
                         </div>
                         <button type="submit" class="form-btn">Crear Producto</button>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA: MESAS Y QR -->
+        <div id="tables" class="page">
+            <h2>Mesas y Códigos QR</h2>
+            <div class="grid" style="grid-template-columns: 350px 1fr;">
+                <div class="card">
+                    <h3>Mesas del Sistema</h3>
+                    <ul id="tables-list" class="item-list" style="max-height: 70vh; overflow-y: auto;">
+                        <p>Cargando mesas...</p>
+                    </ul>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <h3>Código QR de la Mesa</h3>
+                    <div id="qr-code-container" style="margin-top: 20px;"><p>Selecciona una mesa de la lista para ver su código QR.</p></div>
                 </div>
             </div>
         </div>
@@ -580,10 +605,11 @@
             });
         }
 
-        function renderTablesForQr(tables, listElement) {
+        function renderTablesForQr(tables, listElement, activeQrCode) {
             listElement.innerHTML = '';
             if (tables.length === 0) {
                 listElement.innerHTML = '<p>No hay mesas creadas en el sistema.</p>';
+                document.getElementById('qr-code-container').innerHTML = '<p>No hay mesas para mostrar.</p>';
                 return;
             }
             tables.forEach(table => {
@@ -592,29 +618,64 @@
                 li.style.cursor = 'pointer';
                 li.dataset.qrCode = table.qr_code;
                 li.dataset.tableName = table.nombre;
-                li.innerHTML = `<div class="item-details"><div class="item-title">${table.nombre}</div></div>`;
+                li.dataset.tableId = table.id;
+                li.dataset.isActive = table.is_active;
+                if (table.qr_code === activeQrCode) {
+                    li.classList.add('active'); // Marcar como activo si es el seleccionado
+                }
+                li.innerHTML = `<div class="item-details"><div class="item-title">${table.nombre}</div><div class="item-meta">${table.is_active ? 'Activa' : 'Inactiva'}</div></div>`;
                 listElement.appendChild(li);
             });
         }
 
-        function showQrForTable(tableName, tableQrCode) {
-            const container = document.getElementById('qr-code-container');
-            container.innerHTML = ''; // Limpiar contenido anterior
-
-            const canvas = document.createElement('canvas');
-            container.appendChild(canvas);
-
+        function generateQrForTable(canvas, tableName, tableQrCode) {
             // La URL debe apuntar a la IP del servidor, no a localhost, para que los clientes puedan acceder.
             // Usamos window.location.origin para obtener http://<host>:<port>
             const url = `${window.location.origin}/?table=${tableQrCode}`;
-
+        
             QRCode.toCanvas(canvas, url, { width: 256, errorCorrectionLevel: 'H' }, function (error) {
                 if (error) {
                     console.error(error);
-                    container.innerHTML = '<p style="color: var(--error-color);">Error al generar el QR.</p>';
+                    canvas.parentElement.innerHTML = '<p style="color: var(--error-color);">Error al generar el QR.</p>';
+                } else {
+                    // Una vez generado el QR, añadimos la URL debajo sin borrar el canvas
+                    const urlElement = document.createElement('p');
+                    urlElement.className = 'item-meta';
+                    urlElement.style.wordBreak = 'break-all';
+                    urlElement.textContent = url;
+                    canvas.parentElement.appendChild(urlElement);
                 }
             });
-            container.innerHTML += `<p style="margin-top: 15px; font-weight: bold;">${tableName}</p><p class="item-meta">${url}</p>`;
+        }
+
+        function showTableDetails(tableId, tableName, tableQrCode, isActive) {
+            const container = document.getElementById('qr-code-container');
+            container.innerHTML = ''; // Limpiar contenido anterior
+
+            // Mostrar el nombre de la mesa
+            const nameElement = document.createElement('p');
+            nameElement.style.fontWeight = 'bold';
+            nameElement.textContent = tableName;
+            container.appendChild(nameElement);
+
+            // Crear el botón para generar el QR
+            const generateQrBtn = document.createElement('button');
+            generateQrBtn.className = 'form-btn btn-generate-qr';
+            generateQrBtn.textContent = 'Generar Código QR';
+            generateQrBtn.onclick = () => {
+                generateQrBtn.style.display = 'none'; // Ocultar el botón
+                const canvas = document.createElement('canvas');
+                container.appendChild(canvas);
+                generateQrForTable(canvas, tableName, tableQrCode);
+            };
+            container.appendChild(generateQrBtn);
+
+            // Crear el botón para activar/desactivar
+            const actionButton = document.createElement('button');
+            actionButton.className = `form-btn ${isActive ? 'btn-deactivate' : 'btn-activate'}`;
+            actionButton.textContent = isActive ? 'Desactivar Mesa' : 'Activar Mesa';
+            actionButton.dataset.tableId = tableId;
+            container.appendChild(actionButton);
         }
         // --- PAGE LOADERS ---
 
@@ -826,21 +887,14 @@
 
         async function loadTablesPage() {
             const tablesList = document.getElementById('tables-list');
+            const activeItem = tablesList.querySelector('li.active');
+            const activeQrCode = activeItem ? activeItem.dataset.qrCode : null;
             try {
-                const tables = await apiFetch('/mesas/');
-                renderTablesForQr(tables, tablesList);
+                const tables = await apiFetch('/mesas/'); // Asume que este endpoint devuelve todas las mesas
+                renderTablesForQr(tables, tablesList, activeQrCode);
             } catch (error) {
-                tablesList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
-            }
-        }
-
-        async function loadTablesPage() {
-            const tablesList = document.getElementById('tables-list');
-            try {
-                const tables = await apiFetch('/mesas/');
-                renderTablesForQr(tables, tablesList);
-            } catch (error) {
-                tablesList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
+                showNotification(`Error al cargar mesas: ${error.message}`, 'error');
+                tablesList.innerHTML = `<p style="color: var(--error-color);">Error cargando mesas: ${error.message}</p>`;
             }
         }
 
@@ -1146,13 +1200,42 @@
         }
 
         function handleTableClickForQr(event) {
-            const tableItem = event.target.closest('li[data-qr-code]');
+            const tableItem = event.target.closest('li.item');
             if (!tableItem) return;
 
+            // Quitar la clase activa de otros elementos
+            document.querySelectorAll('#tables-list li.item').forEach(li => li.classList.remove('active'));
+            // Añadir clase activa al seleccionado
+            tableItem.classList.add('active');
+
+            const tableId = tableItem.dataset.tableId;
             const qrCode = tableItem.dataset.qrCode;
             const tableName = tableItem.dataset.tableName;
+            const isActive = tableItem.dataset.isActive === 'true';
 
-            showQrForTable(tableName, qrCode);
+            showTableDetails(tableId, tableName, qrCode, isActive);
+        }
+
+        async function handleToggleTableActive(event) {
+            const button = event.target.closest('.btn-activate, .btn-deactivate');
+            if (!button) return;
+            const tableId = button.dataset.tableId;
+            const isActivating = button.classList.contains('btn-activate');
+            const endpoint = isActivating ? `/admin/tables/${tableId}/activate` : `/admin/tables/${tableId}/deactivate`;
+            
+            try {
+                // 1. Realizar la acción
+                const updatedTable = await apiFetch(endpoint, { method: 'POST' });
+                showNotification(`Mesa '${updatedTable.nombre}' ${isActivating ? 'activada' : 'desactivada'}.`, 'info');
+
+                // 2. Recargar la lista de la izquierda para reflejar el estado
+                await loadTablesPage();
+
+                // 3. Volver a renderizar la vista de detalles con la información actualizada
+                showTableDetails(updatedTable.id, updatedTable.nombre, updatedTable.qr_code, updatedTable.is_active);
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
         }
 
         // --- NUEVA FUNCIÓN PARA ENVIAR REACCIONES ---
@@ -1228,6 +1311,7 @@
 
             // Tables & QR Page
             document.getElementById('tables-list').addEventListener('click', handleTableClickForQr);
+            document.getElementById('qr-code-container').addEventListener('click', handleToggleTableActive);
 
             // Poll recent orders every 5 seconds while admin is on dashboard
             setInterval(() => {

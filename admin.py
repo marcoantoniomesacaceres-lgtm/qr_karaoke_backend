@@ -154,6 +154,28 @@ def delete_table(mesa_id: int, db: Session = Depends(get_db)):
     crud.create_admin_log_entry(db, action="DELETE_TABLE", details=f"Mesa '{db_mesa.nombre}' (ID: {mesa_id}) eliminada.")
     return Response(status_code=204)
 
+@router.post("/tables/{mesa_id}/activate", response_model=schemas.Mesa, summary="Activar una mesa")
+def activate_table(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Activa una mesa, permitiendo que los usuarios se conecten a ella.
+    """
+    db_mesa = crud.set_mesa_active_status(db, mesa_id=mesa_id, is_active=True)
+    if not db_mesa:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+    crud.create_admin_log_entry(db, action="ACTIVATE_TABLE", details=f"Mesa '{db_mesa.nombre}' (ID: {mesa_id}) activada.")
+    return db_mesa
+
+@router.post("/tables/{mesa_id}/deactivate", response_model=schemas.Mesa, summary="Desactivar una mesa")
+def deactivate_table(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Desactiva una mesa, impidiendo que nuevos usuarios se conecten.
+    """
+    db_mesa = crud.set_mesa_active_status(db, mesa_id=mesa_id, is_active=False)
+    if not db_mesa:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+    crud.create_admin_log_entry(db, action="DEACTIVATE_TABLE", details=f"Mesa '{db_mesa.nombre}' (ID: {mesa_id}) desactivada.")
+    return db_mesa
+
 @router.get("/reports/income-by-category", response_model=List[schemas.ReporteIngresosPorCategoria], summary="Obtener los ingresos por categoría de producto")
 def get_income_by_category_report(db: Session = Depends(get_db)):
     """
