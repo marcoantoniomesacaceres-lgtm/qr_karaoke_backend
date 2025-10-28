@@ -64,8 +64,9 @@ class MesaInfo(BaseModel):
 
 # --- Schema para la vista del Administrador ---
 class CancionAdminView(Cancion):
-    # Hereda de Cancion y añade la información del usuario
-    usuario: UsuarioBase
+    # Hereda de Cancion y añade la información del usuario, incluyendo su mesa
+    usuario: 'UsuarioPublico' # Usamos una referencia forward para evitar importación circular
+
     model_config = ConfigDict(from_attributes=True)
 
 # --- Schemas para Producto ---
@@ -155,6 +156,8 @@ class UsuarioPublico(UsuarioBase):
     is_silenced: bool = False # Mantener este campo para consistencia, aunque Usuario ya lo tiene
     model_config = ConfigDict(from_attributes=True)
 
+# Actualizamos la referencia forward para CancionAdminView con el método de Pydantic v2
+CancionAdminView.model_rebuild()
 
 class ProductoMasConsumido(BaseModel):
     nombre: str
@@ -292,8 +295,8 @@ class ConsumoHistorial(BaseModel):
     usuario: UsuarioBase # Asegúrate de que UsuarioBase esté definido antes de ConsumoHistorial
     model_config = ConfigDict(from_attributes=True)
 
-# Actualizamos la referencia forward para HistorialUsuario
-HistorialUsuario.update_forward_refs()
+# Actualizamos la referencia forward para HistorialUsuario con el método de Pydantic v2
+HistorialUsuario.model_rebuild()
 
 class ReporteGastoUsuarioPorCategoria(BaseModel):
     nick: str

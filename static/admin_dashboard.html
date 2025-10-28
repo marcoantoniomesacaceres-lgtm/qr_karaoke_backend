@@ -561,15 +561,19 @@
             songs.forEach(song => {
                 const li = document.createElement('li');
                 li.className = 'item';
-                const userNick = song.usuario ? song.usuario.nick : 'N/A';
-                const isDJ = userNick === 'DJ';
+                
+                // Determinar qué mostrar: el nombre de la mesa o el nick del usuario (ej: DJ)
+                let addedBy = 'Desconocido';
+                if (song.usuario) {
+                    addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
+                }
 
                 li.innerHTML = `
                     <div class="item-details song-item-info">
                         <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
                         <div>
                             <div class="item-title">${song.titulo}</div>
-                            <div class="item-meta">Por: ${userNick}</div>
+                            <div class="item-meta">Por: <strong>${addedBy}</strong></div>
                         </div>
                     </div>
                     <div class="item-actions">
