@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor - La Rana que Canta</title>
+    <title>LA CANTA QUE RANA - Reproductor</title>
     <style>
         body, html {
             margin: 0;
@@ -18,6 +18,30 @@
             align-items: center;
             font-family: sans-serif;
         }
+        #background-carousel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-size: cover;
+            background-position: center center;
+            background-color: #000;
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0; /* Empieza oculto */
+        }
+        #background-carousel.active {
+            opacity: 1;
+        }
+        /* Viñeta oscura para mejorar la legibilidad del texto */
+        #background-carousel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
         #player-container {
             position: absolute;
             top: 0;
@@ -27,22 +51,33 @@
             z-index: 10;
         }
         #standby-screen {
-            z-index: 5;
+            position: relative;
+            z-index: 3; /* Por encima del carrusel */
             text-align: center;
+            display: flex; /* Usamos flex para centrar */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.5s ease-in-out;
         }
         h1 {
             font-size: 3em;
             color: #4CAF50;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
         }
         p {
             font-size: 1.5em;
+            text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
         }
     </style>
 </head>
 <body>
+    <div id="background-carousel"></div>
 
     <div id="standby-screen">
-        <h1>La Rana que Canta</h1>
+        <h1>LA CANTA QUE RANA</h1>
         <p>Esperando la siguiente canción...</p>
     </div>
 
@@ -53,6 +88,35 @@
         const WEBSOCKET_URL = `ws://${window.location.host}/ws/cola`;
         let player;
         let standbyScreen = document.getElementById('standby-screen');
+        let backgroundCarousel = document.getElementById('background-carousel');
+
+        // --- Lógica del Carrusel de Fondos ---
+        const backgroundImages = [
+            "https://images.unsplash.com/photo-1594125674939-57342526a84c?q=80&w=2070&auto=format&fit=crop", // Mujer cantando con micrófono
+            "https://images.unsplash.com/photo-1524230659264-3a2d413b5359?q=80&w=2070&auto=format&fit=crop", // Grupo de amigos cantando
+            "https://images.unsplash.com/photo-1567446452963-234832486438?q=80&w=1932&auto=format&fit=crop", // Mujer cantando en un bar
+            "https://images.unsplash.com/photo-1516280440614-37939fb98186?q=80&w=2070&auto=format&fit=crop"  // Hombre cantando con pasión
+        ];
+        let currentImageIndex = 0;
+        let carouselInterval;
+
+        function changeBackgroundImage() {
+            backgroundCarousel.style.backgroundImage = `url('${backgroundImages[currentImageIndex]}')`;
+            currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+        }
+
+        function startCarousel() {
+            if (carouselInterval) return; // Ya está corriendo
+            backgroundCarousel.classList.add('active');
+            changeBackgroundImage(); // Carga la primera imagen inmediatamente
+            carouselInterval = setInterval(changeBackgroundImage, 7000); // Cambia cada 7 segundos
+        }
+
+        function stopCarousel() {
+            clearInterval(carouselInterval);
+            carouselInterval = null;
+            backgroundCarousel.classList.remove('active');
+        }
 
         // 1. Carga de la API de YouTube
         function onYouTubeIframeAPIReady() {
@@ -62,7 +126,8 @@
 
         // 2. Función para crear y controlar el reproductor
         function playVideo(videoId) {
-            standbyScreen.style.display = 'none'; // Ocultar pantalla de espera
+            standbyScreen.style.opacity = '0'; // Ocultar con transición
+            stopCarousel(); // Detener el carrusel de fondos
 
             if (player) {
                 player.loadVideoById(videoId);
@@ -95,7 +160,8 @@
             // Cuando el video termina (estado 0)
             if (event.data == YT.PlayerState.ENDED) {
                 console.log("Video terminado. Mostrando pantalla de espera.");
-                standbyScreen.style.display = 'flex';
+                standbyScreen.style.opacity = '1'; // Mostrar con transición
+                startCarousel(); // Iniciar el carrusel de nuevo
                 if (player) {
                     player.destroy();
                     player = null;
@@ -123,7 +189,10 @@
         }
 
         // Iniciar la conexión al cargar la página
-        window.addEventListener('DOMContentLoaded', connectWebSocket);
+        window.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+            startCarousel(); // Inicia el carrusel al cargar la página
+        });
     </script>
 </body>
 </html>

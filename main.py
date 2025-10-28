@@ -94,6 +94,11 @@ async def read_player():
     """Sirve la página del reproductor de video."""
     return FileResponse(os.path.join("static", "player.html"))
 
+@app.get("/player", response_class=FileResponse, include_in_schema=False)
+async def read_player():
+    """Sirve la página del reproductor de video."""
+    return FileResponse(os.path.join("static", "player.html"))
+
 # Endpoint de WebSocket para la cola en tiempo real
 @app.websocket("/ws/cola")
 async def websocket_endpoint(websocket: WebSocket):

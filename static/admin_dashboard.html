@@ -1167,7 +1167,6 @@
                     } else if (response.ok) {
                         const data = await response.json();
                         showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
-                        window.open(data.play_url, '_blank'); // Mantenemos la lógica de abrir en una nueva pestaña
                     }
 
                 } else if (action === 'remove') {
