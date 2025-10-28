@@ -615,7 +615,15 @@
                 listElement.innerHTML = '<p>No hay mesas creadas en el sistema.</p>';
                 document.getElementById('qr-code-container').innerHTML = '<p>No hay mesas para mostrar.</p>';
                 return;
-            }
+        }
+
+        // Añadir estáticamente la opción para el reproductor
+        listElement.innerHTML += `
+            <li class="item" style="cursor: pointer;" data-qr-code="/player" data-table-name="Pantalla del Reproductor" data-table-id="player" data-is-active="true">
+                <div class="item-details"><div class="item-title">📺 Pantalla del Reproductor</div><div class="item-meta">Acceso principal</div></div>
+            </li>
+        `;
+
             tables.forEach(table => {
                 const li = document.createElement('li');
                 li.className = 'item';
@@ -632,10 +640,16 @@
             });
         }
 
-        function generateQrForTable(canvas, tableName, tableQrCode) {
-            // La URL debe apuntar a la IP del servidor, no a localhost, para que los clientes puedan acceder.
-            // Usamos window.location.origin para obtener http://<host>:<port>
-            const url = `${window.location.origin}/?table=${tableQrCode}`;
+        function generateQrForTable(canvas, tableQrCode) {
+            let url;
+            // Si el qrCode es una ruta (empieza con '/'), la usamos directamente.
+            // Si no, asumimos que es un código de mesa.
+            if (tableQrCode.startsWith('/')) {
+                url = `${window.location.origin}${tableQrCode}`;
+            } else {
+                // URL para las mesas
+                url = `${window.location.origin}/?table=${tableQrCode}`;
+            }
         
             QRCode.toCanvas(canvas, url, { width: 256, errorCorrectionLevel: 'H' }, function (error) {
                 if (error) {
@@ -670,16 +684,19 @@
                 generateQrBtn.style.display = 'none'; // Ocultar el botón
                 const canvas = document.createElement('canvas');
                 container.appendChild(canvas);
-                generateQrForTable(canvas, tableName, tableQrCode);
+                generateQrForTable(canvas, tableQrCode);
             };
             container.appendChild(generateQrBtn);
 
-            // Crear el botón para activar/desactivar
-            const actionButton = document.createElement('button');
-            actionButton.className = `form-btn ${isActive ? 'btn-deactivate' : 'btn-activate'}`;
-            actionButton.textContent = isActive ? 'Desactivar Mesa' : 'Activar Mesa';
-            actionButton.dataset.tableId = tableId;
-            container.appendChild(actionButton);
+            // Solo mostrar botones de activar/desactivar si NO es el reproductor
+            if (tableId !== 'player') {
+                // Crear el botón para activar/desactivar
+                const actionButton = document.createElement('button');
+                actionButton.className = `form-btn ${isActive ? 'btn-deactivate' : 'btn-activate'}`;
+                actionButton.textContent = isActive ? 'Desactivar Mesa' : 'Activar Mesa';
+                actionButton.dataset.tableId = tableId;
+                container.appendChild(actionButton);
+            }
         }
         // --- PAGE LOADERS ---
 
