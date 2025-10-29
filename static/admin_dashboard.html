@@ -246,7 +246,14 @@
         @keyframes float-up {
             to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
         }
-
+        
+        /* Animación para la alerta de nuevo pedido */
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
+            20%, 40%, 60%, 80% { transform: rotate(10deg); }
+        }
+        .shaking {
         /* Estilos específicos para el Código QR */
         #qr-code-container {
             display: flex;
@@ -469,6 +476,9 @@
 
     <!-- Contenedor para mostrar las reacciones flotantes -->
     <div id="reaction-container" class="reaction-container"></div>
+
+    <!-- Elemento de audio para la notificación de pedido -->
+    <audio id="order-notification-sound" src="/static/notification.mp3" preload="auto" loop></audio>
 
 
     <div id="notification"></div>
@@ -738,11 +748,14 @@
                     // Mensaje: "Mesa X pidió 2x Papas de todito" + botón cancelar
                     li.innerHTML = `
                         <div class="item-details">
-                            <div class="item-title">${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}</div>
+                            <div class="item-title">
+                                ${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}
+                                <span class="order-alert-icon">🔔</span>
+                            </div>
                             <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
                         </div>
                         <div class="item-actions">
-                            <button class="btn-deactivate cancel-order-btn" data-id="${it.id}" title="Cancelar pedido">Cancelar</button>
+                            <button class="btn-action dispatch-order-btn" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
                         </div>
                     `;
                     listEl.appendChild(li);
@@ -770,21 +783,30 @@
                         if (!data || !data.type) return;
                         switch (data.type) {
                             case 'consumo_created':
+                                // Activar la alerta visual y sonora
+                                document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+
                                 // Prepend nuevo pedido a la lista
                                 const it = data.payload;
                                 const listEl = document.getElementById('recent-orders-list');
                                 if (listEl) {
+                                    // Si el primer elemento es el mensaje de "no hay pedidos", lo quitamos
+                                    if (listEl.querySelector('p')) listEl.innerHTML = '';
+
                                     const li = document.createElement('li');
-                                    li.className = 'item';
+                                    li.className = 'item new-order'; // Añadimos la clase 'new-order'
                                     const mesaText = it.mesa_nombre ? `Mesa ${it.mesa_nombre}` : '';
                                     li.dataset.consumoId = it.id;
                                     li.innerHTML = `
                                         <div class="item-details">
-                                            <div class="item-title">${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}</div>
+                                            <div class="item-title">
+                                                ${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}
+                                                <span class="order-alert-icon">🔔</span>
+                                            </div>
                                             <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
                                         </div>
                                         <div class="item-actions">
-                                            <button class="btn-deactivate cancel-order-btn" data-id="${it.id}" title="Cancelar pedido">Cancelar</button>
+                                            <button class="btn-action dispatch-order-btn" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
                                         </div>
                                     `;
                                     // Prepend and keep max 10 items
@@ -1354,17 +1376,29 @@
 
             // Delegated handler for cancel buttons on recent orders
             document.getElementById('recent-orders-list').addEventListener('click', async (e) => {
-                const btn = e.target.closest('.cancel-order-btn');
+                const btn = e.target.closest('.dispatch-order-btn');
                 if (!btn) return;
                 const consumoId = btn.dataset.id;
                 if (!consumoId) return;
-                if (!confirm('¿Confirmas cancelar este pedido?')) return;
+                if (!confirm('¿Confirmas que este pedido ha sido despachado?')) return;
+                
+                const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
+                if (li) {
+                    li.classList.remove('new-order'); // Quitamos la clase de alerta
+                }
+
                 try {
                     await apiFetch(`/admin/consumos/${consumoId}`, { method: 'DELETE' });
-                    // Remove from DOM
-                    const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
-                    if (li) li.remove();
-                    showNotification('Pedido cancelado.', 'info');
+                    if (li) li.remove(); // Eliminar el elemento de la lista
+                    
+                    // Comprobar si quedan más pedidos nuevos. Si no, detener el sonido.
+                    const remainingNewOrders = document.querySelectorAll('#recent-orders-list .new-order').length;
+                    if (remainingNewOrders === 0) {
+                        const sound = document.getElementById('order-notification-sound');
+                        sound.pause();
+                        sound.currentTime = 0; // Reiniciar el audio
+                    }
+                    showNotification('Pedido despachado.', 'info');
                 } catch (err) {
                     showNotification(`Error cancelando pedido: ${err.message}`, 'error');
                 }
