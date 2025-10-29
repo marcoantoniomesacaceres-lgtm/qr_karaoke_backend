@@ -28,9 +28,14 @@ def extract_video_id_from_url(url: str) -> str | None:
         return match.group(1)
     return None
 
-async def _perform_youtube_search(q: str) -> List[Dict[str, Any]]:
+
+async def _perform_youtube_search(q: str, karaoke_mode: bool = False) -> List[Dict[str, Any]]:
     """Función interna que contiene la lógica de búsqueda en YouTube."""
-    logger.info(f"Iniciando búsqueda interna en YouTube con el término: '{q}'")
+    logger.info(f"Iniciando búsqueda interna en YouTube con el término: '{q}' (Karaoke Mode: {karaoke_mode})")
+    
+    if karaoke_mode:
+        q = f"{q} karaoke"
+
     YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
     if not YOUTUBE_API_KEY or YOUTUBE_API_KEY == "TU_API_KEY_DE_YOUTUBE_AQUI":

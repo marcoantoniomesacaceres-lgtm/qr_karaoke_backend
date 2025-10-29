@@ -10,10 +10,10 @@ router = APIRouter()
 
 # Lista de palabras inapropiadas (puedes expandirla según sea necesario)
 PROFANITY_LIST = {
-    "puta", "pendejo", "cabron", "mierda", "coño", "gilipollas", "joder",
+    "puta","pene","vagina","parolo", "pendejo", "cabron", "mierda", "coño", "gilipollas", "joder",
     "culero", "chinga", "verga", "mamón", "idiota", "imbecil", "zorra",
     "maricon", "puto", "fuck", "shit", "asshole", "bitch", "cunt", "dick",
-    "bastard", "whore", "faggot", "nigga", "nigger", "caca", "culo", "teta"
+    "bastard", "whore", "faggot", "perra", "cagon", "caca", "culo", "lameculo","teta"
 }
 
 def contains_profanity(text: str) -> bool:

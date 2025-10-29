@@ -357,7 +357,10 @@
                             <label for="admin-search-input">Buscar en YouTube</label>
                             <input type="text" id="admin-search-input" placeholder="Artista, canción o URL de YouTube" required>
                         </div>
-                        <button type="submit" class="form-btn" id="admin-search-btn">Buscar</button>
+                        <div class="form-group" style="display: flex; gap: 10px;">
+                            <button type="button" class="form-btn" id="admin-search-songs-btn" style="background-color: var(--primary-color); flex: 1;">Canciones</button>
+                            <button type="button" class="form-btn" id="admin-search-karaoke-btn" style="background-color: var(--success-color); flex: 1;">Karaoke</button>
+                        </div>
                     </form>
                     <div id="admin-search-results" class="item-list" style="margin-top: 20px; max-height: 400px; overflow-y: auto;">
                         <!-- Resultados de búsqueda del admin -->
@@ -1089,20 +1092,28 @@
 
         // --- NUEVAS FUNCIONES PARA GESTIÓN DE COLA DEL ADMIN ---
 
-        async function handleAdminSearch(event) {
+        async function handleAdminSearch(event, karaokeMode = false) {
             event.preventDefault();
             const query = document.getElementById('admin-search-input').value.trim();
             if (!query) return;
 
-            const searchButton = document.getElementById('admin-search-btn');
-            searchButton.disabled = true;
-            searchButton.textContent = 'Buscando...';
+            const songsButton = document.getElementById('admin-search-songs-btn');
+            const karaokeButton = document.getElementById('admin-search-karaoke-btn');
+            songsButton.disabled = true;
+            karaokeButton.disabled = true;
+            
+            // Cambiar texto del botón presionado
+            const clickedButton = karaokeMode ? karaokeButton : songsButton;
+            const originalText = clickedButton.textContent;
+            clickedButton.textContent = 'Buscando...';
 
             const resultsContainer = document.getElementById('admin-search-results');
             resultsContainer.innerHTML = '<p>Buscando...</p>';
 
             try {
-                const results = await apiFetch(`/youtube/search?q=${encodeURIComponent(query)}`);
+                const url = `/youtube/search?q=${encodeURIComponent(query)}${karaokeMode ? '&karaoke_mode=true' : ''}`;
+                const results = await apiFetch(url);
+
                 resultsContainer.innerHTML = '';
                 if (results.length > 0) {
                     results.forEach(song => {
@@ -1124,8 +1135,9 @@
             } catch (error) {
                 resultsContainer.innerHTML = `<p class="error-msg">Error: ${error.message}</p>`;
             } finally {
-                searchButton.disabled = false;
-                searchButton.textContent = 'Buscar';
+                songsButton.disabled = false;
+                karaokeButton.disabled = false;
+                clickedButton.textContent = originalText;
             }
         }
 
@@ -1304,7 +1316,8 @@
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
 
             // Queue Page
-            document.getElementById('admin-search-form').addEventListener('submit', handleAdminSearch);
+            document.getElementById('admin-search-songs-btn').addEventListener('click', (e) => handleAdminSearch(e, false));
+            document.getElementById('admin-search-karaoke-btn').addEventListener('click', (e) => handleAdminSearch(e, true));
             document.getElementById('admin-search-results').addEventListener('click', handleAdminAddSong);
             document.getElementById('approved-songs-list').addEventListener('click', handleQueueActions);
 
@@ -1358,6 +1371,7 @@
             });
         });
     </script>
+
 
 </body>
 </html>
