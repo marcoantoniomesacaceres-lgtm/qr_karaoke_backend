@@ -233,8 +233,11 @@
         <div id="tab-search" class="tab-content">
             <h2>Buscar Canción en YouTube</h2>
             <form id="search-form">
-                <input type="text" id="search-input" placeholder="Artista o título de la canción" required>
-                <button type="submit" id="search-button">Buscar</button>
+                <input type="text" id="search-input" placeholder="Artista, canción o URL de YouTube" required>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="button" id="search-songs-btn" class="form-btn" style="background-color: #4CAF50; flex: 1;">Canciones</button>
+                    <button type="button" id="search-karaoke-btn" class="form-btn" style="background-color: #bb86fc; flex: 1;">Karaoke</button>
+                </div>
             </form>
             <div id="search-results" class="song-list">
                 <!-- Los resultados de búsqueda se insertarán aquí -->
@@ -493,20 +496,28 @@
             }
         }
 
-        async function handleSearch(event) {
+        async function handleSearch(event, karaokeMode = false) {
             event.preventDefault();
             const query = document.getElementById('search-input').value.trim();
             if (!query) return;
 
-            const searchButton = document.getElementById('search-button');
-            searchButton.disabled = true;
-            searchButton.textContent = 'Buscando...';
+            const songsButton = document.getElementById('search-songs-btn');
+            const karaokeButton = document.getElementById('search-karaoke-btn');
+            songsButton.disabled = true;
+            karaokeButton.disabled = true;
+
+            // Cambiar texto del botón presionado
+            const clickedButton = karaokeMode ? karaokeButton : songsButton;
+            const originalText = clickedButton.textContent;
+            clickedButton.textContent = 'Buscando...';
 
             const resultsContainer = document.getElementById('search-results');
             resultsContainer.innerHTML = '<p>Buscando...</p>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/youtube/public-search?q=${encodeURIComponent(query)}`);
+                // Construimos la URL con el parámetro karaoke_mode si es necesario
+                const url = `${API_BASE_URL}/youtube/public-search?q=${encodeURIComponent(query)}${karaokeMode ? '&karaoke_mode=true' : ''}`;
+                const response = await fetch(url);
                 // Si la respuesta no es OK (ej: 403, 500), leemos el error y lo lanzamos
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -536,8 +547,9 @@
             } catch (error) {
                 resultsContainer.innerHTML = `<p class="error-msg">Error al buscar: ${error.message}</p>`;
             } finally {
-                searchButton.disabled = false;
-                searchButton.textContent = 'Buscar';
+                songsButton.disabled = false;
+                karaokeButton.disabled = false;
+                clickedButton.textContent = originalText;
             }
         }
 
@@ -772,7 +784,8 @@
             loginForm.addEventListener('submit', handleLogin);
             logoutButton.addEventListener('click', handleLogout);
             document.querySelector('.tabs').addEventListener('click', handleTabClick);
-            document.getElementById('search-form').addEventListener('submit', handleSearch);
+            document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
+            document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
             document.getElementById('search-results').addEventListener('click', handleAddSong);
             catalogList.addEventListener('click', handleOrderProduct);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);

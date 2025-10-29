@@ -203,13 +203,13 @@ async def search_youtube(q: str, api_key: str = Depends(api_key_auth, use_cache=
     return await _perform_youtube_search(q)
 
 @router.get("/public-search", summary="[Público] Buscar videos en YouTube para usuarios")
-async def public_search_youtube(q: str) -> List[Dict[str, Any]]:
+async def public_search_youtube(q: str, karaoke_mode: bool = False) -> List[Dict[str, Any]]:
     """
     Endpoint público para que los usuarios de las mesas busquen videos.
     No requiere API Key. Reutiliza la misma lógica de búsqueda que el endpoint de admin.
     """
-    logger.info(f"Búsqueda [Pública] en YouTube con el término: '{q}'")
-    return await _perform_youtube_search(q)
+    logger.info(f"Búsqueda [Pública] en YouTube con el término: '{q}' (Karaoke Mode: {karaoke_mode})")
+    return await _perform_youtube_search(q, karaoke_mode=karaoke_mode)
 
 
 if __name__ == "__main__":
