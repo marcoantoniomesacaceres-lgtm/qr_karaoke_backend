@@ -5,18 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LA CANTA QUE RANA - Reproductor</title>
     <style>
+        :root {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --primary-color: #4CAF50;
+            --surface-color: rgba(18, 18, 18, 0.85);
+        }
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
-            color: #fff;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         #background-carousel {
             position: fixed;
@@ -24,23 +30,22 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 0; /* Detrás de todo */
             background-size: cover;
             background-position: center center;
-            background-color: #000;
+            background-color: var(--bg-color);
             transition: opacity 1.5s ease-in-out;
-            opacity: 0; /* Empieza oculto */
+            opacity: 0;
         }
         #background-carousel.active {
             opacity: 1;
         }
-        /* Viñeta oscura para mejorar la legibilidad del texto */
         #background-carousel::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 2;
+            z-index: 1;
         }
         #player-container {
             position: absolute;
@@ -48,29 +53,116 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 10;
+            z-index: 2; /* Encima del carrusel */
         }
         #standby-screen {
             position: relative;
-            z-index: 3; /* Por encima del carrusel */
+            z-index: 5; /* Encima de todo cuando está activo */
             text-align: center;
-            display: flex; /* Usamos flex para centrar */
+            display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             width: 100%;
             height: 100%;
             transition: opacity 0.5s ease-in-out;
+            background-color: transparent; /* El fondo lo da el carrusel */
         }
         h1 {
-            font-size: 3em;
-            color: #4CAF50;
+            font-size: 4vw;
+            color: var(--primary-color);
             text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+            margin-top: 0;
         }
         p {
-            font-size: 1.5em;
+            font-size: 2vw;
             text-shadow: 1px 1px 6px rgba(0,0,0,0.7);
         }
+
+        /* --- Overlay informativo --- */
+        .info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20; /* Encima del reproductor */
+            display: flex;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+            padding: 20px 40px;
+            box-sizing: border-box;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .info-section {
+            flex: 1;
+            padding: 0 20px;
+        }
+        .info-section:first-child {
+            border-right: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .info-section h2 {
+            font-size: 2vw;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 4px #000;
+        }
+        .info-title {
+            font-size: 2.5vw;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info-artist {
+            font-size: 1.5vw;
+            color: #ccc;
+        }
+
+        /* --- Reacciones --- */
+        .reaction-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .reaction-emoji {
+            position: absolute;
+            bottom: -100px;
+            font-size: 5rem;
+            animation: float-up 6s ease-out forwards;
+            text-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+        }
+        @keyframes float-up {
+            to {
+                bottom: 100%;
+                transform: translateX(var(--tx, 0)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* --- Banner de Notificaciones Globales --- */
+        #notification-banner {
+            position: fixed;
+            top: -150px; /* Empieza fuera de la pantalla */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 1200px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 20px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            z-index: 9000;
+            font-size: 2.5vw;
+            font-weight: bold;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+            transition: top 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        #notification-banner.show { top: 0; }
     </style>
 </head>
 <body>
@@ -83,12 +175,36 @@
 
     <div id="player-container"></div>
 
+    <div class="info-overlay" id="info-overlay">
+        <div class="info-section">
+            <h2>Ahora Cantando</h2>
+            <div id="now-playing-info">
+                <div class="info-title">Esperando canción...</div>
+                <div class="info-artist"></div>
+            </div>
+        </div>
+        <div class="info-section">
+            <h2>Siguiente</h2>
+            <div id="upcoming-info">
+                <div class="info-title">No hay canciones en espera</div>
+                <div class="info-artist"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner para mensajes globales -->
+    <div id="notification-banner"></div>
+
+    <div id="reaction-container" class="reaction-container"></div>
+
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const WEBSOCKET_URL = `ws://${window.location.host}/ws/cola`;
         let player;
         let standbyScreen = document.getElementById('standby-screen');
         let backgroundCarousel = document.getElementById('background-carousel');
+        let infoOverlay = document.getElementById('info-overlay');
+        let notificationBanner = document.getElementById('notification-banner');
 
         // --- Lógica del Carrusel de Fondos ---
         const backgroundImages = [
@@ -107,12 +223,16 @@
 
         function startCarousel() {
             if (carouselInterval) return; // Ya está corriendo
+            standbyScreen.style.opacity = '1';
+            infoOverlay.style.opacity = '0';
             backgroundCarousel.classList.add('active');
             changeBackgroundImage(); // Carga la primera imagen inmediatamente
             carouselInterval = setInterval(changeBackgroundImage, 7000); // Cambia cada 7 segundos
         }
 
         function stopCarousel() {
+            standbyScreen.style.opacity = '0';
+            infoOverlay.style.opacity = '1';
             clearInterval(carouselInterval);
             carouselInterval = null;
             backgroundCarousel.classList.remove('active');
@@ -126,8 +246,7 @@
 
         // 2. Función para crear y controlar el reproductor
         function playVideo(videoId) {
-            standbyScreen.style.opacity = '0'; // Ocultar con transición
-            stopCarousel(); // Detener el carrusel de fondos
+            stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
 
             if (player) {
                 player.loadVideoById(videoId);
@@ -160,8 +279,7 @@
             // Cuando el video termina (estado 0)
             if (event.data == YT.PlayerState.ENDED) {
                 console.log("Video terminado. Mostrando pantalla de espera.");
-                standbyScreen.style.opacity = '1'; // Mostrar con transición
-                startCarousel(); // Iniciar el carrusel de nuevo
+                startCarousel(); // Muestra standby, oculta overlay e inicia carrusel
                 if (player) {
                     player.destroy();
                     player = null;
@@ -171,14 +289,42 @@
 
         // 3. Conexión WebSocket para recibir órdenes
         function connectWebSocket() {
-            const socket = new WebSocket(WEBSOCKET_URL);
+            let socket = new WebSocket(WEBSOCKET_URL);
 
             socket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                // Escuchamos un evento específico para el reproductor
+
                 if (data.type === 'play_song' && data.payload.youtube_id) {
                     console.log('Recibida orden de reproducir:', data.payload.youtube_id);
                     playVideo(data.payload.youtube_id);
+                }
+
+                // --- NUEVO: Escuchar y mostrar notificaciones globales ---
+                if (data.type === 'notification' && data.payload && data.payload.mensaje) {
+                    notificationBanner.textContent = data.payload.mensaje;
+                    notificationBanner.classList.add('show');
+
+                    // Ocultar el banner después de 10 segundos
+                    setTimeout(() => {
+                        notificationBanner.classList.remove('show');
+                    }, 10000);
+                }
+
+                // Escuchar y mostrar reacciones de emojis
+                if (data.type === 'reaction' && data.payload && data.payload.reaction) {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'reaction-emoji';
+                    emoji.textContent = data.payload.reaction;
+                    
+                    // Posición horizontal y movimiento lateral aleatorios
+                    emoji.style.left = `${Math.random() * 90 + 5}%`;
+                    emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 200}px`);
+                    
+                    document.getElementById('reaction-container').appendChild(emoji);
+                    setTimeout(() => emoji.remove(), 6000); // Limpiar el emoji del DOM después de la animación
+                } else {
+                    // Si no es un tipo específico, asumimos que es la actualización de la cola
+                    updateQueueUI(data);
                 }
             };
 
@@ -186,6 +332,38 @@
                 console.log('WebSocket desconectado. Reconectando en 3 segundos...');
                 setTimeout(connectWebSocket, 3000);
             };
+
+            socket.onerror = (error) => {
+                console.error("Error de WebSocket:", error);
+                socket.close();
+            };
+        }
+
+        function updateQueueUI(queueData) {
+            const nowPlayingInfo = document.getElementById('now-playing-info');
+            const upcomingInfo = document.getElementById('upcoming-info');
+
+            // Actualizar "Ahora Cantando"
+            if (queueData.now_playing) {
+                const song = queueData.now_playing;
+                const addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
+                nowPlayingInfo.innerHTML = `
+                    <div class="info-title">${song.titulo}</div>
+                    <div class="info-artist">Por: <strong>${addedBy}</strong></div>`;
+            } else {
+                nowPlayingInfo.innerHTML = `<div class="info-title">Esperando canción...</div><div class="info-artist"></div>`;
+            }
+
+            // Actualizar "Siguiente"
+            if (queueData.upcoming && queueData.upcoming.length > 0) {
+                const nextSong = queueData.upcoming[0];
+                const addedBy = nextSong.usuario.mesa ? nextSong.usuario.mesa.nombre : nextSong.usuario.nick;
+                upcomingInfo.innerHTML = `
+                    <div class="info-title">${nextSong.titulo}</div>
+                    <div class="info-artist">Por: <strong>${addedBy}</strong></div>`;
+            } else {
+                upcomingInfo.innerHTML = `<div class="info-title">No hay canciones en espera</div><div class="info-artist"></div>`;
+            }
         }
 
         // Iniciar la conexión al cargar la página
