@@ -310,3 +310,44 @@ class ReporteCancionMasPedida(BaseModel):
 class ReporteCategoriaMasVendida(BaseModel):
     categoria: str
     cantidad_total: int
+
+# --- Nuevos Schemas para Consumo por Mesa ---
+class ConsumoItemDetalle(BaseModel):
+    """Detalle de un producto consumido por una mesa."""
+    producto_nombre: str
+    cantidad: int
+    valor_total: Decimal
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class MesaConsumoResumen(BaseModel):
+    """Resumen del consumo de una mesa."""
+    mesa_id: int
+    mesa_nombre: str
+    total_consumido: Decimal
+    consumos: List[ConsumoItemDetalle]
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Nuevos Schemas para Pagos y Estado de Cuenta por Mesa ---
+class PagoBase(BaseModel):
+    monto: Decimal
+    metodo_pago: Optional[str] = "Efectivo"
+
+class PagoCreate(PagoBase):
+    mesa_id: int
+
+class PagoView(PagoBase):
+    id: int
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class MesaEstadoPago(BaseModel):
+    """Schema completo para el estado de cuenta de una mesa."""
+    mesa_id: int
+    mesa_nombre: str
+    total_consumido: Decimal
+    total_pagado: Decimal
+    saldo_pendiente: Decimal
+    consumos: List[ConsumoItemDetalle] = []
+    pagos: List[PagoView] = []
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)

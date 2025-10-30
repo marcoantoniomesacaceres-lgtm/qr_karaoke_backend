@@ -1266,3 +1266,119 @@ def set_mesa_active_status(db: Session, mesa_id: int, is_active: bool) -> Option
         db.commit()
         db.refresh(db_mesa)
     return db_mesa
+
+def get_all_tables_consumption_summaries(db: Session) -> List[dict]:
+    """
+    Obtiene un resumen detallado del consumo para todas las mesas,
+    incluyendo el valor total y los productos consumidos.
+    """
+    # Obtener todas las mesas
+    mesas = db.query(models.Mesa).order_by(models.Mesa.nombre).all()
+    
+    results = []
+    for mesa in mesas:
+        # Calcular el consumo total para esta mesa
+        total_consumido = (
+            db.query(func.sum(models.Consumo.valor_total))
+            .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+            .filter(models.Usuario.mesa_id == mesa.id)
+            .scalar() or Decimal('0.00')
+        )
+        
+        # Obtener los detalles de cada consumo para esta mesa
+        consumos_detalle = (
+            db.query(
+                models.Producto.nombre.label('producto_nombre'),
+                models.Consumo.cantidad,
+                models.Consumo.valor_total,
+                models.Consumo.created_at
+            )
+            .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+            .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+            .filter(models.Usuario.mesa_id == mesa.id)
+            .order_by(models.Consumo.created_at.desc())
+            .all()
+        )
+        
+        results.append({
+            "mesa_id": mesa.id,
+            "mesa_nombre": mesa.nombre,
+            "total_consumido": total_consumido,
+            "consumos": [
+                {"producto_nombre": c.producto_nombre, "cantidad": c.cantidad, "valor_total": c.valor_total, "created_at": c.created_at}
+                for c in consumos_detalle
+            ]
+        })
+        
+    return results
+
+def create_pago_for_mesa(db: Session, pago: schemas.PagoCreate) -> models.Pago:
+    """
+    Registra un nuevo pago para una mesa específica.
+    """
+    db_mesa = get_mesa_by_id(db, mesa_id=pago.mesa_id)
+    if not db_mesa:
+        return None
+
+    db_pago = models.Pago(
+        monto=pago.monto,
+        metodo_pago=pago.metodo_pago,
+        mesa_id=pago.mesa_id
+    )
+    db.add(db_pago)
+    db.commit()
+    db.refresh(db_pago)
+    return db_pago
+
+def get_all_tables_payment_status(db: Session) -> List[dict]:
+    """
+    Obtiene un estado de cuenta detallado para todas las mesas, incluyendo
+    consumos, pagos y saldo pendiente.
+    """
+    mesas = db.query(models.Mesa).order_by(models.Mesa.nombre).all()
+    
+    results = []
+    for mesa in mesas:
+        # 1. Calcular total consumido
+        total_consumido = (
+            db.query(func.sum(models.Consumo.valor_total))
+            .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+            .filter(models.Usuario.mesa_id == mesa.id)
+            .scalar() or Decimal('0.00')
+        )
+
+        # 2. Calcular total pagado
+        total_pagado = (
+            db.query(func.sum(models.Pago.monto))
+            .filter(models.Pago.mesa_id == mesa.id)
+            .scalar() or Decimal('0.00')
+        )
+
+        # 3. Calcular saldo pendiente
+        saldo_pendiente = total_consumido - total_pagado
+
+        # 4. Obtener detalles de consumos y pagos
+        consumos_detalle = db.query(models.Consumo).join(models.Usuario).filter(models.Usuario.mesa_id == mesa.id).all()
+        pagos_detalle = db.query(models.Pago).filter(models.Pago.mesa_id == mesa.id).order_by(models.Pago.created_at.desc()).all()
+
+        # Mapear consumos a ConsumoItemDetalle
+        consumos_items = [
+            schemas.ConsumoItemDetalle(
+                producto_nombre=c.producto.nombre,
+                cantidad=c.cantidad,
+                valor_total=c.valor_total,
+                created_at=c.created_at
+            ) for c in consumos_detalle
+        ]
+
+        results.append({
+            "mesa_id": mesa.id,
+            "mesa_nombre": mesa.nombre,
+            "total_consumido": total_consumido,
+            "total_pagado": total_pagado,
+            "saldo_pendiente": saldo_pendiente,
+            "consumos": consumos_items,
+            "pagos": pagos_detalle
+        })
+        
+    return results

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-
+import models 
 import crud, config, schemas
 from database import SessionLocal
 import websocket_manager
@@ -649,6 +649,27 @@ async def admin_delete_consumo(consumo_id: int, db: Session = Depends(get_db)):
 
     return Response(status_code=204)
 
+@router.post('/consumos/{consumo_id}/mark-despachado', status_code=200, summary='Marcar consumo como despachado')
+async def admin_mark_consumo_despachado(consumo_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Marca un consumo como despachado.
+    No elimina el consumo de la base de datos, solo lo elimina de la lista de "pedidos recientes" en el dashboard.
+    """
+    db_consumo = db.query(models.Consumo).filter(models.Consumo.id == consumo_id).first()
+    if not db_consumo:
+        raise HTTPException(status_code=404, detail='Consumo no encontrado')
+
+    # Log the action
+    crud.create_admin_log_entry(db, action="MARK_CONSUMO_DESPACHADO", details=f"Consumo ID {consumo_id} marcado como despachado.")
+
+    # Notify clients that this consumption should be removed from recent lists
+    try:
+        await websocket_manager.manager.broadcast_consumo_deleted({'id': consumo_id})
+    except Exception:
+        pass # Don't break the response if notification fails
+
+    return {"message": f"Consumo {consumo_id} marcado como despachado."}
+
 @router.post("/broadcast-message", status_code=200, summary="Enviar un mensaje a todas las pantallas")
 async def broadcast_message(notificacion: schemas.Notificacion, db: Session = Depends(get_db)):
     """
@@ -699,6 +720,40 @@ def get_night_summary(db: Session = Depends(get_db)):
         'canciones_cantadas': canciones_val,
         'usuarios_activos': usuarios_val,
     }
+
+@router.get("/reports/table-consumption-summaries", response_model=List[schemas.MesaConsumoResumen], summary="Obtener resumen de consumo por mesa")
+def get_table_consumption_summaries_endpoint(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve un resumen detallado del consumo de cada mesa,
+    incluyendo el valor total consumido y la lista de productos pedidos.
+    """
+    summaries = crud.get_all_tables_consumption_summaries(db)
+    return summaries
+
+@router.get("/reports/table-payment-status", response_model=List[schemas.MesaEstadoPago], summary="Obtener estado de cuenta de todas las mesas", tags=["Reportes", "Cuentas"])
+async def get_table_payment_status_endpoint(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve un estado de cuenta detallado para cada mesa,
+    incluyendo total consumido, total pagado, saldo pendiente, y listas
+    de consumos y pagos realizados.
+    """
+    status_list = crud.get_all_tables_payment_status(db)
+    return status_list
+
+@router.post("/pagos", response_model=schemas.PagoView, summary="Registrar un nuevo pago para una mesa", tags=["Cuentas"])
+async def create_pago_endpoint(pago: schemas.PagoCreate, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Registra un nuevo pago para una mesa específica.
+    """
+    db_pago = crud.create_pago_for_mesa(db, pago=pago)
+    if not db_pago:
+        raise HTTPException(status_code=404, detail="La mesa especificada no fue encontrada.")
+    
+    crud.create_admin_log_entry(db, action="CREATE_PAGO", details=f"Registrado pago de ${pago.monto} para la mesa ID {pago.mesa_id}.")
+    
+    # Podríamos emitir un evento por WebSocket si quisiéramos actualizar la vista en tiempo real
+    # await websocket_manager.manager.broadcast_payment_update(pago.mesa_id)
+    return db_pago
 
 @router.get("/tables/{mesa_id}/summary", response_model=schemas.ResumenMesa, summary="Obtener resumen de una mesa específica")
 def get_table_summary(mesa_id: int, db: Session = Depends(get_db)):

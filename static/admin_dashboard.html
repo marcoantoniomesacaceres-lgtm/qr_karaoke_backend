@@ -270,6 +270,28 @@
         #qr-code-container .btn-deactivate { background-color: var(--error-color); } /* Rojo */
         #qr-code-container .btn-activate { background-color: var(--info-color); } /* Azul */
     </style>
+    <style>
+        /* Estilos para la página de Cuentas por Mesa */
+        .account-card {
+            display: flex;
+            flex-direction: column;
+        }
+        .account-summary {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .account-summary div { margin-bottom: 8px; }
+        .saldo-pendiente { font-size: 1.3em; font-weight: bold; }
+        .saldo-ok { color: var(--success-color); }
+        .saldo-debe { color: var(--error-color); }
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px; overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
     <div class="sidebar">
@@ -278,6 +300,7 @@
             <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
             <li><a href="#queue" class="nav-link">Cola de Canciones</a></li>
             <li><a href="#inventory" class="nav-link">Inventario</a></li>
+            <li><a href="#accounts" class="nav-link">Cuentas por Mesa</a></li>
             <li><a href="#reports" class="nav-link">Reportes</a></li>
             <li><a href="#tables" class="nav-link">Mesas y QR</a></li>
             <li><a href="#settings" class="nav-link">Configuración</a></li>
@@ -345,6 +368,12 @@
                 </div>
                 <p class="item-meta">Haz clic en un emoticono para enviarlo a todos.</p>
             </div>
+            <!-- SECCIÓN DE CONSUMO POR MESA (EXISTENTE) -->
+            <div class="card" style="margin-top:20px;" id="table-consumption-summary-card">
+                <h3>Consumo por Mesa (Resumen)</h3>
+                <ul id="table-consumption-list" class="item-list"></ul>
+            </div>
+
         </div>
 
         <!-- PÁGINA: COLA DE CANCIONES -->
@@ -425,6 +454,41 @@
                     <h3>Código QR de la Mesa</h3>
                     <div id="qr-code-container" style="margin-top: 20px;"><p>Selecciona una mesa de la lista para ver su código QR.</p></div>
                 </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA: CUENTAS POR MESA -->
+        <div id="accounts" class="page">
+            <h2>Cuentas por Mesa</h2>
+            <div id="accounts-grid" class="grid grid-3">
+                <!-- Las tarjetas de estado de cuenta se generarán aquí -->
+            </div>
+        </div>
+
+        <!-- MODAL PARA REGISTRAR PAGO -->
+        <div id="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
+            <div class="card" style="width: 400px;">
+                <h3 id="payment-modal-title">Registrar Pago</h3>
+                <form id="payment-form">
+                    <input type="hidden" id="payment-mesa-id" name="mesa_id">
+                    <div class="form-group">
+                        <label for="payment-amount">Monto a Pagar ($)</label>
+                        <input type="number" id="payment-amount" name="monto" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-method">Método de Pago</label>
+                        <select id="payment-method" name="metodo_pago">
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:20px;">
+                        <button type="submit" class="form-btn" style="flex:1;">Registrar Pago</button>
+                        <button type="button" id="payment-modal-close" class="form-btn" style="flex:1; background-color:var(--text-secondary);">Cancelar</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -755,7 +819,8 @@
                             <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
                         </div>
                         <div class="item-actions">
-                            <button class="btn-action dispatch-order-btn" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
+                            <button class="btn-action btn-despachado" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
+                            <button class="btn-action btn-no-despachado" data-id="${it.id}" title="Cancelar pedido">No Despachado</button>
                         </div>
                     `;
                     listEl.appendChild(li);
@@ -764,6 +829,141 @@
                 listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando pedidos: ${error.message}</p></li>`;
             }
         }
+
+        // CARGA Y RENDER DE CONSUMO POR MESA
+        async function loadTableConsumptionSummaries() {
+            const listEl = document.getElementById('table-consumption-list');
+            listEl.innerHTML = '<li><p>Cargando resumen de consumo...</p></li>';
+            try {
+                const summaries = await apiFetch('/admin/reports/table-consumption-summaries');
+                listEl.innerHTML = '';
+                if (!summaries || summaries.length === 0) {
+                    listEl.innerHTML = '<li><p>No hay consumo registrado en ninguna mesa.</p></li>';
+                    return;
+                }
+
+                summaries.forEach(summary => {
+                    const li = document.createElement('li');
+                    li.className = 'item';
+                    li.innerHTML = `
+                        <div class="item-details">
+                            <div class="item-title">${summary.mesa_nombre}</div>
+                            <div class="item-meta">Total Consumido: <strong>$${summary.total_consumido.toFixed(2)}</strong></div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn-action toggle-consumption-details" data-mesa-id="${summary.mesa_id}">Ver Detalles</button>
+                        </div>
+                        <div class="consumption-details" style="display: none; width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+                            <h4>Productos Consumidos:</h4>
+                            <ul class="item-list" style="background-color: #2a2a2a; padding: 10px; border-radius: 5px;">
+                                ${summary.consumos.length > 0 ? summary.consumos.map(c => `
+                                    <li class="item" style="padding: 8px 0; border-bottom: 1px dotted #444;">${c.cantidad} x ${c.producto_nombre} ($${c.valor_total.toFixed(2)}) <span style="font-size: 0.8em; color: var(--text-secondary);">${new Date(c.created_at).toLocaleTimeString()}</span></li>
+                                `).join('') : '<li><p>No hay productos consumidos.</p></li>'}
+                            </ul>
+                        </div>
+                    `;
+                    listEl.appendChild(li);
+                });
+            } catch (error) {
+                listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando consumo por mesa: ${error.message}</p></li>`;
+            }
+        }
+
+        // --- NUEVAS FUNCIONES PARA LA PÁGINA DE CUENTAS ---
+
+        function renderAccountStatus(statusList) {
+            const gridEl = document.getElementById('accounts-grid');
+            gridEl.innerHTML = '';
+
+            if (!statusList || statusList.length === 0) {
+                gridEl.innerHTML = '<p>No hay mesas con actividad para mostrar.</p>';
+                return;
+            }
+
+            statusList.forEach(mesa => {
+                // FIX: Convertir a número antes de comparar
+                const saldoPendienteNum = parseFloat(mesa.saldo_pendiente);
+                const totalConsumidoNum = parseFloat(mesa.total_consumido);
+                const totalPagadoNum = parseFloat(mesa.total_pagado);
+                const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
+                const card = document.createElement('div');
+                card.className = 'card account-card';
+                card.innerHTML = `
+                    <h3>${mesa.mesa_nombre}</h3>
+                    <div class="account-summary">
+                        <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
+                        <div>Total Pagado: <strong style="color: var(--success-color);">$${totalPagadoNum.toFixed(2)}</strong></div>
+                        <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
+                    </div>
+                    <button class="form-btn register-payment-btn" data-mesa-id="${mesa.mesa_id}" data-mesa-nombre="${mesa.mesa_nombre}" style="margin-bottom: 15px;">Registrar Pago</button>
+                    
+                    <!-- Detalles colapsables -->
+                    <details>
+                        <summary style="cursor:pointer; color: var(--secondary-color);">Ver Detalles de Consumos y Pagos</summary>
+                        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <h4>Consumos</h4>
+                            <div class="details-section">
+                                <ul class="item-list">
+                                ${mesa.consumos.length > 0 ? mesa.consumos.map(c => `
+                                    <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)}</li>
+                                `).join('') : '<li>No hay consumos.</li>'}
+                                </ul>
+                            </div>
+                            <h4 style="margin-top:10px;">Pagos</h4>
+                            <div class="details-section">
+                                <ul class="item-list">
+                                ${mesa.pagos.length > 0 ? mesa.pagos.map(p => `
+                                    <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - ${new Date(p.created_at).toLocaleTimeString()}</li>
+                                `).join('') : '<li>No hay pagos registrados.</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                `;
+                gridEl.appendChild(card);
+            });
+        }
+
+        async function loadAccountsPage() {
+            try {
+                const statusList = await apiFetch('/admin/reports/table-payment-status');
+                renderAccountStatus(statusList);
+            } catch (error) {
+                document.getElementById('accounts-grid').innerHTML = `<p style="color: var(--error-color);">Error al cargar estado de cuentas: ${error.message}</p>`;
+            }
+        }
+
+        function openPaymentModal(mesaId, mesaNombre) {
+            document.getElementById('payment-mesa-id').value = mesaId;
+            document.getElementById('payment-modal-title').textContent = `Registrar Pago para ${mesaNombre}`;
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-form').reset();
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        async function handleRegisterPayment(event) {
+            event.preventDefault();
+            const form = document.getElementById('payment-form');
+            const formData = new FormData(form);
+            const paymentData = {
+                mesa_id: parseInt(formData.get('mesa_id'), 10),
+                monto: parseFloat(formData.get('monto')),
+                metodo_pago: formData.get('metodo_pago')
+            };
+
+            try {
+                await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
+                showNotification('Pago registrado con éxito.', 'success');
+                closePaymentModal();
+                loadAccountsPage(); // Recargar la vista de cuentas
+            } catch (error) {
+                showNotification(`Error al registrar pago: ${error.message}`, 'error');
+            }
+        }
+
 
         // WEBSOCKET: Conexión para actualizaciones en tiempo real (cola, notificaciones, consumos)
         let adminSocket = null;
@@ -965,6 +1165,7 @@
                 case 'queue': loadQueuePage(); break;
                 case 'inventory': loadInventoryPage(); break;
                 case 'settings': loadSettingsPage(); break;
+                case 'accounts': loadAccountsPage(); break;
                 case 'tables': loadTablesPage(); break;
             }
         }
@@ -1325,6 +1526,7 @@
             // Cargar datos de la página inicial
             loadDashboardPage();
 
+            loadTableConsumptionSummaries(); // Cargar resumen de consumo por mesa
             // Setup WebSocket for realtime updates (consume events and others)
             setupAdminWebSocket();
 
@@ -1375,12 +1577,35 @@
             }, 5000);
 
             // Delegated handler for cancel buttons on recent orders
+            // Modificado para manejar los dos nuevos botones: Despachado y No Despachado
             document.getElementById('recent-orders-list').addEventListener('click', async (e) => {
-                const btn = e.target.closest('.dispatch-order-btn');
-                if (!btn) return;
-                const consumoId = btn.dataset.id;
+                const btnDespachado = e.target.closest('.btn-despachado');
+                const btnNoDespachado = e.target.closest('.btn-no-despachado');
+
+                let consumoId;
+                let endpoint;
+                let confirmMessage;
+                let successMessage;
+                let isDeleteAction = false; // Indica si la acción es eliminar el registro de la DB
+
+                if (btnDespachado) {
+                    consumoId = btnDespachado.dataset.id;
+                    endpoint = `/admin/consumos/${consumoId}/mark-despachado`;
+                    confirmMessage = '¿Confirmas que este pedido ha sido despachado?';
+                    successMessage = 'Pedido marcado como despachado.';
+                    isDeleteAction = false;
+                } else if (btnNoDespachado) {
+                    consumoId = btnNoDespachado.dataset.id;
+                    endpoint = `/admin/consumos/${consumoId}`; // Endpoint existente para DELETE
+                    confirmMessage = '¿Estás seguro de que quieres CANCELAR este pedido? Se eliminará del sistema.';
+                    successMessage = 'Pedido cancelado y eliminado del sistema.';
+                    isDeleteAction = true;
+                } else {
+                    return; // No es ninguno de nuestros botones
+                }
+
                 if (!consumoId) return;
-                if (!confirm('¿Confirmas que este pedido ha sido despachado?')) return;
+                if (!confirm(confirmMessage)) return;
                 
                 const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
                 if (li) {
@@ -1388,22 +1613,22 @@
                 }
 
                 try {
-                    await apiFetch(`/admin/consumos/${consumoId}`, { method: 'DELETE' });
+                    await apiFetch(endpoint, { method: isDeleteAction ? 'DELETE' : 'POST' });
                     if (li) li.remove(); // Eliminar el elemento de la lista
-                    
-                    // Comprobar si quedan más pedidos nuevos. Si no, detener el sonido.
-                    const remainingNewOrders = document.querySelectorAll('#recent-orders-list .new-order').length;
-                    if (remainingNewOrders === 0) {
-                        const sound = document.getElementById('order-notification-sound');
-                        sound.pause();
-                        sound.currentTime = 0; // Reiniciar el audio
-                    }
-                    showNotification('Pedido despachado.', 'info');
+                    showNotification(successMessage, 'info');
                 } catch (err) {
                     showNotification(`Error cancelando pedido: ${err.message}`, 'error');
                 }
             });
         });
+
+        // Listeners para el modal de pago
+        document.getElementById('accounts-grid').addEventListener('click', (e) => {
+            const btn = e.target.closest('.register-payment-btn');
+            if(btn) openPaymentModal(btn.dataset.mesaId, btn.dataset.mesaNombre);
+        });
+        document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
+        document.getElementById('payment-form').addEventListener('submit', handleRegisterPayment);
     </script>
 
 

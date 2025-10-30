@@ -14,6 +14,7 @@ class Mesa(Base):
 
     # Relación: Una mesa puede tener muchos usuarios
     usuarios = relationship("Usuario", back_populates="mesa")
+    pagos = relationship("Pago", back_populates="mesa") # Relación con Pagos
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -96,3 +97,16 @@ class AdminApiKey(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     last_used = Column(DateTime, nullable=True)
+
+class Pago(Base):
+    __tablename__ = "pagos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    monto = Column(Numeric(10, 2), nullable=False)
+    metodo_pago = Column(String, default="Efectivo")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    mesa_id = Column(Integer, ForeignKey("mesas.id"))
+
+    # Relación: Un pago pertenece a una mesa
+    mesa = relationship("Mesa", back_populates="pagos")
