@@ -1382,3 +1382,46 @@ def get_all_tables_payment_status(db: Session) -> List[dict]:
         })
         
     return results
+
+def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
+    """
+    Obtiene un estado de cuenta detallado para una mesa específica.
+    """
+    mesa = get_mesa_by_id(db, mesa_id=mesa_id)
+    if not mesa:
+        return None
+
+    # 1. Calcular total consumido
+    total_consumido = (
+        db.query(func.sum(models.Consumo.valor_total))
+        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+        .filter(models.Usuario.mesa_id == mesa.id)
+        .scalar() or Decimal('0.00')
+    )
+
+    # 2. Calcular total pagado
+    total_pagado = (
+        db.query(func.sum(models.Pago.monto))
+        .filter(models.Pago.mesa_id == mesa.id)
+        .scalar() or Decimal('0.00')
+    )
+
+    # 3. Calcular saldo pendiente
+    saldo_pendiente = total_consumido - total_pagado
+
+    # 4. Obtener detalles de consumos y pagos
+    consumos_detalle = db.query(models.Consumo).join(models.Usuario).filter(models.Usuario.mesa_id == mesa.id).order_by(models.Consumo.created_at.asc()).all()
+    pagos_detalle = db.query(models.Pago).filter(models.Pago.mesa_id == mesa.id).order_by(models.Pago.created_at.asc()).all()
+
+    consumos_items = [
+        schemas.ConsumoItemDetalle(
+            producto_nombre=c.producto.nombre,
+            cantidad=c.cantidad,
+            valor_total=c.valor_total,
+            created_at=c.created_at
+        ) for c in consumos_detalle
+    ]
+
+    return schemas.MesaEstadoPago(
+        mesa_id=mesa.id, mesa_nombre=mesa.nombre, total_consumido=total_consumido, total_pagado=total_pagado, saldo_pendiente=saldo_pendiente, consumos=consumos_items, pagos=pagos_detalle
+    ).dict()

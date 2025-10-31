@@ -905,7 +905,7 @@
                             <div class="details-section">
                                 <ul class="item-list">
                                 ${mesa.consumos.length > 0 ? mesa.consumos.map(c => `
-                                    <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)}</li>
+                                    <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: var(--text-secondary); font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
                                 `).join('') : '<li>No hay consumos.</li>'}
                                 </ul>
                             </div>
@@ -913,7 +913,7 @@
                             <div class="details-section">
                                 <ul class="item-list">
                                 ${mesa.pagos.length > 0 ? mesa.pagos.map(p => `
-                                    <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - ${new Date(p.created_at).toLocaleTimeString()}</li>
+                                    <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: var(--text-secondary); font-size: 0.9em;">${new Date(p.created_at).toLocaleTimeString()}</span></li>
                                 `).join('') : '<li>No hay pagos registrados.</li>'}
                                 </ul>
                             </div>

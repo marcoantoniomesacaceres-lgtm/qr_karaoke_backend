@@ -123,6 +123,12 @@
         .btn-confirm { background-color: #4CAF50; }
         .btn-cancel { background-color: #6c757d; }
         #notification.error {
+        .order-item .cancel-btn {
+            background-color: #cf6679; /* Rojo suave */
+        }
+        .order-item .cancel-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
             background-color: #cf6679;
             color: #121212;
         }
@@ -150,6 +156,28 @@
         }
         @keyframes float-up {
             to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
+        }
+
+        /* Estilos para la sección "Mis Cuentas" */
+        .account-view { background-color: #1e1e1e; padding: 20px; border-radius: 8px; }
+        .account-summary { font-size: 1.1em; line-height: 1.6; }
+        .account-summary strong { font-size: 1.2em; }
+        .saldo-pendiente { font-size: 1.3em !important; font-weight: bold; }
+        .saldo-ok { color: #66bb6a; }
+        .saldo-debe { color: #cf6679; }
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .details-section h4 { margin-top: 0; color: #bb86fc; }
+        .details-section .item-list li {
+            padding: 8px 4px;
+            border-bottom: 1px dotted #444;
+            font-size: 0.95em;
         }
     </style>
     <style>
@@ -214,6 +242,8 @@
             <button class="tab-button active" data-tab="tab-queue">Cola</button>
             <button class="tab-button" data-tab="tab-search">Buscar Canción</button>
             <button class="tab-button" data-tab="tab-catalog">Catálogo</button>
+            <button class="tab-button" data-tab="tab-my-orders">Mis Pedidos</button>
+            <button class="tab-button" data-tab="tab-my-account">Mis Cuentas</button>
             <button class="tab-button" data-tab="tab-my-list">Mi Lista</button>
         </div>
 
@@ -250,6 +280,20 @@
             <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
             </ul>
+        </div>
+
+        <!-- Pestaña de Mis Pedidos -->
+        <div id="tab-my-orders" class="tab-content">
+            <h2>Mis Pedidos Recientes</h2>
+            <ul id="my-orders-list" class="song-list">
+                <!-- Los pedidos del usuario se insertarán aquí -->
+            </ul>
+        </div>
+
+        <!-- Pestaña de Mis Cuentas -->
+        <div id="tab-my-account" class="tab-content">
+            <h2>Estado de Cuenta de la Mesa</h2>
+            <div id="my-account-content">Cargando estado de cuenta...</div>
         </div>
 
         <!-- Pestaña de Mi Lista -->
@@ -396,6 +440,38 @@
             }
         }
 
+        function renderMyOrders(consumos) {
+            const myOrdersList = document.getElementById('my-orders-list');
+            myOrdersList.innerHTML = '';
+            if (consumos.length > 0) {
+                consumos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(consumo => {
+                    const timeSinceOrder = (new Date() - new Date(consumo.created_at)) / 1000; // en segundos
+                    const canCancel = timeSinceOrder < 60;
+                    const cancelButton = `
+                        <button class="cancel-btn" data-consumo-id="${consumo.id}" ${!canCancel ? 'disabled' : ''}>
+                            ${canCancel ? 'Cancelar' : 'Expirado'}
+                        </button>`;
+
+                    myOrdersList.innerHTML += `
+                        <li class="song-item order-item" id="consumo-${consumo.id}">
+                            <div class="song-item-info">
+                                <img src="${consumo.producto.imagen_url || 'https://via.placeholder.com/80x60.png?text=Producto'}" alt="${consumo.producto.nombre}">
+                                <div>
+                                    <div class="song-title">${consumo.cantidad}x ${consumo.producto.nombre}</div>
+                                    <div class="song-user">Total: $${consumo.valor_total}</div>
+                                </div>
+                            </div>
+                            <div>
+                                ${cancelButton}
+                            </div>
+                        </li>
+                    `;
+                });
+            } else {
+                myOrdersList.innerHTML = '<li><p>Aún no has realizado ningún pedido.</p></li>';
+            }
+        }
+
         function showNotification(message, type = 'success', duration = 3000) {
             notificationBanner.textContent = message;
             // Remove previous classes
@@ -427,6 +503,10 @@
                       fetchProducts(); // Recargamos el catálogo de productos
                   } else if (data.type === 'song_finished') {
                       fetchMyList(); // Recargamos la lista para ver el puntaje
+                  } else if (data.type === 'consumo_deleted' || data.type === 'consumo_created') {
+                      // Si se crea o elimina un consumo, actualizamos la lista de pedidos y el perfil
+                      fetchMyOrders();
+                      fetchTableAccountStatus(); // Actualizar también la cuenta de la mesa
                   }
                   else if (data.type === 'reaction') {
                       const reactionPayload = data.payload;
@@ -649,6 +729,8 @@
 
                     showNotification(`¡Pedido de ${cantidad}x ${productName} realizado!`, 'success');
                     fetchUserProfile();
+                    fetchMyOrders(); // Actualizamos la lista de pedidos
+                    fetchTableAccountStatus(); // Actualizamos la cuenta de la mesa
                     fetchProducts();
                 } catch (error) {
                     showNotification(`Error: ${error.message}`, 'error', 5000);
@@ -658,6 +740,32 @@
                     confirmOrderBtn.textContent = 'Confirmar Pedido';
                 }
             };
+        }
+
+        async function handleCancelOrder(event) {
+            if (!event.target.classList.contains('cancel-btn')) return;
+            if (!confirm('¿Seguro que quieres cancelar este pedido?')) return;
+
+            const button = event.target;
+            const consumoId = button.dataset.consumoId;
+            button.disabled = true;
+            button.textContent = 'Cancelando...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumos/${consumoId}/cancelar/${state.user.id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'No se pudo cancelar el pedido.');
+                }
+                showNotification('Pedido cancelado con éxito.', 'success');
+                fetchMyOrders(); // Actualiza la lista de pedidos
+                fetchTableAccountStatus(); // Actualiza la cuenta de la mesa
+                fetchUserProfile(); // Actualiza los puntos y nivel del usuario
+            } catch (error) {
+                showNotification(error.message, 'error', 5000);
+            }
         }
 
         async function fetchProducts() {
@@ -674,6 +782,66 @@
                 renderMyList(songs);
             } catch (error) {
                 console.error('Error al obtener mi lista:', error);
+            }
+        }
+
+        async function fetchMyOrders() {
+            if (!state.user) return;
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumos/mis-pedidos/${state.user.id}`);
+                const consumos = await response.json();
+                renderMyOrders(consumos);
+            } catch (error) { console.error('Error al obtener mis pedidos:', error); }
+        }
+
+        async function fetchTableAccountStatus() {
+            if (!state.user || document.getElementById('tab-my-account').classList.contains('active') === false) return;
+
+            const container = document.getElementById('my-account-content');
+            container.innerHTML = '<p>Cargando estado de cuenta...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios/my-table-account?usuario_id=${state.user.id}`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'No se pudo cargar la cuenta.');
+                }
+                const data = await response.json();
+
+                const saldoClass = data.saldo_pendiente > 0 ? 'saldo-debe' : 'saldo-ok';
+                container.innerHTML = `
+                    <div class="account-view">
+                        <div class="account-summary">
+                            <div>Total Consumido: <strong>$${parseFloat(data.total_consumido).toFixed(2)}</strong></div>
+                            <div>Total Pagado: <strong style="color: #66bb6a;">$${parseFloat(data.total_pagado).toFixed(2)}</strong></div>
+                            <div>Saldo Pendiente: <strong class="saldo-pendiente ${saldoClass}">$${parseFloat(data.saldo_pendiente).toFixed(2)}</strong></div>
+                        </div>
+
+                        <details style="margin-top: 20px;">
+                            <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles de Consumos y Pagos</summary>
+                            <div style="margin-top: 10px;">
+                                <div class="details-section">
+                                    <h4>Consumos</h4>
+                                    <ul class="item-list">
+                                        ${data.consumos.length > 0 ? data.consumos.map(c => `
+                                            <li>${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: #b0b0b0; font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
+                                        `).join('') : '<li>No hay consumos registrados.</li>'}
+                                    </ul>
+                                </div>
+                                <div class="details-section" style="margin-top: 15px;">
+                                    <h4>Pagos</h4>
+                                    <ul class="item-list">
+                                        ${data.pagos.length > 0 ? data.pagos.map(p => `
+                                            <li>$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: #b0b0b0; font-size: 0.9em;">(${new Date(p.created_at).toLocaleTimeString()})</span></li>
+                                        `).join('') : '<li>No hay pagos registrados.</li>'}
+                                    </ul>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<p class="error-msg">${error.message}</p>`;
             }
         }
 
@@ -741,6 +909,12 @@
             if (clickedTab.dataset.tab === 'tab-catalog') {
                 fetchProducts();
             }
+            if (clickedTab.dataset.tab === 'tab-my-orders') {
+                fetchMyOrders();
+            }
+            if (clickedTab.dataset.tab === 'tab-my-account') {
+                fetchTableAccountStatus();
+            }
         }
 
         async function handleSendReaction(event) {
@@ -788,6 +962,7 @@
             document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
             document.getElementById('search-results').addEventListener('click', handleAddSong);
             catalogList.addEventListener('click', handleOrderProduct);
+            document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
             cancelOrderBtn.addEventListener('click', () => {
