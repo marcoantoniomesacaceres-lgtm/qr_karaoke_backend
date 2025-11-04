@@ -265,6 +265,11 @@
             20%, 40%, 60%, 80% { transform: rotate(10deg); }
         }
         .shaking {
+            display: inline-block; /* Necesario para que la transformación funcione correctamente */
+            animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both infinite;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+        }
         /* Estilos específicos para el Código QR */
         #qr-code-container {
             display: flex;
@@ -825,7 +830,7 @@
                         <div class="item-details">
                             <div class="item-title">
                                 ${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}
-                                <span class="order-alert-icon">🔔</span>
+                                <span class="order-alert-icon shaking">🔔</span>
                             </div>
                             <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
                         </div>
@@ -1619,8 +1624,10 @@
                 if (!confirm(confirmMessage)) return;
                 
                 const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
-                if (li) {
-                    li.classList.remove('new-order'); // Quitamos la clase de alerta
+                // Detener la animación de la campana al procesar el pedido
+                const bellIcon = li ? li.querySelector('.order-alert-icon') : null;
+                if (bellIcon) {
+                    bellIcon.classList.remove('shaking');
                 }
 
                 try {
