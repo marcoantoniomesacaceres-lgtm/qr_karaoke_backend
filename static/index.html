@@ -892,7 +892,7 @@
             sessionStorage.removeItem('karaokeTable');
             if (state.websocket) state.websocket.close();
             state.user = null;
-            state.tableQrCode = getQueryParam('table'); // Mantenemos el código de la mesa
+            // No recargamos el QR code desde el parámetro, ya lo tenemos en state.tableQrCode
             dashboardView.classList.add('hidden');
             loginContainer.classList.remove('hidden');
             nickInput.value = '';

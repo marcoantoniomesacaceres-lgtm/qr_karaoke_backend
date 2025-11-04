@@ -196,6 +196,16 @@
         #notification.success { background-color: var(--success-color); color: var(--bg-color); }
         #notification.error { background-color: var(--error-color); color: var(--bg-color); }
         #notification.info { background-color: var(--info-color); color: var(--bg-color); }
+        
+        /* Estilo especial para los mensajes globales del admin */
+        #notification.admin-global-message {
+            font-size: 1.3em;
+            font-weight: bold;
+            background-color: var(--secondary-color);
+            color: var(--bg-color);
+            animation: pulse 2s infinite alternate; /* Opcional: animación sutil */
+        }
+
 
         /* Componentes específicos */
         .summary-card { text-align: center; }
@@ -384,12 +394,6 @@
                 </div>
                 <p class="item-meta">Haz clic en un emoticono para enviarlo a todos.</p>
             </div>
-            <!-- SECCIÓN DE CONSUMO POR MESA (EXISTENTE) -->
-            <div class="card" style="margin-top:20px;" id="table-consumption-summary-card">
-                <h3>Consumo por Mesa (Resumen)</h3>
-                <ul id="table-consumption-list" class="item-list"></ul>
-            </div>
-
         </div>
 
         <!-- PÁGINA: COLA DE CANCIONES -->
@@ -846,45 +850,6 @@
             }
         }
 
-        // CARGA Y RENDER DE CONSUMO POR MESA
-        async function loadTableConsumptionSummaries() {
-            const listEl = document.getElementById('table-consumption-list');
-            listEl.innerHTML = '<li><p>Cargando resumen de consumo...</p></li>';
-            try {
-                const summaries = await apiFetch('/admin/reports/table-consumption-summaries');
-                listEl.innerHTML = '';
-                if (!summaries || summaries.length === 0) {
-                    listEl.innerHTML = '<li><p>No hay consumo registrado en ninguna mesa.</p></li>';
-                    return;
-                }
-
-                summaries.forEach(summary => {
-                    const li = document.createElement('li');
-                    li.className = 'item';
-                    li.innerHTML = `
-                        <div class="item-details">
-                            <div class="item-title">${summary.mesa_nombre}</div>
-                            <div class="item-meta">Total Consumido: <strong>$${summary.total_consumido.toFixed(2)}</strong></div>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn-action toggle-consumption-details" data-mesa-id="${summary.mesa_id}">Ver Detalles</button>
-                        </div>
-                        <div class="consumption-details" style="display: none; width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
-                            <h4>Productos Consumidos:</h4>
-                            <ul class="item-list" style="background-color: #2a2a2a; padding: 10px; border-radius: 5px;">
-                                ${summary.consumos.length > 0 ? summary.consumos.map(c => `
-                                    <li class="item" style="padding: 8px 0; border-bottom: 1px dotted #444;">${c.cantidad} x ${c.producto_nombre} ($${c.valor_total.toFixed(2)}) <span style="font-size: 0.8em; color: var(--text-secondary);">${new Date(c.created_at).toLocaleTimeString()}</span></li>
-                                `).join('') : '<li><p>No hay productos consumidos.</p></li>'}
-                            </ul>
-                        </div>
-                    `;
-                    listEl.appendChild(li);
-                });
-            } catch (error) {
-                listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando consumo por mesa: ${error.message}</p></li>`;
-            }
-        }
-
         // --- NUEVAS FUNCIONES PARA LA PÁGINA DE CUENTAS ---
 
         function renderAccountStatus(statusList) {
@@ -1056,7 +1021,10 @@
                                 showNotification(data.payload?.mensaje || 'Notificación', 'info');
                                 break;
                             case 'product_update':
-                                // Re-fetch products if inventory page is active
+                                if (data.type === 'notification' || data.type === 'admin_notification') {
+                                    showNotification(data.payload.mensaje, 'admin-global-message');
+                                }
+                                 // Re-fetch products if inventory page is active
                                 if (document.getElementById('inventory').classList.contains('active')) {
                                     loadInventoryPage();
                                 }
@@ -1542,7 +1510,6 @@
             // Cargar datos de la página inicial
             loadDashboardPage();
 
-            loadTableConsumptionSummaries(); // Cargar resumen de consumo por mesa
             // Setup WebSocket for realtime updates (consume events and others)
             setupAdminWebSocket();
 
