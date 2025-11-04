@@ -238,6 +238,30 @@ class ConnectionManager:
         for d in dead:
             if d in self.active_connections: self.active_connections.remove(d)
 
+    async def broadcast_song_finished(self, cancion: models.Cancion):
+        """
+        Envía un evento indicando que una canción ha terminado y su puntuación.
+        """
+        # Determinar el nombre del cantante (mesa o nick)
+        cantante = cancion.usuario.mesa.nombre if (cancion.usuario and cancion.usuario.mesa) else (cancion.usuario.nick if cancion.usuario else "N/A")
+        payload = {
+            "type": "song_finished",
+            "payload": {
+                "cantante_nombre": cantante,
+                "puntuacion_ia": cancion.puntuacion_ia
+            }
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload))
+            except Exception:
+                try: await connection.close()
+                except Exception: pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections: self.active_connections.remove(d)
+
     async def broadcast_play_song(self, youtube_id: str):
         """
         Envía un evento para reproducir una canción en el reproductor.

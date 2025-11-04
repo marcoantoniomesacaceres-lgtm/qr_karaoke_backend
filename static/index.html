@@ -219,6 +219,7 @@
     </div>
 
     <div class="container hidden" id="dashboard-view">
+        <h1 style="text-align: center; margin-bottom: 20px;">LA CANTA QUE RANA</h1>
         <div class="profile-card">
             <h3><span id="user-nick"></span></h3>
             <p>Mesa: <strong id="table-name"></strong></p>
@@ -863,6 +864,7 @@
                 state.user = profile; // Actualizamos el estado local del usuario
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
                 updateProfileCard();
+                fetchMyList(); // **CORRECCIÓN: Cargar la lista de canciones después de actualizar el perfil.**
             } catch (error) {
                 console.error('Error al actualizar el perfil:', error);
             }

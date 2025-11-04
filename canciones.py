@@ -34,9 +34,12 @@ async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api
     """
     # Primero, marcamos la que terminó como 'cantada'
     cancion_cantada = crud.marcar_cancion_actual_como_cantada(db)
-    
-    # Si una canción fue marcada como cantada, notificamos su puntaje
+
+    # Si una canción fue marcada como cantada, notificamos su puntaje a todos los clientes.
+    # Esto mostrará el resultado en el reproductor y otras pantallas.
     if cancion_cantada:
+        # El manager se encarga de construir el payload y enviarlo.
+        # El payload incluirá el título, el nick del usuario y la puntuación.
         await websocket_manager.manager.broadcast_song_finished(cancion_cantada)
 
     # Luego, marcamos la siguiente en la cola como 'reproduciendo'

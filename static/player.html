@@ -87,34 +87,31 @@
             width: 100%;
             z-index: 20; /* Encima del reproductor */
             display: flex;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
-            padding: 20px 40px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
+            padding: 10px 40px; /* Reducido el padding vertical */
             box-sizing: border-box;
             transition: opacity 0.5s ease-in-out;
         }
         .info-section {
             flex: 1;
-            padding: 0 20px;
+            padding: 0 20px; /* Mantenemos el padding horizontal */
         }
         .info-section:first-child {
             border-right: 2px solid rgba(255, 255, 255, 0.2);
         }
         .info-section h2 {
-            font-size: 2vw;
+            font-size: 1.2vw; /* Reducido */
             margin-top: 0;
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* Reducido */
             color: var(--primary-color);
             text-shadow: 2px 2px 4px #000;
         }
         .info-title {
-            font-size: 2.5vw;
+            font-size: 1.5vw; /* Reducido */
             font-weight: bold;
             margin-bottom: 5px;
         }
-        .info-artist {
-            font-size: 1.5vw;
-            color: #ccc;
-        }
+        .info-artist { font-size: 1vw; color: #ccc; } /* Reducido */
 
         /* --- Reacciones --- */
         .reaction-container {
@@ -297,6 +294,20 @@
                 if (data.type === 'play_song' && data.payload.youtube_id) {
                     console.log('Recibida orden de reproducir:', data.payload.youtube_id);
                     playVideo(data.payload.youtube_id);
+                }
+
+                // --- NUEVO: Escuchar el evento de canción finalizada ---
+                if (data.type === 'song_finished' && data.payload) {
+                    const scoreInfo = data.payload;
+                    const standbyParagraph = standbyScreen.querySelector('p');
+                    let message = '';
+
+                    if (scoreInfo.puntuacion_ia > 0) {
+                        message = `¡Felicitaciones, <strong>${scoreInfo.cantante_nombre}</strong>! Tu puntaje fue de <strong>${scoreInfo.puntuacion_ia}</strong> puntos. ¡Sigue así!`;
+                    } else {
+                        message = `Nadie cantó la última canción. Puntaje: 0.`;
+                    }
+                    standbyParagraph.innerHTML = `${message}<br>Esperando la siguiente canción...`;
                 }
 
                 // --- NUEVO: Escuchar y mostrar notificaciones globales ---
