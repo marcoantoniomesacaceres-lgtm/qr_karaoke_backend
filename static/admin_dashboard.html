@@ -126,6 +126,17 @@
         .btn-reject { background-color: var(--error-color); }
         .btn-action { background-color: var(--info-color); }
         
+        /* Colores específicos para botones de despacho de pedidos */
+        .btn-despachado {
+            background-color: var(--success-color); /* Verde */
+        }
+        .btn-no-despachado {
+            background-color: var(--warning-color); /* Naranja */
+            color: var(--bg-color) !important; /* Texto oscuro para mejor contraste */
+        }
+        .btn-no-despachado:hover {
+            background-color: var(--error-color); /* Rojo al pasar el cursor */
+        }
         /* Estilos de Formularios */
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: var(--text-secondary); }
@@ -819,8 +830,8 @@
                             <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
                         </div>
                         <div class="item-actions">
-                            <button class="btn-action btn-despachado" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
-                            <button class="btn-action btn-no-despachado" data-id="${it.id}" title="Cancelar pedido">No Despachado</button>
+                            <button class="btn-despachado" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
+                            <button class="btn-no-despachado" data-id="${it.id}" title="Cancelar pedido">No Despachado</button>
                         </div>
                     `;
                     listEl.appendChild(li);

@@ -535,7 +535,7 @@ def get_consumers_no_singers_report(db: Session = Depends(get_db), umbral: float
     users = crud.get_usuarios_consumen_pero_no_cantan(db, umbral_consumo=umbral)
     return users
 
-@router.get("/my-table-account", response_model=schemas.MesaEstadoPago, summary="Obtener el estado de cuenta de mi mesa", tags=["Cuentas", "Usuarios"])
+@router.get("/my-table-account", response_model=schemas.MesaEstadoPago, summary="Obtener el estado de cuenta de mi mesa", tags=["Cuentas", "Usuarios"], include_in_schema=False)
 def get_my_table_account_status(usuario_id: int, db: Session = Depends(get_db)):
     """
     **[Usuario]** Devuelve el estado de cuenta completo de la mesa a la que
