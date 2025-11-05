@@ -136,7 +136,7 @@
             background-color: #66bb6a;
             color: #121212;
         }
-        /* Estilos para el Carrito de Compras Flotante */
+        /* Estilos para el boton confirmar pedido */
         #cart-fab {
             position: fixed;
             bottom: 20px;
@@ -146,10 +146,14 @@
             background-color: #bb86fc;
             color: #121212;
             border-radius: 50%;
+            border-radius: 8px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 24px;
+            font-size: 1em;
+            font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 1500;
@@ -300,7 +304,10 @@
 
         <!-- Pestaña de Catálogo de Productos -->
         <div id="tab-catalog" class="tab-content">
-            <h2>Catálogo de Productos</h2>
+            <div class="catalog-header">
+                <h2>Catálogo de Productos</h2>
+                <button id="cart-confirm-btn-header">Confirmar Pedido (<span id="cart-count">0</span>)</button>
+            </div>
             <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
             </ul>
@@ -387,10 +394,7 @@
         const modalProductName = document.getElementById('modal-product-name');
         const quantityInput = document.getElementById('quantity-input');
         const cartModal = document.getElementById('cart-modal');
-        const cartFab = document.createElement('div'); // Botón flotante del carrito
-        cartFab.id = 'cart-fab';
-        cartFab.innerHTML = '🛒<span id="cart-count">0</span>';
-
+        const cartConfirmBtnHeader = document.getElementById('cart-confirm-btn-header');
         const confirmOrderBtn = document.getElementById('confirm-order-btn');
         const cancelOrderBtn = document.getElementById('cancel-order-btn');
         const catalogList = document.getElementById('product-catalog-list');
@@ -488,6 +492,7 @@
             const cartItemsList = document.getElementById('cart-items-list');
             const cartCount = document.getElementById('cart-count');
             const confirmCartBtn = document.getElementById('confirm-cart-order-btn');
+            const cartHeaderBtn = document.getElementById('cart-confirm-btn-header');
 
             const totalItems = state.cart.reduce((sum, item) => sum + item.cantidad, 0);
             cartCount.textContent = totalItems;
@@ -496,6 +501,7 @@
             if (state.cart.length === 0) {
                 cartItemsList.innerHTML = '<p>Tu carrito está vacío.</p>';
                 confirmCartBtn.disabled = true;
+                cartHeaderBtn.style.display = 'none'; // Ocultar el botón si el carrito está vacío
             } else {
                 cartItemsList.innerHTML = '';
                 state.cart.forEach(item => {
@@ -507,6 +513,7 @@
                     `;
                 });
                 confirmCartBtn.disabled = false;
+                cartHeaderBtn.style.display = 'inline-block'; // Mostrar el botón si hay items
             }
         }
 
@@ -956,10 +963,7 @@
             loginContainer.classList.add('hidden');
             dashboardView.classList.remove('hidden');
 
-            connectWebSocket();
-            // Añadir el botón flotante del carrito al dashboard
-            dashboardView.appendChild(cartFab);
-            renderCart();
+            connectWebSocket();            renderCart(); // Renderiza el carrito (y oculta el botón si está vacío)
             fetchMyList();
         }
 
@@ -982,29 +986,44 @@
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-            // Ocultar el botón flotante del carrito por defecto
-            if (cartFab) {
-                cartFab.style.display = 'none';
-            }
-
             clickedTab.classList.add('active');
             document.getElementById(clickedTab.dataset.tab).classList.add('active');
 
             if (clickedTab.dataset.tab === 'tab-my-list') {
                 fetchMyList();
             }
-            if (clickedTab.dataset.tab === 'tab-catalog') {
-                // Mostrar el botón flotante del carrito solo en la pestaña de catálogo
-                if (cartFab) {
-                    cartFab.style.display = 'flex';
-                }
-                fetchProducts();
-            }
             if (clickedTab.dataset.tab === 'tab-my-orders') {
                 fetchMyOrders();
             }
             if (clickedTab.dataset.tab === 'tab-my-account') {
                 fetchTableAccountStatus();
+            }
+        }
+        function handleTabClick(event) {
+            const clickedTab = event.target.closest('.tab-button');
+            if (!clickedTab) return;
+
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            clickedTab.classList.add('active');
+            const activeTabId = clickedTab.dataset.tab;
+            document.getElementById(activeTabId).classList.add('active');
+
+            // Cargar contenido según la pestaña
+            switch (activeTabId) {
+                case 'tab-my-list':
+                    fetchMyList();
+                    break;
+                case 'tab-catalog':
+                    fetchProducts();
+                    break;
+                case 'tab-my-orders':
+                    fetchMyOrders();
+                    break;
+                case 'tab-my-account':
+                    fetchTableAccountStatus();
+                    break;
             }
         }
 
@@ -1039,10 +1058,7 @@
             loginContainer.classList.add('hidden');
             dashboardView.classList.remove('hidden');
 
-            connectWebSocket();
-            // Añadir el botón flotante del carrito al dashboard
-            dashboardView.appendChild(cartFab);
-            renderCart();
+            connectWebSocket();            renderCart();
             fetchMyList();
         }
 
@@ -1056,30 +1072,6 @@
             loginContainer.classList.remove('hidden');
             nickInput.value = '';
             errorMessage.textContent = '';
-        }
-
-        function handleTabClick(event) {
-            const clickedTab = event.target.closest('.tab-button');
-            if (!clickedTab) return;
-
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            clickedTab.classList.add('active');
-            document.getElementById(clickedTab.dataset.tab).classList.add('active');
-
-            if (clickedTab.dataset.tab === 'tab-my-list') {
-                fetchMyList();
-            }
-            if (clickedTab.dataset.tab === 'tab-catalog') {
-                fetchProducts();
-            }
-            if (clickedTab.dataset.tab === 'tab-my-orders') {
-                fetchMyOrders();
-            }
-            if (clickedTab.dataset.tab === 'tab-my-account') {
-                fetchTableAccountStatus();
-            }
         }
 
         async function handleSendReaction(event) {
@@ -1135,7 +1127,7 @@
             });
 
             // Eventos del Carrito
-            cartFab.addEventListener('click', () => {
+            cartConfirmBtnHeader.addEventListener('click', () => {
                 cartModal.style.display = 'flex';
                 renderCart();
             });
