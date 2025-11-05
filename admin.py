@@ -9,12 +9,30 @@ from security import api_key_auth
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 
+# Creamos un nuevo router para las rutas públicas que no necesitan clave de API
+public_router = APIRouter()
+
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+# --- Rutas Públicas (para usuarios en mesas) ---
+
+@public_router.get("/consumos/mis-pedidos/{usuario_id}", response_model=List[schemas.ConsumoHistorial], summary="Obtener los pedidos de un usuario", tags=["Usuarios"])
+def get_mis_pedidos(usuario_id: int, db: Session = Depends(get_db)):
+    """
+    **[Usuario]** Devuelve el historial de consumos (pedidos) de un usuario específico.
+    """
+    # Reutilizamos la función existente en crud.py
+    consumos = crud.get_consumos_por_usuario(db, usuario_id=usuario_id)
+    return consumos
+
+
+# --- Rutas de Administrador (protegidas por API Key) ---
 
 @router.post("/reset-night", status_code=204, summary="Reiniciar el sistema para una nueva noche")
 async def reset_night(db: Session = Depends(get_db)):

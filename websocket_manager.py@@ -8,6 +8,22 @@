@@ -7,6 +7,22 @@ from fastapi.encoders import jsonable_encoder
 import schemas, crud
 from database import SessionLocal
 
+def create_consumo_payload(db_consumo: models.Consumo) -> dict:
+    """Crea el diccionario de payload para un evento de consumo."""
+    mesa_nombre = None
+    if db_consumo.usuario and db_consumo.usuario.mesa:
+        mesa_nombre = db_consumo.usuario.mesa.nombre
+
+    return {
+        'id': db_consumo.id,
+        'cantidad': db_consumo.cantidad,
+        'valor_total': float(db_consumo.valor_total),
+        'producto_nombre': db_consumo.producto.nombre if db_consumo.producto else "Desconocido",
+        'usuario_nick': db_consumo.usuario.nick if db_consumo.usuario else "Desconocido",
+        'mesa_nombre': mesa_nombre,
+        'created_at': db_consumo.created_at.isoformat()
+    }
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
@@ -121,10 +137,7 @@ class ConnectionManager:
         El payload debe ser un diccionario serializable que contenga
         fields como producto_nombre, usuario_nick, mesa_nombre, cantidad, created_at, etc.
         """
-        payload = {
-            "type": "consumo_created",
-            "payload": consumo_payload
-        }
+        payload = {"type": "consumo_created", "payload": consumo_payload}
         dead = []
         for connection in list(self.active_connections):
             try:

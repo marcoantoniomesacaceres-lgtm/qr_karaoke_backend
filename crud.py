@@ -215,6 +215,69 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
     db.refresh(db_usuario)
     return db_consumo, None
 
+def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usuario_id: int):
+    """
+    Crea múltiples registros de consumo a partir de un carrito de compras.
+    Toda la operación se maneja como una única transacción.
+    """
+    SILVER_THRESHOLD = 50.0
+    GOLD_THRESHOLD = 150.0
+
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not db_usuario:
+        return None, "Usuario no encontrado."
+
+    consumos_creados = []
+    valor_total_pedido = Decimal(0)
+
+    try:
+        # Iteramos sobre una copia para poder modificarla si es necesario
+        for item in carrito.items:
+            if item.cantidad <= 0:
+                raise ValueError("La cantidad de cada producto debe ser mayor que cero.")
+
+            db_producto = db.query(models.Producto).filter(models.Producto.id == item.producto_id).first()
+            if not db_producto:
+                raise ValueError(f"Producto con ID {item.producto_id} no encontrado.")
+            if not db_producto.is_active:
+                raise ValueError(f"El producto '{db_producto.nombre}' no está disponible.")
+            if db_producto.stock < item.cantidad:
+                raise ValueError(f"No hay stock suficiente para '{db_producto.nombre}'. Disponible: {db_producto.stock}.")
+
+            # Calculamos el valor de esta línea del pedido
+            valor_linea = db_producto.valor * item.cantidad
+            valor_total_pedido += valor_linea
+
+            # Creamos el objeto Consumo pero aún no lo guardamos (sin db.add o db.commit)
+            db_consumo = models.Consumo(
+                producto_id=item.producto_id,
+                cantidad=item.cantidad,
+                valor_total=valor_linea,
+                usuario_id=usuario_id
+            )
+            db.add(db_consumo)
+            consumos_creados.append(db_consumo)
+
+            # Descontamos el stock
+            db_producto.stock -= item.cantidad
+
+        # Si todo fue bien, actualizamos los puntos y el nivel del usuario
+        db_usuario.puntos += int(valor_total_pedido / 10)
+        total_consumido_historico = (db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0) + valor_total_pedido
+
+        if total_consumido_historico >= GOLD_THRESHOLD:
+            db_usuario.nivel = "oro"
+        elif total_consumido_historico >= SILVER_THRESHOLD:
+            db_usuario.nivel = "plata"
+
+        db.commit() # Guardamos todos los cambios a la vez
+        for consumo in consumos_creados:
+            db.refresh(consumo)
+        return consumos_creados, None
+    except ValueError as e:
+        db.rollback() # Si algo falla, revertimos TODOS los cambios de esta transacción
+        return None, str(e)
+
 def marcar_cancion_actual_como_cantada(db: Session):
     """
     Busca la canción que se está reproduciendo, la marca como 'cantada' y le da puntos al usuario.

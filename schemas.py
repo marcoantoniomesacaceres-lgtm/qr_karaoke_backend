@@ -101,6 +101,17 @@ class Consumo(BaseModel):
     producto: ProductoBase # Usamos un schema más simple para evitar anidamiento excesivo
     model_config = ConfigDict(from_attributes=True)
 
+# --- Schemas para el Carrito de Compras ---
+class CarritoItem(BaseModel):
+    """Representa un solo ítem dentro del carrito."""
+    producto_id: int
+    cantidad: int
+
+class CarritoCreate(BaseModel):
+    """Representa el carrito completo que el usuario enviará."""
+    items: List[CarritoItem]
+
+
 
 # --- Schema para consumo reciente (para el dashboard de admin) ---
 class ConsumoReciente(BaseModel):

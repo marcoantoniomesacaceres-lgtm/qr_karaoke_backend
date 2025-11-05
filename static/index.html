@@ -136,6 +136,29 @@
             background-color: #66bb6a;
             color: #121212;
         }
+        /* Estilos para el Carrito de Compras Flotante */
+        #cart-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #bb86fc;
+            color: #121212;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1500;
+            transition: transform 0.2s;
+        }
+        #cart-fab:hover { transform: scale(1.1); }
+        #cart-count { position: absolute; top: 0; right: 0; background: #f44336; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .modal-content .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
+        .modal-content .cart-item-name { flex-grow: 1; }
 
         /* Estilos para las reacciones con emoticonos */
         .reaction-container {
@@ -320,6 +343,20 @@
         </div>
     </div>
 
+    <!-- Modal para el Carrito de Compras -->
+    <div id="cart-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>🛒 Mi Pedido</h3>
+            <div id="cart-items-list" style="text-align: left; margin-bottom: 20px;">
+                <p>Tu carrito está vacío.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="confirm-cart-order-btn" class="btn-confirm">Hacer Pedido</button>
+                <button id="cancel-cart-btn" class="btn-cancel">Seguir Comprando</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Contenedor para mostrar las reacciones flotantes -->
     <div id="reaction-container" class="reaction-container"></div>
 
@@ -333,6 +370,7 @@
             user: null,
             tableQrCode: null,
             websocket: null,
+            cart: [], // ¡NUEVO ESTADO PARA EL CARRITO!
         };
 
         // --- ELEMENTOS DEL DOM ---
@@ -348,6 +386,11 @@
         const orderModal = document.getElementById('order-modal');
         const modalProductName = document.getElementById('modal-product-name');
         const quantityInput = document.getElementById('quantity-input');
+        const cartModal = document.getElementById('cart-modal');
+        const cartFab = document.createElement('div'); // Botón flotante del carrito
+        cartFab.id = 'cart-fab';
+        cartFab.innerHTML = '🛒<span id="cart-count">0</span>';
+
         const confirmOrderBtn = document.getElementById('confirm-order-btn');
         const cancelOrderBtn = document.getElementById('cancel-order-btn');
         const catalogList = document.getElementById('product-catalog-list');
@@ -430,7 +473,7 @@
                             <p class="product-card-category">${product.categoria}</p>
                             <div class="product-card-footer">
                                 <span class="product-price">$${product.valor}</span>
-                                <button class="order-btn" data-product-id="${product.id}" data-product-name="${product.nombre}" data-product-stock="${product.stock}">Pedir</button>
+                                <button class="add-to-cart-btn" data-product-id="${product.id}" data-product-name="${product.nombre}" data-product-stock="${product.stock}">Añadir</button>
                             </div>
                         </div>
                     `;
@@ -439,6 +482,42 @@
             } else {
                 catalogList.innerHTML = '<p>No hay productos disponibles en este momento.</p>';
             }
+        }
+
+        function renderCart() {
+            const cartItemsList = document.getElementById('cart-items-list');
+            const cartCount = document.getElementById('cart-count');
+            const confirmCartBtn = document.getElementById('confirm-cart-order-btn');
+
+            const totalItems = state.cart.reduce((sum, item) => sum + item.cantidad, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
+
+            if (state.cart.length === 0) {
+                cartItemsList.innerHTML = '<p>Tu carrito está vacío.</p>';
+                confirmCartBtn.disabled = true;
+            } else {
+                cartItemsList.innerHTML = '';
+                state.cart.forEach(item => {
+                    cartItemsList.innerHTML += `
+                        <div class="cart-item">
+                            <span class="cart-item-name">${item.cantidad}x ${item.nombre}</span>
+                            <button class="cart-remove-item-btn" data-product-id="${item.producto_id}" style="font-size: 0.8em; padding: 4px 8px; background-color: #dc3545;">X</button>
+                        </div>
+                    `;
+                });
+                confirmCartBtn.disabled = false;
+            }
+        }
+
+        function addToCart(productId, productName, stock) {
+            const existingItem = state.cart.find(item => item.producto_id === productId);
+            if (existingItem) {
+                if (existingItem.cantidad < stock) existingItem.cantidad++;
+            } else {
+                state.cart.push({ producto_id: productId, nombre: productName, cantidad: 1 });
+            }
+            renderCart();
         }
 
         function renderMyOrders(consumos) {
@@ -691,56 +770,48 @@
             }
         }
 
-        async function handleOrderProduct(event) {
-            if (!event.target.classList.contains('order-btn')) return;
+        async function handleAddToCart(event) {
+            if (!event.target.classList.contains('add-to-cart-btn')) return;
 
             const button = event.target;
             const productId = button.dataset.productId;
             const productName = button.dataset.productName;
             const productStock = parseInt(button.dataset.productStock, 10);
 
-            modalProductName.textContent = productName;
-            quantityInput.value = 1;
-            quantityInput.max = productStock;
-            orderModal.style.display = 'flex';
+            addToCart(productId, productName, productStock);
+            showNotification(`${productName} añadido al carrito.`, 'success', 1500);
+        }
 
-            confirmOrderBtn.onclick = async () => {
-                const cantidad = parseInt(quantityInput.value, 10);
-                if (cantidad <= 0 || cantidad > productStock) {
-                    showNotification(`Cantidad inválida. Stock disponible: ${productStock}`, 'error');
-                    return;
-                }
+        async function handlePlaceOrder() {
+            if (state.cart.length === 0) return;
 
-                const orderData = {
-                    producto_id: parseInt(productId, 10),
-                    cantidad: cantidad
-                };
+            const confirmBtn = document.getElementById('confirm-cart-order-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Enviando...';
 
-                confirmOrderBtn.disabled = true;
-                confirmOrderBtn.textContent = 'Pidiendo...';
+            const cartPayload = { items: state.cart };
 
-                try {
-                    const response = await fetch(`${API_BASE_URL}/consumos/pedir/${state.user.id}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(orderData)
-                    });
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.detail || 'Error al procesar el pedido.');
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumos/pedir/carrito/${state.user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cartPayload)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Error al procesar el pedido.');
 
-                    showNotification(`¡Pedido de ${cantidad}x ${productName} realizado!`, 'success');
-                    fetchUserProfile();
-                    fetchMyOrders(); // Actualizamos la lista de pedidos
-                    fetchTableAccountStatus(); // Actualizamos la cuenta de la mesa
-                    fetchProducts();
-                } catch (error) {
-                    showNotification(`Error: ${error.message}`, 'error', 5000);
-                } finally {
-                    orderModal.style.display = 'none';
-                    confirmOrderBtn.disabled = false;
-                    confirmOrderBtn.textContent = 'Confirmar Pedido';
-                }
-            };
+                showNotification('¡Pedido realizado con éxito!', 'success');
+                state.cart = []; // Limpiar carrito
+                renderCart();
+                cartModal.style.display = 'none';
+                fetchUserProfile();
+                fetchMyOrders();
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error', 5000);
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Hacer Pedido';
+            }
         }
 
         async function handleCancelOrder(event) {
@@ -886,6 +957,138 @@
             dashboardView.classList.remove('hidden');
 
             connectWebSocket();
+            // Añadir el botón flotante del carrito al dashboard
+            dashboardView.appendChild(cartFab);
+            renderCart();
+            fetchMyList();
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('karaokeUser');
+            sessionStorage.removeItem('karaokeTable');
+            if (state.websocket) state.websocket.close();
+            state.user = null;
+            // No recargamos el QR code desde el parámetro, ya lo tenemos en state.tableQrCode
+            dashboardView.classList.add('hidden');
+            loginContainer.classList.remove('hidden');
+            nickInput.value = '';
+            errorMessage.textContent = '';
+        }
+
+        function handleTabClick(event) {
+            const clickedTab = event.target.closest('.tab-button');
+            if (!clickedTab) return;
+
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            clickedTab.classList.add('active');
+            document.getElementById(clickedTab.dataset.tab).classList.add('active');
+
+            if (clickedTab.dataset.tab === 'tab-my-list') {
+                fetchMyList();
+            }
+            if (clickedTab.dataset.tab === 'tab-catalog') {
+                fetchProducts();
+            }
+            if (clickedTab.dataset.tab === 'tab-my-orders') {
+                fetchMyOrders();
+            }
+            if (clickedTab.dataset.tab === 'tab-my-account') {
+                fetchTableAccountStatus();
+            }
+        }
+
+        async function handleSendReaction(event) {
+            const emojiSpan = event.target.closest('#reaction-buttons span');
+            if (!emojiSpan) return;
+
+            const reaction = emojiSpan.textContent;
+            const payload = {
+                reaction: reaction,
+                sender: state.user ? state.user.nick : "Anónimo" // Usar el nick del usuario si está logueado
+            };
+            try {
+                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            } catch (error) {
+                console.error("Error enviando reacción:", error);
+            }
+        }
+
+        function getQueryParam(param) {
+            return new URLSearchParams(window.location.search).get(param);
+        }
+
+        // --- INICIALIZACIÓN ---
+        window.addEventListener('DOMContentLoaded', () => {
+            state.tableQrCode = getQueryParam('table');
+            if (!state.tableQrCode) {
+                welcomeMessage.textContent = 'Error: No se encontró el código de la mesa.';
+                loginForm.classList.add('hidden');
+                return;
+            }
+
+            const storedUser = sessionStorage.getItem('karaokeUser');
+            const storedTable = sessionStorage.getItem('karaokeTable');
+
+            if (storedUser && storedTable === state.tableQrCode) {
+                state.user = JSON.parse(storedUser);
+                showDashboard();
+            }
+
+            // Asignar eventos
+            connectButton.addEventListener('click', handleLogin);
+            logoutButton.addEventListener('click', handleLogout);
+            document.querySelector('.tabs').addEventListener('click', handleTabClick);
+            document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
+            document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
+            document.getElementById('search-results').addEventListener('click', handleAddSong);
+            catalogList.addEventListener('click', handleAddToCart);
+            document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
+            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
+            document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
+            cancelOrderBtn.addEventListener('click', () => {
+                orderModal.style.display = 'none';
+            });
+
+            // Eventos del Carrito
+            cartFab.addEventListener('click', () => {
+                cartModal.style.display = 'flex';
+                renderCart();
+            });
+            document.getElementById('cancel-cart-btn').addEventListener('click', () => cartModal.style.display = 'none');
+            document.getElementById('confirm-cart-order-btn').addEventListener('click', handlePlaceOrder);
+            document.getElementById('cart-items-list').addEventListener('click', (e) => {
+                if (e.target.classList.contains('cart-remove-item-btn')) {
+                    const productId = parseInt(e.target.dataset.productId, 10);
+                    state.cart = state.cart.filter(item => item.producto_id !== productId);
+                    renderCart();
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
+        function updateProfileCard() {
+            document.getElementById('user-nick').textContent = state.user.nick;
+            document.getElementById('user-points').textContent = state.user.puntos;
+            const levelEl = document.getElementById('user-level');
+            levelEl.textContent = state.user.nivel.charAt(0).toUpperCase() + state.user.nivel.slice(1);
+            levelEl.className = `profile-level level-${state.user.nivel}`;
+        }
+
+        function showDashboard() {
+            document.getElementById('table-name').textContent = state.tableQrCode;
+            updateProfileCard();
+
+            loginContainer.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+
+            connectWebSocket();
+            // Añadir el botón flotante del carrito al dashboard
+            dashboardView.appendChild(cartFab);
+            renderCart();
             fetchMyList();
         }
 
@@ -970,11 +1173,27 @@
             document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
             document.getElementById('search-results').addEventListener('click', handleAddSong);
             catalogList.addEventListener('click', handleOrderProduct);
+            catalogList.addEventListener('click', handleAddToCart);
             document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
             cancelOrderBtn.addEventListener('click', () => {
                 orderModal.style.display = 'none';
+            });
+
+            // Eventos del Carrito
+            cartFab.addEventListener('click', () => {
+                cartModal.style.display = 'flex';
+                renderCart();
+            });
+            document.getElementById('cancel-cart-btn').addEventListener('click', () => cartModal.style.display = 'none');
+            document.getElementById('confirm-cart-order-btn').addEventListener('click', handlePlaceOrder);
+            document.getElementById('cart-items-list').addEventListener('click', (e) => {
+                if (e.target.classList.contains('cart-remove-item-btn')) {
+                    const productId = parseInt(e.target.dataset.productId, 10);
+                    state.cart = state.cart.filter(item => item.producto_id !== productId);
+                    renderCart();
+                }
             });
 
         });
