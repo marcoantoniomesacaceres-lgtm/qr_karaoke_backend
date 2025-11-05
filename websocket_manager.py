@@ -143,6 +143,32 @@ class ConnectionManager:
                     pass
         return len(dead)
 
+    async def broadcast_pedido_created(self, pedido_payload: dict):
+        """
+        Envía un evento indicando que se creó un nuevo pedido consolidado.
+        """
+        payload = {
+            "type": "pedido_created",
+            "payload": pedido_payload
+        }
+        dead = []
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_text(json.dumps(payload, default=str)) # Usar default=str para fechas
+            except Exception:
+                try:
+                    await connection.close()
+                except Exception:
+                    pass
+                dead.append(connection)
+        for d in dead:
+            if d in self.active_connections:
+                try:
+                    self.active_connections.remove(d)
+                except ValueError:
+                    pass
+        return len(dead)
+
     async def broadcast_consumo_deleted(self, consumo_payload: dict):
         """
         Envía un evento indicando que un consumo fue eliminado.

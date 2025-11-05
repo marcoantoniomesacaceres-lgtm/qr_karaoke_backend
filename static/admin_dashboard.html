@@ -995,23 +995,6 @@
                                     while (listEl.children.length > 10) listEl.removeChild(listEl.lastChild);
                                 }
                                 break;
-                            case 'consumo_deleted':
-                                // payload: {id: consumo_id} o {ids: [consumo_id1, ...]}
-                                const payload = data.payload;
-                                if (payload) {
-                                    const listEl = document.getElementById('recent-orders-list');
-                                    if (listEl) {
-                                        if (payload.id) { // Eliminar un solo consumo
-                                            const child = listEl.querySelector(`li[data-consumo-id="${payload.id}"]`);
-                                            if (child) child.remove();
-                                        } else if (payload.ids && Array.isArray(payload.ids)) { // Eliminar un pedido consolidado
-                                            const orderId = payload.ids.join(',');
-                                            const child = listEl.querySelector(`li[data-consumo-ids="${orderId}"]`);
-                                            if (child) child.remove();
-                                        }
-                                    }
-                                }
-                                break;
                             case 'pedido_created':
                                 // Activar la alerta visual y sonora
                                 document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
@@ -1047,16 +1030,24 @@
                                 }
                                 break;
                             case 'consumo_deleted':
-                                // payload: {id: consumo_id}
-                                const deletedId = data.payload && data.payload.id;
-                                if (deletedId) {
-                                    const listEl2 = document.getElementById('recent-orders-list');
-                                    if (listEl2) {
-                                        const child = listEl2.querySelector(`li[data-consumo-id="${deletedId}"]`);
-                                        if (child) child.remove();
+                                // payload: {id: consumo_id} o {ids: [consumo_id1, ...]}
+                                const payload = data.payload;
+                                if (payload) {
+                                    const listEl = document.getElementById('recent-orders-list');
+                                    if (listEl) {
+                                        if (payload.id) { // Eliminar un solo consumo
+                                            const child = listEl.querySelector(`li[data-consumo-id="${payload.id}"]`);
+                                            if (child) child.remove();
+                                        } else if (payload.ids && Array.isArray(payload.ids)) { // Eliminar un pedido consolidado
+                                            const orderId = payload.ids.join(',');
+                                            const child = listEl.querySelector(`li[data-consumo-ids="${orderId}"], li[data-ids="${orderId}"]`);
+                                            if (child) child.remove();
+                                        }
                                     }
                                 }
                                 break;
+                            case 'pedido_created':
+                                // Activar la alerta visual y sonora
                             case 'song_finished':
                                 const songInfo = data.payload;
                                 const lastSungContainer = document.getElementById('last-sung-info');
@@ -1623,14 +1614,14 @@
                 let isDeleteAction = false; // Indica si la acción es eliminar el registro de la DB
 
                 if (btnDespachado) {
-                    consumoIds = (btnDespachado.dataset.id || btnDespachado.dataset.ids).split(',');
+                    consumoIds = (btnDespachado.dataset.id || btnDespachado.dataset.ids || '').split(',');
                     // Marcamos cada consumo como despachado
                     endpoint = `/admin/consumos/{consumo_id}/mark-despachado`;
                     confirmMessage = '¿Confirmas que este pedido ha sido despachado?';
                     successMessage = 'Pedido marcado como despachado.';
                     isDeleteAction = false;
                 } else if (btnNoDespachado) {
-                    consumoIds = (btnNoDespachado.dataset.id || btnNoDespachado.dataset.ids).split(',');
+                    consumoIds = (btnNoDespachado.dataset.id || btnNoDespachado.dataset.ids || '').split(',');
                     // Eliminamos cada consumo
                     endpoint = `/admin/consumos/{consumo_id}`;
                     confirmMessage = '¿Estás seguro de que quieres CANCELAR este pedido? Se eliminará del sistema.';
@@ -1640,7 +1631,7 @@
                     return; // No es ninguno de nuestros botones
                 }
 
-                if (!consumoIds || consumoIds.length === 0) return;
+                if (!consumoIds || consumoIds.length === 0 || consumoIds[0] === '') return;
                 if (!confirm(confirmMessage)) return;
                 
                 const li = btnDespachado ? btnDespachado.closest('li') : btnNoDespachado.closest('li');
