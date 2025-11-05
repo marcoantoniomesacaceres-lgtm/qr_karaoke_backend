@@ -996,6 +996,57 @@
                                 }
                                 break;
                             case 'consumo_deleted':
+                                // payload: {id: consumo_id} o {ids: [consumo_id1, ...]}
+                                const payload = data.payload;
+                                if (payload) {
+                                    const listEl = document.getElementById('recent-orders-list');
+                                    if (listEl) {
+                                        if (payload.id) { // Eliminar un solo consumo
+                                            const child = listEl.querySelector(`li[data-consumo-id="${payload.id}"]`);
+                                            if (child) child.remove();
+                                        } else if (payload.ids && Array.isArray(payload.ids)) { // Eliminar un pedido consolidado
+                                            const orderId = payload.ids.join(',');
+                                            const child = listEl.querySelector(`li[data-consumo-ids="${orderId}"]`);
+                                            if (child) child.remove();
+                                        }
+                                    }
+                                }
+                                break;
+                            case 'pedido_created':
+                                // Activar la alerta visual y sonora
+                                document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+
+                                const pedido = data.payload;
+                                const listElPedido = document.getElementById('recent-orders-list');
+                                if (listElPedido) {
+                                    if (listElPedido.querySelector('p')) listElPedido.innerHTML = '';
+
+                                    const li = document.createElement('li');
+                                    li.className = 'item new-order';
+                                    li.dataset.consumoIds = pedido.consumo_ids.join(','); // Guardamos todos los IDs
+                                    
+                                    const itemsHtml = pedido.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
+                                    const mesaText = pedido.mesa_nombre ? `Mesa ${pedido.mesa_nombre}` : '';
+
+                                    li.innerHTML = `
+                                        <div class="item-details">
+                                            <div class="item-title">
+                                                ${mesaText} pidió:
+                                                <span class="order-alert-icon shaking">🔔</span>
+                                            </div>
+                                            <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
+                                            <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
+                                        </div>
+                                        <div class="item-actions">
+                                            <button class="btn-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Marcar como despachado">Despachado</button>
+                                            <button class="btn-no-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Cancelar pedido">No Despachado</button>
+                                        </div>
+                                    `;
+                                    listElPedido.insertBefore(li, listElPedido.firstChild);
+                                    while (listElPedido.children.length > 10) listElPedido.removeChild(listElPedido.lastChild);
+                                }
+                                break;
+                            case 'consumo_deleted':
                                 // payload: {id: consumo_id}
                                 const deletedId = data.payload && data.payload.id;
                                 if (deletedId) {
@@ -1565,21 +1616,23 @@
                 const btnDespachado = e.target.closest('.btn-despachado');
                 const btnNoDespachado = e.target.closest('.btn-no-despachado');
 
-                let consumoId;
+                let consumoIds; // Puede ser uno o varios
                 let endpoint;
                 let confirmMessage;
                 let successMessage;
                 let isDeleteAction = false; // Indica si la acción es eliminar el registro de la DB
 
                 if (btnDespachado) {
-                    consumoId = btnDespachado.dataset.id;
-                    endpoint = `/admin/consumos/${consumoId}/mark-despachado`;
+                    consumoIds = (btnDespachado.dataset.id || btnDespachado.dataset.ids).split(',');
+                    // Marcamos cada consumo como despachado
+                    endpoint = `/admin/consumos/{consumo_id}/mark-despachado`;
                     confirmMessage = '¿Confirmas que este pedido ha sido despachado?';
                     successMessage = 'Pedido marcado como despachado.';
                     isDeleteAction = false;
                 } else if (btnNoDespachado) {
-                    consumoId = btnNoDespachado.dataset.id;
-                    endpoint = `/admin/consumos/${consumoId}`; // Endpoint existente para DELETE
+                    consumoIds = (btnNoDespachado.dataset.id || btnNoDespachado.dataset.ids).split(',');
+                    // Eliminamos cada consumo
+                    endpoint = `/admin/consumos/{consumo_id}`;
                     confirmMessage = '¿Estás seguro de que quieres CANCELAR este pedido? Se eliminará del sistema.';
                     successMessage = 'Pedido cancelado y eliminado del sistema.';
                     isDeleteAction = true;
@@ -1587,10 +1640,11 @@
                     return; // No es ninguno de nuestros botones
                 }
 
-                if (!consumoId) return;
+                if (!consumoIds || consumoIds.length === 0) return;
                 if (!confirm(confirmMessage)) return;
                 
-                const li = document.querySelector(`#recent-orders-list li[data-consumo-id="${consumoId}"]`);
+                const li = btnDespachado ? btnDespachado.closest('li') : btnNoDespachado.closest('li');
+
                 // Detener la animación de la campana al procesar el pedido
                 const bellIcon = li ? li.querySelector('.order-alert-icon') : null;
                 if (bellIcon) {
@@ -1598,7 +1652,12 @@
                 }
 
                 try {
-                    await apiFetch(endpoint, { method: isDeleteAction ? 'DELETE' : 'POST' });
+                    // Iteramos para aplicar la acción a cada ID de consumo
+                    for (const id of consumoIds) {
+                        const finalEndpoint = endpoint.replace('{consumo_id}', id);
+                        await apiFetch(finalEndpoint, { method: isDeleteAction ? 'DELETE' : 'POST' });
+                    }
+
                     if (li) li.remove(); // Eliminar el elemento de la lista
                     showNotification(successMessage, 'info');
                 } catch (err) {

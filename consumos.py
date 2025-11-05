@@ -110,13 +110,23 @@ async def usuario_pide_carrito(
     # Notificamos a todos para que la cola se actualice (por si cambia la prioridad)
     asyncio.create_task(websocket_manager.manager.broadcast_queue_update())
 
-    # Notificamos al admin sobre el NUEVO PEDIDO CONSOLIDADO
+    # Notificamos al admin sobre el NUEVO PEDIDO CONSOLIDADO en un solo evento
     try:
-        # Reutilizamos el payload de consumo_created, pero ahora lo llenamos con los detalles del pedido completo
-        # En una futura mejora, podríamos crear un tipo de evento 'pedido_created'
-        for db_consumo in consumos_creados:
-             consumo_payload = websocket_manager.create_consumo_payload(db_consumo)
-             asyncio.create_task(websocket_manager.manager.broadcast_consumo_created(consumo_payload))
+        if consumos_creados:
+            primer_consumo = consumos_creados[0]
+            mesa_nombre = primer_consumo.usuario.mesa.nombre if primer_consumo.usuario and primer_consumo.usuario.mesa else None
+            
+            pedido_payload = {
+                'id': f"pedido-{primer_consumo.created_at.timestamp()}", # ID único para el pedido
+                'consumo_ids': [c.id for c in consumos_creados], # IDs para acciones
+                'usuario_nick': primer_consumo.usuario.nick if primer_consumo.usuario else 'Desconocido',
+                'mesa_nombre': mesa_nombre,
+                'created_at': primer_consumo.created_at.isoformat(),
+                'items': [
+                    {'producto_nombre': c.producto.nombre, 'cantidad': c.cantidad} for c in consumos_creados
+                ]
+            }
+            asyncio.create_task(websocket_manager.manager.broadcast_pedido_created(pedido_payload))
     except Exception:
         pass # No dejar que la notificación rompa la respuesta
 
