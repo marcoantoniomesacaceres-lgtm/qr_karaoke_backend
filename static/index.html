@@ -351,7 +351,7 @@
                 <p>Tu carrito está vacío.</p>
             </div>
             <div class="modal-actions">
-                <button id="confirm-cart-order-btn" class="btn-confirm">Hacer Pedido</button>
+                <button id="confirm-cart-order-btn" class="btn-confirm" style="background-color: #2196F3;">Hacer Pedido</button>
                 <button id="cancel-cart-btn" class="btn-cancel">Seguir Comprando</button>
             </div>
         </div>
@@ -982,6 +982,11 @@
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
+            // Ocultar el botón flotante del carrito por defecto
+            if (cartFab) {
+                cartFab.style.display = 'none';
+            }
+
             clickedTab.classList.add('active');
             document.getElementById(clickedTab.dataset.tab).classList.add('active');
 
@@ -989,6 +994,10 @@
                 fetchMyList();
             }
             if (clickedTab.dataset.tab === 'tab-catalog') {
+                // Mostrar el botón flotante del carrito solo en la pestaña de catálogo
+                if (cartFab) {
+                    cartFab.style.display = 'flex';
+                }
                 fetchProducts();
             }
             if (clickedTab.dataset.tab === 'tab-my-orders') {
@@ -1015,61 +1024,6 @@
             }
         }
 
-        function getQueryParam(param) {
-            return new URLSearchParams(window.location.search).get(param);
-        }
-
-        // --- INICIALIZACIÓN ---
-        window.addEventListener('DOMContentLoaded', () => {
-            state.tableQrCode = getQueryParam('table');
-            if (!state.tableQrCode) {
-                welcomeMessage.textContent = 'Error: No se encontró el código de la mesa.';
-                loginForm.classList.add('hidden');
-                return;
-            }
-
-            const storedUser = sessionStorage.getItem('karaokeUser');
-            const storedTable = sessionStorage.getItem('karaokeTable');
-
-            if (storedUser && storedTable === state.tableQrCode) {
-                state.user = JSON.parse(storedUser);
-                showDashboard();
-            }
-
-            // Asignar eventos
-            connectButton.addEventListener('click', handleLogin);
-            logoutButton.addEventListener('click', handleLogout);
-            document.querySelector('.tabs').addEventListener('click', handleTabClick);
-            document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
-            document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
-            document.getElementById('search-results').addEventListener('click', handleAddSong);
-            catalogList.addEventListener('click', handleAddToCart);
-            document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
-            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
-            document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
-            cancelOrderBtn.addEventListener('click', () => {
-                orderModal.style.display = 'none';
-            });
-
-            // Eventos del Carrito
-            cartFab.addEventListener('click', () => {
-                cartModal.style.display = 'flex';
-                renderCart();
-            });
-            document.getElementById('cancel-cart-btn').addEventListener('click', () => cartModal.style.display = 'none');
-            document.getElementById('confirm-cart-order-btn').addEventListener('click', handlePlaceOrder);
-            document.getElementById('cart-items-list').addEventListener('click', (e) => {
-                if (e.target.classList.contains('cart-remove-item-btn')) {
-                    const productId = parseInt(e.target.dataset.productId, 10);
-                    state.cart = state.cart.filter(item => item.producto_id !== productId);
-                    renderCart();
-                }
-            });
-
-        });
-    </script>
-</body>
-</html>
         function updateProfileCard() {
             document.getElementById('user-nick').textContent = state.user.nick;
             document.getElementById('user-points').textContent = state.user.puntos;
@@ -1172,7 +1126,6 @@
             document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
             document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
             document.getElementById('search-results').addEventListener('click', handleAddSong);
-            catalogList.addEventListener('click', handleOrderProduct);
             catalogList.addEventListener('click', handleAddToCart);
             document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
