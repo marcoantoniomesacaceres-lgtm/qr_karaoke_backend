@@ -818,31 +818,49 @@
         async function loadRecentOrders() {
             const listEl = document.getElementById('recent-orders-list');
             try {
-                const items = await apiFetch('/admin/recent-consumos?limit=10');
+                const pedidos = await apiFetch('/admin/recent-consumos?limit=10');
                 listEl.innerHTML = '';
-                if (!items || items.length === 0) {
+                if (!pedidos || pedidos.length === 0) {
                     listEl.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
                     return;
                 }
-                items.forEach(it => {
+                pedidos.forEach(pedido => {
                     const li = document.createElement('li');
                     li.className = 'item';
-                    li.dataset.consumoId = it.id;
-                    const mesaText = it.mesa_nombre ? `Mesa ${it.mesa_nombre}` : '';
-                    // Mensaje: "Mesa X pidió 2x Papas de todito" + botón cancelar
-                    li.innerHTML = `
-                        <div class="item-details">
-                            <div class="item-title">
-                                ${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}
-                                <span class="order-alert-icon shaking">🔔</span>
+                    const mesaText = pedido.mesa_nombre ? `Mesa ${pedido.mesa_nombre}` : '';
+
+                    if (pedido.is_single_item) {
+                        // Renderizar como un consumo individual
+                        li.dataset.consumoId = pedido.id;
+                        li.innerHTML = `
+                            <div class="item-details">
+                                <div class="item-title">
+                                    ${mesaText} pidió ${pedido.cantidad} x ${pedido.producto_nombre}
+                                    <span class="order-alert-icon shaking">🔔</span>
+                                </div>
+                                <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
                             </div>
-                            <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn-despachado" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
-                            <button class="btn-no-despachado" data-id="${it.id}" title="Cancelar pedido">No Despachado</button>
-                        </div>
-                    `;
+                            <div class="item-actions">
+                                <button class="btn-despachado" data-id="${pedido.id}" title="Marcar como despachado">Despachado</button>
+                                <button class="btn-no-despachado" data-id="${pedido.id}" title="Cancelar pedido">No Despachado</button>
+                            </div>
+                        `;
+                    } else {
+                        // Renderizar como un pedido consolidado
+                        li.dataset.consumoIds = pedido.consumo_ids.join(',');
+                        const itemsHtml = pedido.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
+                        li.innerHTML = `
+                            <div class="item-details">
+                                <div class="item-title">${mesaText} pidió: <span class="order-alert-icon shaking">🔔</span></div>
+                                <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
+                                <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Marcar como despachado">Despachado</button>
+                                <button class="btn-no-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Cancelar pedido">No Despachado</button>
+                            </div>
+                        `;
+                    }
                     listEl.appendChild(li);
                 });
             } catch (error) {
@@ -1596,11 +1614,7 @@
             document.getElementById('qr-code-container').addEventListener('click', handleToggleTableActive);
 
             // Poll recent orders every 5 seconds while admin is on dashboard
-            setInterval(() => {
-                const dashboardActive = document.getElementById('dashboard').classList.contains('active');
-                if (dashboardActive) loadRecentOrders();
-            }, 5000);
-
+            // Se elimina el intervalo para evitar el parpadeo. La actualización se hará por WebSockets.
             // Delegated handler for cancel buttons on recent orders
             // Modificado para manejar los dos nuevos botones: Despachado y No Despachado
             document.getElementById('recent-orders-list').addEventListener('click', async (e) => {
