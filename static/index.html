@@ -795,7 +795,7 @@
             confirmBtn.textContent = 'Enviando...';
 
             const cartPayload = { items: state.cart };
-
+ 
             try {
                 const response = await fetch(`${API_BASE_URL}/consumos/pedir/carrito/${state.user.id}`, {
                     method: 'POST',

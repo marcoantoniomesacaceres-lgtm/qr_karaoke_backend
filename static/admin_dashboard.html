@@ -1052,12 +1052,13 @@
                                 const payload = data.payload;
                                 if (payload) {
                                     const listEl = document.getElementById('recent-orders-list');
-                                    if (listEl) {
+                                    if (listEl) { // Check if the list element exists
                                         if (payload.id) { // Eliminar un solo consumo
                                             const child = listEl.querySelector(`li[data-consumo-id="${payload.id}"]`);
                                             if (child) child.remove();
                                         } else if (payload.ids && Array.isArray(payload.ids)) { // Eliminar un pedido consolidado
-                                            const orderId = payload.ids.join(',');
+                                            // FIX: Ensure payload.ids is an array before joining.
+                                            const orderId = Array.isArray(payload.ids) ? payload.ids.join(',') : '';
                                             const child = listEl.querySelector(`li[data-consumo-ids="${orderId}"], li[data-ids="${orderId}"]`);
                                             if (child) child.remove();
                                         }
