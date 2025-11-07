@@ -816,57 +816,65 @@
 
         // CARGA Y RENDER DE ÚLTIMOS PEDIDOS
         async function loadRecentOrders() {
-            const listEl = document.getElementById('recent-orders-list');
-            try {
-                const pedidos = await apiFetch('/admin/recent-consumos?limit=10');
-                listEl.innerHTML = '';
-                if (!pedidos || pedidos.length === 0) {
-                    listEl.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
-                    return;
-                }
-                pedidos.forEach(pedido => {
-                    const li = document.createElement('li');
-                    li.className = 'item';
-                    const mesaText = pedido.mesa_nombre ? `Mesa ${pedido.mesa_nombre}` : '';
-
-                    if (pedido.is_single_item) {
-                        // Renderizar como un consumo individual
-                        li.dataset.consumoId = pedido.id;
-                        li.innerHTML = `
-                            <div class="item-details">
-                                <div class="item-title">
-                                    ${mesaText} pidió ${pedido.cantidad} x ${pedido.producto_nombre}
-                                    <span class="order-alert-icon shaking">🔔</span>
-                                </div>
-                                <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn-despachado" data-id="${pedido.id}" title="Marcar como despachado">Despachado</button>
-                                <button class="btn-no-despachado" data-id="${pedido.id}" title="Cancelar pedido">No Despachado</button>
-                            </div>
-                        `;
-                    } else {
-                        // Renderizar como un pedido consolidado
-                        li.dataset.consumoIds = pedido.consumo_ids.join(',');
-                        const itemsHtml = pedido.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
-                        li.innerHTML = `
-                            <div class="item-details">
-                                <div class="item-title">${mesaText} pidió: <span class="order-alert-icon shaking">🔔</span></div>
-                                <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
-                                <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
-                            </div>
-                            <div class="item-actions">
-                                <button class="btn-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Marcar como despachado">Despachado</button>
-                                <button class="btn-no-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Cancelar pedido">No Despachado</button>
-                            </div>
-                        `;
-                    }
-                    listEl.appendChild(li);
-                });
-            } catch (error) {
-                listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando pedidos: ${error.message}</p></li>`;
+        const listEl = document.getElementById('recent-orders-list');
+        try {
+            const pedidos = await apiFetch('/admin/recent-consumos?limit=25'); // Pedimos más para tener margen de agrupación
+            listEl.innerHTML = '';
+            if (!pedidos || pedidos.length === 0) {
+                listEl.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
+                return;
             }
+
+            // 1. Agrupar pedidos por mesa
+            const pedidosPorMesa = pedidos.reduce((acc, pedido) => {
+                const mesaNombre = pedido.mesa_nombre || 'Pedidos sin mesa';
+                if (!acc[mesaNombre]) {
+                    acc[mesaNombre] = {
+                        items: [],
+                        ultimaFecha: new Date(0),
+                        nicks: new Set()
+                    };
+                }
+                acc[mesaNombre].items.push(pedido);
+                acc[mesaNombre].nicks.add(pedido.usuario_nick);
+                if (new Date(pedido.created_at) > acc[mesaNombre].ultimaFecha) {
+                    acc[mesaNombre].ultimaFecha = new Date(pedido.created_at);
+                }
+                return acc;
+            }, {});
+
+            // 2. Renderizar cada grupo en una tarjeta
+            Object.keys(pedidosPorMesa).sort((a, b) => pedidosPorMesa[b].ultimaFecha - pedidosPorMesa[a].ultimaFecha).forEach(mesaNombre => {
+                const grupo = pedidosPorMesa[mesaNombre];
+                const li = document.createElement('li');
+                li.className = 'item';
+                
+                const itemsHtml = grupo.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
+                const allConsumoIds = grupo.items.map(item => item.id).join(',');
+
+                li.innerHTML = `
+                    <div class="item-details">
+                        <div class="item-title">
+                            ${mesaNombre} pidió:
+                            <span class="order-alert-icon shaking">🔔</span>
+                        </div>
+                        <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
+                        <div class="item-meta">
+                            Por: ${[...grupo.nicks].join(', ')} — Último pedido a las ${grupo.ultimaFecha.toLocaleTimeString()}
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn-despachado" data-ids="${allConsumoIds}" title="Marcar todo como despachado">Despachado</button>
+                        <button class="btn-no-despachado" data-ids="${allConsumoIds}" title="Cancelar todo el pedido">No Despachado</button>
+                    </div>
+                `;
+                listEl.appendChild(li);
+            });
+
+        } catch (error) {
+            listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando pedidos: ${error.message}</p></li>`;
         }
+    }
 
         // --- NUEVAS FUNCIONES PARA LA PÁGINA DE CUENTAS ---
 
@@ -984,34 +992,8 @@
                             case 'consumo_created':
                                 // Activar la alerta visual y sonora
                                 document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
-
-                                // Prepend nuevo pedido a la lista
-                                const it = data.payload;
-                                const listEl = document.getElementById('recent-orders-list');
-                                if (listEl) {
-                                    // Si el primer elemento es el mensaje de "no hay pedidos", lo quitamos
-                                    if (listEl.querySelector('p')) listEl.innerHTML = '';
-
-                                    const li = document.createElement('li');
-                                    li.className = 'item new-order'; // Añadimos la clase 'new-order'
-                                    const mesaText = it.mesa_nombre ? `Mesa ${it.mesa_nombre}` : '';
-                                    li.dataset.consumoId = it.id;
-                                    li.innerHTML = `
-                                        <div class="item-details">
-                                            <div class="item-title">
-                                                ${mesaText} pidió ${it.cantidad} x ${it.producto_nombre}
-                                                <span class="order-alert-icon">🔔</span>
-                                            </div>
-                                            <div class="item-meta">Por: ${it.usuario_nick} — ${new Date(it.created_at).toLocaleTimeString()}</div>
-                                        </div>
-                                        <div class="item-actions">
-                                            <button class="btn-action dispatch-order-btn" data-id="${it.id}" title="Marcar como despachado">Despachado</button>
-                                        </div>
-                                    `;
-                                    // Prepend and keep max 10 items
-                                    listEl.insertBefore(li, listEl.firstChild);
-                                    while (listEl.children.length > 10) listEl.removeChild(listEl.lastChild);
-                                }
+                                // En lugar de añadirlo directamente, recargamos toda la lista para que se agrupe correctamente.
+                                loadRecentOrders();
                                 break;
                             case 'pedido_created':
                                 // Activar la alerta visual y sonora
