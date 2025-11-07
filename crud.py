@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func, case
+from sqlalchemy import func, case, or_
+from sqlalchemy.orm import joinedload # Importar joinedload
 import secrets
 from typing import List, Optional
 import datetime

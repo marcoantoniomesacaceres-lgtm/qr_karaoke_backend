@@ -39,7 +39,8 @@ async def registrar_consumo(
         if db_consumo.usuario and db_consumo.usuario.mesa:
             mesa_nombre = db_consumo.usuario.mesa.nombre
 
-        consumo_payload = {
+        consumo_payload = { # This is for single consumptions
+            'type': 'single_consumo',
             'id': db_consumo.id,
             'cantidad': db_consumo.cantidad,
             'valor_total': float(db_consumo.valor_total),
@@ -47,7 +48,8 @@ async def registrar_consumo(
             'usuario_nick': db_consumo.usuario.nick if db_consumo.usuario else None,
             'mesa_nombre': mesa_nombre,
             'created_at': db_consumo.created_at.isoformat()
-        }
+            # 'is_single_item': True is implied by 'type': 'single_consumo'
+        } 
         # Fire-and-forget the notification to avoid affecting the HTTP response
         asyncio.create_task(websocket_manager.manager.broadcast_consumo_created(consumo_payload))
     except Exception:
@@ -76,7 +78,8 @@ async def usuario_pide_producto(
         if db_consumo.usuario and db_consumo.usuario.mesa:
             mesa_nombre = db_consumo.usuario.mesa.nombre
 
-        consumo_payload = {
+            consumo_payload = { # This is for single consumptions from public endpoint
+                'type': 'single_consumo',
             'id': db_consumo.id,
             'cantidad': db_consumo.cantidad,
             'valor_total': float(db_consumo.valor_total),
@@ -84,7 +87,8 @@ async def usuario_pide_producto(
             'usuario_nick': db_consumo.usuario.nick if db_consumo.usuario else None,
             'mesa_nombre': mesa_nombre,
             'created_at': db_consumo.created_at.isoformat()
-        }
+                # 'is_single_item': True is implied by 'type': 'single_consumo'
+            } 
         asyncio.create_task(websocket_manager.manager.broadcast_consumo_created(consumo_payload))
     except Exception:
         pass
@@ -117,7 +121,8 @@ async def usuario_pide_carrito(
             mesa_nombre = primer_consumo.usuario.mesa.nombre if primer_consumo.usuario and primer_consumo.usuario.mesa else None
             
             pedido_payload = {
-                'id': f"pedido-{primer_consumo.created_at.timestamp()}", # ID único para el pedido
+                'type': 'consolidated_pedido', # Add type
+                'id': f"pedido-{primer_consumo.created_at.timestamp()}-{primer_consumo.usuario.id}", # Unique ID for the consolidated order
                 'consumo_ids': [c.id for c in consumos_creados], # IDs para acciones
                 'usuario_nick': primer_consumo.usuario.nick if primer_consumo.usuario else 'Desconocido',
                 'mesa_nombre': mesa_nombre,
@@ -125,7 +130,8 @@ async def usuario_pide_carrito(
                 'items': [
                     {'producto_nombre': c.producto.nombre, 'cantidad': c.cantidad} for c in consumos_creados
                 ]
-            }
+                # 'is_single_item': False is implied by 'type': 'consolidated_pedido'
+            } 
             asyncio.create_task(websocket_manager.manager.broadcast_pedido_created(pedido_payload))
     except Exception:
         pass # No dejar que la notificación rompa la respuesta
