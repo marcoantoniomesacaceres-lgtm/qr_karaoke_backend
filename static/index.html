@@ -878,7 +878,7 @@
             container.innerHTML = '<p>Cargando estado de cuenta...</p>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/admin/my-table-account?usuario_id=${state.user.id}`);
+                const response = await fetch(`${API_BASE_URL}/mi-cuenta/${state.user.id}`);
                 if (!response.ok) {
                     const err = await response.json();
                     throw new Error(err.detail || 'No se pudo cargar la cuenta.');

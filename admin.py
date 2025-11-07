@@ -31,6 +31,22 @@ def get_mis_pedidos(usuario_id: int, db: Session = Depends(get_db)):
     consumos = crud.get_consumos_por_usuario(db, usuario_id=usuario_id)
     return consumos
 
+@public_router.get("/mi-cuenta/{usuario_id}", response_model=schemas.MesaEstadoPago, summary="Obtener el estado de cuenta de mi mesa", tags=["Usuarios", "Cuentas"])
+def get_my_table_account_status_public(usuario_id: int, db: Session = Depends(get_db)):
+    """
+    **[Usuario]** Devuelve el estado de cuenta completo de la mesa a la que
+    pertenece el usuario, incluyendo consumos, pagos y saldo.
+    """
+    db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
+    if not db_usuario or not db_usuario.mesa_id:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado o no está en una mesa.")
+
+    status = crud.get_table_payment_status(db, mesa_id=db_usuario.mesa_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="No se pudo obtener el estado de la mesa.")
+    return status
+
+
 
 # --- Rutas de Administrador (protegidas por API Key) ---
 
@@ -552,21 +568,6 @@ def get_consumers_no_singers_report(db: Session = Depends(get_db), umbral: float
     """
     users = crud.get_usuarios_consumen_pero_no_cantan(db, umbral_consumo=umbral)
     return users
-
-@router.get("/my-table-account", response_model=schemas.MesaEstadoPago, summary="Obtener el estado de cuenta de mi mesa", tags=["Cuentas", "Usuarios"], include_in_schema=False)
-def get_my_table_account_status(usuario_id: int, db: Session = Depends(get_db)):
-    """
-    **[Usuario]** Devuelve el estado de cuenta completo de la mesa a la que
-    pertenece el usuario, incluyendo consumos, pagos y saldo.
-    """
-    db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
-    if not db_usuario or not db_usuario.mesa_id:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado o no está en una mesa.")
-
-    status = crud.get_table_payment_status(db, mesa_id=db_usuario.mesa_id)
-    if not status:
-        raise HTTPException(status_code=404, detail="No se pudo obtener el estado de la mesa.")
-    return status
 
 @router.get("/tables/{mesa_id}/top-categories", response_model=List[schemas.ReporteCategoriaMasVendida], summary="Obtener categorías más vendidas en una mesa")
 def get_top_categories_by_table_report(mesa_id: int, db: Session = Depends(get_db), limit: int = 5):
