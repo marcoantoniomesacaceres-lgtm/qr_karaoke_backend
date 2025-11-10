@@ -116,6 +116,7 @@ app.include_router(youtube.router, prefix="/api/v1/youtube", tags=["YouTube"])
 app.include_router(consumos.router, prefix="/api/v1/consumos", tags=["Consumos"])
 app.include_router(usuarios.router, prefix="/api/v1/usuarios", tags=["Usuarios"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administración"])
+app.include_router(admin.public_router, prefix="/api/v1", tags=["Público"]) # Añadir el router público
 app.include_router(productos.router, prefix="/api/v1/productos", tags=["Productos"])
 app.include_router(broadcast.router, prefix="/api/v1/broadcast", tags=["Broadcast"])
 

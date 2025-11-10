@@ -200,33 +200,35 @@
             max-height: 250px;
             overflow-y: auto;
         }
+        /* Estilos para la sección "Mi Consumo" */
+        .account-view {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex; /* Added for consistent layout with admin dashboard */
+            flex-direction: column; /* Added for consistent layout with admin dashboard */
+        }
+        .account-summary {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .account-summary div { margin-bottom: 8px; }
+        .saldo-pendiente { font-size: 1.3em; font-weight: bold; }
+        .saldo-ok { color: #66bb6a; } /* Using existing success color */
+        .saldo-debe { color: #cf6679; } /* Using existing error color */
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 250px; /* Adjusted for user dashboard */
+            overflow-y: auto;
+        }
         .details-section h4 { margin-top: 0; color: #bb86fc; }
         .details-section .item-list li {
             padding: 8px 4px;
             border-bottom: 1px dotted #444;
             font-size: 0.95em;
-        }
-    </style>
-    <style>
-        /* Estilos para las reacciones con emoticonos */
-        .reaction-container {
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Para que no interfiera con los clics */
-            overflow: hidden;
-            z-index: 9999;
-        }
-        .reaction-emoji {
-            position: absolute;
-            bottom: -50px; /* Empieza fuera de la pantalla */
-            font-size: 3rem;
-            animation: float-up 5s ease-out forwards;
-        }
-        @keyframes float-up {
-            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
         }
     </style>
 </head>
@@ -270,7 +272,8 @@
             <button class="tab-button" data-tab="tab-catalog">Catálogo</button>
             
             <button class="tab-button" data-tab="tab-my-account">Mi Consumo</button>
-            <button class="tab-button" data-tab="tab-my-list">Mi Lista</button>
+            
+            <button class="tab-button" data-tab="tab-my-list" style="display: none;">Mi Lista</button>
         </div>
 
         <!-- Pestaña de la Cola de Karaoke -->
@@ -311,18 +314,32 @@
             </ul>
         </div>
 
-        <!-- Pestaña de Mis Pedidos -->
-        <div id="tab-my-orders" class="tab-content">
-            <h2>Mis Pedidos Recientes</h2>
-            <ul id="my-orders-list" class="song-list">
-                <!-- Los pedidos del usuario se insertarán aquí -->
-            </ul>
-        </div>
-
         <!-- Pestaña de Mis Cuentas -->
         <div id="tab-my-account" class="tab-content">
             <h2>Mi Consumo en la Mesa</h2>
-            <div id="my-account-content">Cargando estado de cuenta...</div>
+            <div id="my-account-content">
+                <!-- Estructura estática de la tarjeta de consumo -->
+                <div class="account-view">
+                    <div class="account-summary">
+                        <div>Total Consumido: <strong id="consumo-total">$0.00</strong></div>
+                        <div>Total Pagado: <strong id="consumo-pagado" style="color: #66bb6a;">$0.00</strong></div>
+                        <div class="saldo-pendiente saldo-ok">Saldo: <strong id="consumo-saldo">$0.00</strong></div>
+                    </div>
+
+                    <details open>
+                        <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles</summary>
+                        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            <div class="details-section">
+                                <h4>Consumos</h4>
+                                <ul id="consumo-lista-items" class="item-list">
+                                    <li>No hay consumos registrados.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+                <!-- Fin de la estructura estática -->
+            </div>
         </div>
 
         <!-- Pestaña de Mi Lista -->
@@ -580,7 +597,7 @@
                 const data = JSON.parse(event.data);
                 
                 // CORRECCIÓN: Verificamos si el mensaje tiene un campo 'type' para manejar
-                // notificaciones y otros eventos estructurados.
+                // notificaciones y otros eventos estructurados. 
                 if (data.type) {
                   if (data.type === 'notification' || data.type === 'admin_notification') {
                     showNotification(data.payload.mensaje);
@@ -862,15 +879,6 @@
             }
         }
 
-        async function fetchMyOrders() {
-            if (!state.user) return;
-            try {
-                const response = await fetch(`${API_BASE_URL}/consumos/mis-pedidos/${state.user.id}`);
-                const consumos = await response.json();
-                renderMyOrders(consumos);
-            } catch (error) { console.error('Error al obtener mis pedidos:', error); }
-        }
-
         async function fetchTableAccountStatus() {
             if (!state.user) return;
 
@@ -885,43 +893,43 @@
                 }
                 const data = await response.json();
 
-                // FIX: Convertir a número antes de comparar
-                const saldoPendienteNum = parseFloat(data.saldo_pendiente);
+                // Convertir a número antes de comparar y formatear
+                const saldoPendienteNum = parseFloat(data.saldo_pendiente); 
                 const totalConsumidoNum = parseFloat(data.total_consumido);
                 const totalPagadoNum = parseFloat(data.total_pagado);
                 const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
 
                 container.innerHTML = `
-                    <div class="account-view">
-                        <h3>${data.mesa_nombre}</h3>
-                        <div class="account-summary">
-                            <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
-                            <div>Total Pagado: <strong style="color: #66bb6a;">$${totalPagadoNum.toFixed(2)}</strong></div>
-                            <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
-                        </div>
-
-                        <details style="margin-top: 20px;">
-                            <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles de Consumos y Pagos</summary>
-                            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
-                                <div class="details-section">
-                                    <h4>Consumos</h4>
-                                    <ul class="item-list">
-                                        ${data.consumos.length > 0 ? data.consumos.map(c => `
-                                            <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: var(--text-secondary); font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
-                                        `).join('') : '<li>No hay consumos registrados.</li>'}
-                                    </ul>
-                                </div>
-                                <div class="details-section">
-                                    <h4>Pagos</h4>
-                                    <ul class="item-list">
-                                        ${data.pagos.length > 0 ? data.pagos.map(p => `
-                                            <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: var(--text-secondary); font-size: 0.9em;">${new Date(p.created_at).toLocaleTimeString()}</span></li>
-                                        `).join('') : '<li>No hay pagos registrados.</li>'}
-                                    </ul>
-                                </div>
-                            </div>
-                        </details>
+                <div class="account-view">
+                    <h3>Cuenta de Mesa: ${data.mesa_nombre}</h3>
+                    <div class="account-summary">
+                        <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
+                        <div>Total Pagado: <strong style="color: #66bb6a;">$${totalPagadoNum.toFixed(2)}</strong></div>
+                        <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
                     </div>
+
+                    <details style="margin-top: 20px;">
+                        <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles de Consumos y Pagos</summary>
+                        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            <div class="details-section">
+                                <h4>Consumos</h4>
+                                <ul class="item-list">
+                                    ${data.consumos.length > 0 ? data.consumos.map(c => `
+                                        <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: var(--text-secondary); font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
+                                    `).join('') : '<li>No hay consumos registrados.</li>'}
+                                </ul>
+                            </div>
+                            <div class="details-section">
+                                <h4>Pagos</h4>
+                                <ul class="item-list">
+                                    ${data.pagos.length > 0 ? data.pagos.map(p => `
+                                        <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: var(--text-secondary); font-size: 0.9em;">${new Date(p.created_at).toLocaleTimeString()}</span></li>
+                                    `).join('') : '<li>No hay pagos registrados.</li>'}
+                                </ul>
+                            </div>
+                        </div>
+                    </details>
+                </div>
                 `;
             } catch (error) {
                 container.innerHTML = `<p class="error-msg">${error.message}</p>`;
@@ -930,17 +938,16 @@
 
         async function fetchUserProfile() {
             try {
-                const response = await fetch(`${API_BASE_URL}/usuarios/${state.user.id}/perfil`);
+                const response = await fetch(`${API_BASE_URL}/usuarios/${state.user.id}`);
                 // --- INICIO DE LA CORRECCIÓN ---
                 if (!response.ok) {
                     throw new Error(`Error ${response.status} al obtener el perfil.`);
                 }
                 // --- FIN DE LA CORRECCIÓN ---
-                const profile = await response.json();
+                const profile = await response.json(); // Esperamos a que el perfil se resuelva
                 state.user = profile; // Actualizamos el estado local del usuario
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
                 updateProfileCard();
-                fetchMyList(); // **CORRECCIÓN: Cargar la lista de canciones después de actualizar el perfil.**
             } catch (error) {
                 console.error('Error al actualizar el perfil:', error);
             }
@@ -962,7 +969,7 @@
             dashboardView.classList.remove('hidden');
 
             connectWebSocket();            renderCart(); // Renderiza el carrito (y oculta el botón si está vacío)
-            fetchMyList();
+            fetchMyList(); 
         }
 
         function handleLogout() {
@@ -985,26 +992,6 @@
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
             clickedTab.classList.add('active');
-            document.getElementById(clickedTab.dataset.tab).classList.add('active');
-
-            if (clickedTab.dataset.tab === 'tab-my-list') {
-                fetchMyList();
-            }
-            if (clickedTab.dataset.tab === 'tab-my-orders') {
-                fetchMyOrders();
-            }
-            if (clickedTab.dataset.tab === 'tab-my-account') {
-                fetchTableAccountStatus();
-            }
-        }
-        function handleTabClick(event) {
-            const clickedTab = event.target.closest('.tab-button');
-            if (!clickedTab) return;
-
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-            clickedTab.classList.add('active');
             const activeTabId = clickedTab.dataset.tab;
             document.getElementById(activeTabId).classList.add('active');
 
@@ -1015,9 +1002,6 @@
                     break;
                 case 'tab-catalog':
                     fetchProducts();
-                    break;
-                case 'tab-my-orders':
-                    fetchMyOrders();
                     break;
                 case 'tab-my-account':
                     fetchTableAccountStatus();
@@ -1057,7 +1041,7 @@
             dashboardView.classList.remove('hidden');
 
             connectWebSocket();            renderCart();
-            fetchMyList();
+            fetchMyList(); 
         }
 
         function handleLogout() {
