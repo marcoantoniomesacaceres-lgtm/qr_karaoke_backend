@@ -59,6 +59,7 @@ class MesaSimple(MesaBase):
 
 # --- Schema simple para info de Mesa ---
 class MesaInfo(BaseModel):
+    id: int
     nombre: str
     model_config = ConfigDict(from_attributes=True)
 

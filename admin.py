@@ -789,6 +789,17 @@ async def get_table_payment_status_endpoint(db: Session = Depends(get_db)):
     status_list = crud.get_all_tables_payment_status(db)
     return status_list
 
+@router.get("/tables/{mesa_id}/payment-status", response_model=schemas.MesaEstadoPago, summary="Obtener estado de cuenta de una mesa específica", tags=["Cuentas"])
+def get_single_table_payment_status(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve un estado de cuenta detallado para una mesa específica,
+    incluyendo total consumido, total pagado, saldo pendiente, y listas
+    de consumos y pagos realizados.
+    """
+    status = crud.get_table_payment_status(db, mesa_id=mesa_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+    return status
 @router.post("/pagos", response_model=schemas.PagoView, summary="Registrar un nuevo pago para una mesa", tags=["Cuentas"])
 async def create_pago_endpoint(pago: schemas.PagoCreate, db: Session = Depends(get_db)):
     """

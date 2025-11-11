@@ -600,6 +600,19 @@
             return data;
         }
 
+        // NEW FUNCTION: Enviar actualización de cuenta a través de WebSocket
+        function enviarActualizacionCuenta(mesaId, cuenta) {
+            if (adminSocket && adminSocket.readyState === WebSocket.OPEN) {
+                const payload = {
+                    type: 'update_account',
+                    mesa_id: mesaId,
+                    cuenta: cuenta
+                };
+                adminSocket.send(JSON.stringify(payload));
+            } else {
+                console.warn("WebSocket no está conectado para enviar actualización de cuenta.");
+            }
+        }
         // --- RENDER FUNCTIONS ---
 
         function renderProducts(products, productList) {
@@ -965,6 +978,10 @@
                 await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
                 showNotification('Pago registrado con éxito.', 'success');
                 closePaymentModal();
+                
+                // Obtener el estado de cuenta actualizado para la mesa y enviarlo por WebSocket
+                const updatedAccountStatus = await apiFetch(`/admin/tables/${paymentData.mesa_id}/payment-status`);
+                enviarActualizacionCuenta(paymentData.mesa_id, updatedAccountStatus);
                 loadAccountsPage(); // Recargar la vista de cuentas
             } catch (error) {
                 showNotification(`Error al registrar pago: ${error.message}`, 'error');

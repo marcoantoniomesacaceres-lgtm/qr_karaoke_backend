@@ -309,42 +309,27 @@
             </div>
             <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
-            </divv>
+            </div>
         </div>
 
         <!-- Pestaña de Mis Cuentas -->
         <div id="tab-my-account" class="tab-content">
             <h2>Estado de Cuenta de la Mesa</h2>
-            <div id="my-account-content">
-                <!-- Estructura estática de la tarjeta de consumo -->
-                <div class="account-view">
-                    <div class="account-summary">
-                        <div>Total Consumido: <strong id="consumo-total">$0.00</strong></div>
-                        <div>Total Pagado: <strong id="consumo-pagado" style="color: #66bb6a;">$0.00</strong></div>
-                        <div class="saldo-pendiente saldo-ok">Saldo: <strong id="consumo-saldo">$0.00</strong></div>
-                    </div>
-
-                    <details open>
-                        <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles</summary>
-                        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
-                            <!-- Sección para los pedidos del usuario con botón de cancelar -->
-                            <div class="details-section">
-                                <h4>Mis Pedidos</h4>
-                                <ul id="my-orders-list" class="item-list">
-                                    <li>Cargando mis pedidos...</li>
-                                </ul>
-                            </div>
-                            <!-- Sección para todos los consumos de la mesa (sin botón de cancelar) -->
-                            <div class="details-section">
-                                <h4>Todos los Consumos de la Mesa</h4>
-                                <ul id="table-consumo-lista-items" class="item-list">
-                                    <li>Cargando consumos de la mesa...</li>
-                                </ul>
-                            </div>                            
-                        </div>
-                    </details>
+            <div id="my-account-content" class="account-view">
+                <div id="mi-consumo">
+                  <h3>Mi Cuenta</h3>
+                  <div class="account-summary">
+                      <p>Total Consumido: <strong id="total-consumido">$0.00</strong></p>
+                      <p>Total Pagado: <strong id="total-pagado" style="color: #66bb6a;">$0.00</strong></p>
+                      <p>Saldo: <strong id="saldo" class="saldo-pendiente saldo-ok">$0.00</strong></p>
+                  </div>
+                
+                  <h4 style="color: #bb86fc; margin-top: 20px;">Consumos</h4>
+                  <ul id="lista-consumos" class="details-section item-list"><li>No hay consumos.</li></ul>
+                
+                  <h4 style="color: #bb86fc; margin-top: 20px;">Pagos</h4>
+                  <ul id="lista-pagos" class="details-section item-list"><li>No hay pagos registrados.</li></ul>
                 </div>
-                <!-- Fin de la estructura estática -->
             </div>
         </div>
 
@@ -630,6 +615,11 @@
                           document.getElementById('reaction-container').appendChild(emoji);
                           setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
                       }
+                  } else if (data.type === 'update_account') { // NEW: Handle account updates from admin
+                      // Check if the update is for the current user's table
+                      if (state.user && state.user.mesa && data.mesa_id === state.user.mesa.id) {
+                          fetchTableAccountStatus(); // Re-fetch the account status for the current user's table
+                      }
                   }
                 } else {
                     // Si no tiene 'type', asumimos que es la actualización de la cola.
@@ -906,12 +896,12 @@
                 const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
 
                 container.innerHTML = `
-                <div class="account-view"> <!-- Mantener la estructura de la tarjeta -->
+                <div id="mi-consumo">
                     <h3>Cuenta de Mesa: ${data.mesa_nombre}</h3>
                     <div class="account-summary">
-                        <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
-                        <div>Total Pagado: <strong style="color: #66bb6a;">$${totalPagadoNum.toFixed(2)}</strong></div>
-                        <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
+                        <p>Total Consumido: <strong id="total-consumido">$${totalConsumidoNum.toFixed(2)}</strong></p>
+                        <p>Total Pagado: <strong id="total-pagado" style="color: #66bb6a;">$${totalPagadoNum.toFixed(2)}</strong></p>
+                        <p>Saldo: <strong id="saldo" class="saldo-pendiente ${saldoClass}">$${saldoPendienteNum.toFixed(2)}</strong></p>
                     </div>
 
                     <details style="margin-top: 20px;">
@@ -919,7 +909,7 @@
                         <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
                             <div class="details-section">
                                 <h4>Consumos</h4>
-                                <ul class="item-list">
+                                <ul id="lista-consumos" class="item-list">
                                     ${data.consumos.length > 0 ? data.consumos.map(c => `
                                         <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: var(--text-secondary); font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
                                     `).join('') : '<li>No hay consumos registrados.</li>'}
@@ -927,7 +917,7 @@
                             </div>
                             <div class="details-section">
                                 <h4>Pagos</h4>
-                                <ul class="item-list">
+                                <ul id="lista-pagos" class="item-list">
                                     ${data.pagos.length > 0 ? data.pagos.map(p => `
                                         <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: var(--text-secondary); font-size: 0.9em;">${new Date(p.created_at).toLocaleTimeString()}</span></li>
                                     `).join('') : '<li>No hay pagos registrados.</li>'}
@@ -935,11 +925,7 @@
                             </div>
                         </div>
                     </details>
-                </div>
                 `;
-                // Ahora, después de que el HTML se ha insertado, podemos llamar a fetchMyOrders
-                // para poblar la lista de pedidos del usuario.
-                fetchMyOrders();
             } catch (error) {
                 container.innerHTML = `<p class="error-msg">${error.message}</p>`;
             }
@@ -948,20 +934,20 @@
         async function fetchMyOrders() {
             if (!state.user) return;
             const myOrdersList = document.getElementById('my-orders-list');
-            if (!myOrdersList) return; // Asegurarse de que el elemento exista
+            // if (!myOrdersList) return; // Asegurarse de que el elemento exista
 
-            myOrdersList.innerHTML = '<p>Cargando mis pedidos...</p>';
-            try {
-                const response = await fetch(`${API_BASE_URL}/consumos/mis-pedidos/${state.user.id}`);
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.detail || 'No se pudo cargar mis pedidos.');
-                }
-                const consumos = await response.json();
-                renderMyOrders(consumos); // Esta función ahora poblará el my-orders-list real
-            } catch (error) {
-                container.innerHTML = `<p class="error-msg">${error.message}</p>`;
-            }
+            // myOrdersList.innerHTML = '<p>Cargando mis pedidos...</p>';
+            // try {
+            //     const response = await fetch(`${API_BASE_URL}/consumos/mis-pedidos/${state.user.id}`);
+            //     if (!response.ok) {
+            //         const err = await response.json();
+            //         throw new Error(err.detail || 'No se pudo cargar mis pedidos.');
+            //     }
+            //     const consumos = await response.json();
+            //     renderMyOrders(consumos); // Esta función ahora poblará el my-orders-list real
+            // } catch (error) {
+            //     container.innerHTML = `<p class="error-msg">${error.message}</p>`;
+            // }
         }
 
         async function fetchUserProfile() {
@@ -1121,41 +1107,129 @@
                 showDashboard();
             }
 
-            // Asignar eventos
-            connectButton.addEventListener('click', handleLogin);
-            logoutButton.addEventListener('click', handleLogout);
-            document.querySelector('.tabs').addEventListener('click', handleTabClick);
-            document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
-            document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
-            document.getElementById('search-results').addEventListener('click', handleAddSong);
-            catalogList.addEventListener('click', handleAddToCart);            
-            // Delegación de eventos para los botones de cancelar en "Mis Pedidos"
-            document.getElementById('tab-my-account').addEventListener('click', (e) => {
-                if (e.target.classList.contains('cancel-btn')) handleCancelOrder(e);
-            });
-            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
-            document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
-            cancelOrderBtn.addEventListener('click', () => {
-                orderModal.style.display = 'none';
-            });
+            // Asignar eventos de forma segura
+            if (connectButton) connectButton.addEventListener('click', handleLogin);
+            if (logoutButton) logoutButton.addEventListener('click', handleLogout);
 
-            // Eventos del Carrito
-            cartConfirmBtnHeader.addEventListener('click', () => {
-                cartModal.style.display = 'flex';
-                renderCart();
-            });
-            document.getElementById('cancel-cart-btn').addEventListener('click', () => cartModal.style.display = 'none');
-            document.getElementById('confirm-cart-order-btn').addEventListener('click', handlePlaceOrder);
-            document.getElementById('cart-items-list').addEventListener('click', (e) => {
-                if (e.target.classList.contains('cart-remove-item-btn')) {
-                    const productId = parseInt(e.target.dataset.productId, 10);
-                    state.cart = state.cart.filter(item => item.producto_id !== productId);
+            const tabs = document.querySelector('.tabs');
+            if (tabs) tabs.addEventListener('click', handleTabClick);
+
+            const searchSongsBtn = document.getElementById('search-songs-btn');
+            if (searchSongsBtn) searchSongsBtn.addEventListener('click', (e) => handleSearch(e, false));
+
+            const searchKaraokeBtn = document.getElementById('search-karaoke-btn');
+            if (searchKaraokeBtn) searchKaraokeBtn.addEventListener('click', (e) => handleSearch(e, true));
+
+            const searchResults = document.getElementById('search-results');
+            if (searchResults) searchResults.addEventListener('click', handleAddSong);
+
+            if (catalogList) catalogList.addEventListener('click', handleAddToCart);
+
+            const myAccountTab = document.getElementById('tab-my-account');
+            if (myAccountTab) {
+                myAccountTab.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cancel-btn')) handleCancelOrder(e);
+                });
+            }
+
+            const reactionButtons = document.getElementById('reaction-buttons');
+            if (reactionButtons) reactionButtons.addEventListener('click', handleSendReaction);
+
+            const mySongList = document.getElementById('my-song-list');
+            if (mySongList) mySongList.addEventListener('click', handleDeleteSong);
+
+            if (cancelOrderBtn) {
+                cancelOrderBtn.addEventListener('click', () => {
+                    orderModal.style.display = 'none';
+                });
+            }
+
+            // Eventos del Carrito de forma segura
+            if (cartConfirmBtnHeader) {
+                cartConfirmBtnHeader.addEventListener('click', () => {
+                    if (cartModal) cartModal.style.display = 'flex';
                     renderCart();
-                }
-            });
+                });
+            }
+
+            const cancelCartBtn = document.getElementById('cancel-cart-btn');
+            if (cancelCartBtn) cancelCartBtn.addEventListener('click', () => cartModal.style.display = 'none');
+
+            const confirmCartOrderBtn = document.getElementById('confirm-cart-order-btn');
+            if (confirmCartOrderBtn) confirmCartOrderBtn.addEventListener('click', handlePlaceOrder);
+
+            const cartItemsList = document.getElementById('cart-items-list');
+            if (cartItemsList) {
+                cartItemsList.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('cart-remove-item-btn')) {
+                        const productId = parseInt(e.target.dataset.productId, 10);
+                        state.cart = state.cart.filter(item => item.producto_id !== productId);
+                        renderCart();
+                    }
+                });
+            }
 
         });
 
-    </script>
+        // === ACTUALIZACIÓN DE CUENTA EN TIEMPO REAL ===
+
+        // Asumiendo que ya tienes socket abierto, por ejemplo:
+        const socket = state.websocket;
+
+        // Este ID o número de mesa debería venir del login o del backend
+        // Ejemplo: mesa actual del cliente (puedes ajustarlo según tu lógica)
+        const mesaActual = state.tableQrCode;
+
+        // Escuchar mensajes desde el WebSocket
+        state.websocket.addEventListener('message', (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === 'update_account' && data.mesa === mesaActual) {
+                    actualizarCuentaCliente(data.cuenta);
+                }
+            } catch (err) {
+                console.error('Error al procesar mensaje de cuenta:', err);
+            }
+        });
+
+        // Función que actualiza la UI del cliente
+        function actualizarCuentaCliente(cuenta) {
+            const totalConsumidoEl = document.getElementById('consumo-total');
+            const totalPagadoEl = document.getElementById('consumo-pagado');
+            const saldoEl = document.getElementById('consumo-saldo');
+            const listaConsumos = document.getElementById('lista-consumos');
+            const listaPagos = document.getElementById('lista-pagos');
+
+            if (totalConsumidoEl) totalConsumidoEl.textContent = `$${cuenta.total_consumido.toFixed(2)}`;
+            if (totalPagadoEl) totalPagadoEl.textContent = `$${cuenta.total_pagado.toFixed(2)}`;
+            if (saldoEl) saldoEl.textContent = `$${cuenta.saldo_pendiente.toFixed(2)}`;
+
+            if (listaConsumos) {
+                listaConsumos.innerHTML = '';
+                if (cuenta.consumos.length > 0) {
+                    cuenta.consumos.forEach(c => {
+                        const li = document.createElement('li');
+                        li.textContent = `${c.cantidad}x ${c.producto} - $${c.precio.toFixed(2)}`;
+                        listaConsumos.appendChild(li);
+                    });
+                } else {
+                    listaConsumos.innerHTML = '<li>No hay consumos.</li>';
+                }
+            }
+
+            if (listaPagos) {
+                listaPagos.innerHTML = '';
+                if (cuenta.pagos.length > 0) {
+                    cuenta.pagos.forEach(p => {
+                        const li = document.createElement('li');
+                        li.textContent = `$${p.monto.toFixed(2)} (${p.fecha})`;
+                        listaPagos.appendChild(li);
+                    });
+                } else {
+                    listaPagos.innerHTML = '<li>No hay pagos registrados.</li>';
+            }
+        }
+    } // ✅ cierre correcto de la función
+</script>
 </body>
 </html>
