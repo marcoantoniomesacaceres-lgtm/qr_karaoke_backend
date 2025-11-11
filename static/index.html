@@ -142,10 +142,9 @@
             bottom: 20px;
             right: 20px;
             width: 60px;
-            height: 60px;
             background-color: #bb86fc;
             color: #121212;
-            border-radius: 50%;
+            height: 60px;
             border-radius: 8px;
             padding: 12px 20px;
             display: flex;
@@ -153,7 +152,6 @@
             justify-content: center;
             font-size: 24px;
             font-size: 1em;
-            font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 1500;
@@ -271,7 +269,7 @@
             <button class="tab-button" data-tab="tab-search">Buscar Canción</button>
             <button class="tab-button" data-tab="tab-catalog">Catálogo</button>
             
-            <button class="tab-button" data-tab="tab-my-account">Mi Consumo</button>
+            <button class="tab-button" data-tab="tab-my-account">Mi Cuenta</button>
             
             <button class="tab-button" data-tab="tab-my-list" style="display: none;">Mi Lista</button>
         </div>
@@ -306,17 +304,17 @@
         <!-- Pestaña de Catálogo de Productos -->
         <div id="tab-catalog" class="tab-content">
             <div class="catalog-header">
-                <h2>Catálogo de Productos</h2>
-                <button id="cart-confirm-btn-header">Confirmar Pedido (<span id="cart-count">0</span>)</button>
+                <h2>Catálogo</h2>
+                <button id="cart-confirm-btn-header">🛒 Mi Pedido (<span id="cart-count">0</span>)</button>
             </div>
             <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
-            </ul>
+            </divv>
         </div>
 
         <!-- Pestaña de Mis Cuentas -->
         <div id="tab-my-account" class="tab-content">
-            <h2>Mi Consumo en la Mesa</h2>
+            <h2>Estado de Cuenta de la Mesa</h2>
             <div id="my-account-content">
                 <!-- Estructura estática de la tarjeta de consumo -->
                 <div class="account-view">
@@ -329,12 +327,20 @@
                     <details open>
                         <summary style="cursor:pointer; color: #bb86fc;">Ver Detalles</summary>
                         <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr; gap: 15px;">
+                            <!-- Sección para los pedidos del usuario con botón de cancelar -->
                             <div class="details-section">
-                                <h4>Consumos</h4>
-                                <ul id="consumo-lista-items" class="item-list">
-                                    <li>No hay consumos registrados.</li>
+                                <h4>Mis Pedidos</h4>
+                                <ul id="my-orders-list" class="item-list">
+                                    <li>Cargando mis pedidos...</li>
                                 </ul>
                             </div>
+                            <!-- Sección para todos los consumos de la mesa (sin botón de cancelar) -->
+                            <div class="details-section">
+                                <h4>Todos los Consumos de la Mesa</h4>
+                                <ul id="table-consumo-lista-items" class="item-list">
+                                    <li>Cargando consumos de la mesa...</li>
+                                </ul>
+                            </div>                            
                         </div>
                     </details>
                 </div>
@@ -484,9 +490,9 @@
                 availableProducts.forEach(product => {
                     const productCard = document.createElement('div');
                     productCard.className = 'product-card';
-                    const imageUrl = product.imagen_url || `https://via.placeholder.com/300x200.png?text=${encodeURIComponent(product.nombre)}`;
+                    const imageUrl = product.imagen_url || `https://placehold.co/300x200/1e1e1e/e0e0e0?text=${encodeURIComponent(product.nombre)}`;
                     productCard.innerHTML = `
-                        <img src="${imageUrl}" alt="${product.nombre}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x200.png?text=Imagen+no+disponible';">
+                        <img src="${imageUrl}" alt="${product.nombre}" onerror="this.onerror=null;this.src='https://placehold.co/300x200/1e1e1e/e0e0e0?text=Imagen+no+disponible';">
                         <div class="product-card-body">
                             <h3 class="product-card-title">${product.nombre}</h3>
                             <p class="product-card-category">${product.categoria}</p>
@@ -827,7 +833,7 @@
                 renderCart();
                 cartModal.style.display = 'none';
                 fetchUserProfile();
-                fetchMyOrders();
+                fetchTableAccountStatus(); // Actualizamos la vista de la cuenta de la mesa
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error', 5000);
             } finally {
@@ -900,7 +906,7 @@
                 const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
 
                 container.innerHTML = `
-                <div class="account-view">
+                <div class="account-view"> <!-- Mantener la estructura de la tarjeta -->
                     <h3>Cuenta de Mesa: ${data.mesa_nombre}</h3>
                     <div class="account-summary">
                         <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
@@ -931,6 +937,28 @@
                     </details>
                 </div>
                 `;
+                // Ahora, después de que el HTML se ha insertado, podemos llamar a fetchMyOrders
+                // para poblar la lista de pedidos del usuario.
+                fetchMyOrders();
+            } catch (error) {
+                container.innerHTML = `<p class="error-msg">${error.message}</p>`;
+            }
+        }
+
+        async function fetchMyOrders() {
+            if (!state.user) return;
+            const myOrdersList = document.getElementById('my-orders-list');
+            if (!myOrdersList) return; // Asegurarse de que el elemento exista
+
+            myOrdersList.innerHTML = '<p>Cargando mis pedidos...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/consumos/mis-pedidos/${state.user.id}`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'No se pudo cargar mis pedidos.');
+                }
+                const consumos = await response.json();
+                renderMyOrders(consumos); // Esta función ahora poblará el my-orders-list real
             } catch (error) {
                 container.innerHTML = `<p class="error-msg">${error.message}</p>`;
             }
@@ -1100,8 +1128,11 @@
             document.getElementById('search-songs-btn').addEventListener('click', (e) => handleSearch(e, false));
             document.getElementById('search-karaoke-btn').addEventListener('click', (e) => handleSearch(e, true));
             document.getElementById('search-results').addEventListener('click', handleAddSong);
-            catalogList.addEventListener('click', handleAddToCart);
-            document.getElementById('my-orders-list').addEventListener('click', handleCancelOrder);
+            catalogList.addEventListener('click', handleAddToCart);            
+            // Delegación de eventos para los botones de cancelar en "Mis Pedidos"
+            document.getElementById('tab-my-account').addEventListener('click', (e) => {
+                if (e.target.classList.contains('cancel-btn')) handleCancelOrder(e);
+            });
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
             document.getElementById('my-song-list').addEventListener('click', handleDeleteSong);
             cancelOrderBtn.addEventListener('click', () => {
@@ -1124,6 +1155,7 @@
             });
 
         });
+
     </script>
 </body>
 </html>
