@@ -996,7 +996,6 @@
 
             const saldoPendiente = parseFloat(form.dataset.saldoPendiente || '0');
 
-            // Validación de pago excedente
             // Función para proceder con el registro del pago
             const proceedWithPayment = async () => {
                 try {
@@ -1015,9 +1014,6 @@
 
             // Validación de pago excedente con modal personalizado
             if (paymentData.monto > saldoPendiente) {
-                if (!confirm('El monto ingresado es mayor que la deuda actual. ¿Deseas registrarlo como un pago adelantado?')) {
-                    return; // El admin oprimió "Cancelar", se detiene la operación.
-                }
                 const modal = document.getElementById('confirm-overpayment-modal');
                 const confirmBtn = document.getElementById('confirm-overpayment-btn');
                 const cancelBtn = document.getElementById('cancel-overpayment-btn');
@@ -1034,18 +1030,6 @@
             } else {
                 // Si el pago no excede la deuda, proceder directamente
                 await proceedWithPayment();
-            }
-            try {
-                await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
-                showNotification('Pago registrado con éxito.', 'success');
-                closePaymentModal();
-                
-                // Obtener el estado de cuenta actualizado para la mesa y enviarlo por WebSocket
-                const updatedAccountStatus = await apiFetch(`/admin/tables/${paymentData.mesa_id}/payment-status`);
-                enviarActualizacionCuenta(paymentData.mesa_id, updatedAccountStatus);
-                loadAccountsPage(); // Recargar la vista de cuentas
-            } catch (error) {
-                showNotification(`Error al registrar pago: ${error.message}`, 'error');
             }
         }
 
