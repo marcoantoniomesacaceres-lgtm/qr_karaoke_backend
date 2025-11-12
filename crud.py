@@ -45,7 +45,7 @@ def get_total_consumido_por_usuario(db: Session, usuario_id: int):
 
 def get_canciones_por_usuario(db: Session, usuario_id: int):
     """Busca todas las canciones de un usuario específico."""
-    return db.query(models.Cancion).filter(models.Cancion.usuario_id == usuario_id).all()
+    return db.query(models.Cancion).filter(models.Cancion.usuario_id == usuario_id).order_by(models.Cancion.created_at.desc()).all()
 
 def create_cancion_para_usuario(db: Session, cancion: schemas.CancionCreate, usuario_id: int):
     """Crea una nueva canción y la asocia a un usuario."""

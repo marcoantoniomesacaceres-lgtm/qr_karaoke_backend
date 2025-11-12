@@ -159,13 +159,18 @@ def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):
     return {"tiempo_espera_segundos": tiempo_segundos}
 
 @router.delete("/{cancion_id}", status_code=204, summary="Eliminar una canción de la lista personal")
-def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depends(get_db)):
-    db_cancion = crud.get_cancion_by_id(db, cancion_id=cancion_id)
+async def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depends(get_db)):
+    """
+    [Usuario] Elimina una canción de su propia lista.
+    Solo se puede eliminar si la canción pertenece al usuario y está en estado 'pendiente'.
+    """
+    db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id, models.Cancion.usuario_id == usuario_id).first()
+
     if not db_cancion:
-        raise HTTPException(status_code=404, detail="Canción no encontrada")
-    if db_cancion.usuario_id != usuario_id:
-        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta canción")
+        raise HTTPException(status_code=404, detail="Canción no encontrada o no te pertenece.")
     if db_cancion.estado != 'pendiente':
-        raise HTTPException(status_code=400, detail="No se puede eliminar porque ya fue procesada")
+        raise HTTPException(status_code=400, detail="No se puede eliminar una canción que ya ha sido procesada.")
+
     crud.delete_cancion(db, cancion_id=cancion_id)
+    await websocket_manager.manager.broadcast_queue_update() # Notificar por si estaba en la cola de pendientes
     return Response(status_code=204) 

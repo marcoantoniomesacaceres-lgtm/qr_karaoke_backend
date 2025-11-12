@@ -265,13 +265,11 @@
         </div>
 
         <div class="tabs">
+            <button class="tab-button" data-tab="tab-my-list">Mi Lista</button>
             <button class="tab-button active" data-tab="tab-queue">Cola</button>
             <button class="tab-button" data-tab="tab-search">Buscar Canción</button>
             <button class="tab-button" data-tab="tab-catalog">Catálogo</button>
-            
             <button class="tab-button" data-tab="tab-my-account">Mi Cuenta</button>
-            
-            <button class="tab-button" data-tab="tab-my-list" style="display: none;">Mi Lista</button>
         </div>
 
         <!-- Pestaña de la Cola de Karaoke -->
@@ -428,18 +426,6 @@
                  upcomingList.innerHTML = '';
             } else {
                  upcomingList.innerHTML = '<li><p>No hay más canciones en la cola.</p></li>';
-            }
-        }
-
-        function renderMyList(songs) {
-            const myList = document.getElementById('my-song-list');
-            myList.innerHTML = '';
-            if (songs.length > 0) {
-                songs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(song => {
-                    myList.innerHTML += createSongItemHTML(song, true);
-                });
-            } else {
-                myList.innerHTML = '<li><p>Aún no has añadido ninguna canción.</p></li>';
             }
         }
 
@@ -764,30 +750,6 @@
             }
         }
 
-        async function handleDeleteSong(event) {
-            if (!event.target.classList.contains('delete-song-btn')) return;
-            if (!confirm('¿Seguro que quieres eliminar esta canción de tu lista?')) return;
-
-            const button = event.target;
-            const songId = button.dataset.songId;
-            button.disabled = true;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/canciones/${songId}?usuario_id=${state.user.id}`, {
-                    method: 'DELETE'
-                });
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.detail || 'No se pudo eliminar la canción.');
-                }
-                showNotification('Canción eliminada.');
-                fetchMyList();
-            } catch (error) {
-                showNotification(error.message, 5000);
-                button.disabled = false;
-            }
-        }
-
         async function handleAddToCart(event) {
             if (!event.target.classList.contains('add-to-cart-btn')) return;
 
@@ -865,16 +827,6 @@
             renderCatalog(products);
         }
 
-        async function fetchMyList() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}/lista`);
-                const songs = await response.json();
-                renderMyList(songs);
-            } catch (error) {
-                console.error('Error al obtener mi lista:', error);
-            }
-        }
-
         async function fetchTableAccountStatus() {
             if (!state.user) return;
 
@@ -950,6 +902,81 @@
             // }
         }
 
+        // === 🧠 OBTENER Y RENDERIZAR "MI LISTA" ===
+        async function fetchMyList() {
+            if (!state.user) return;
+        
+            const myListContainer = document.getElementById('my-song-list');
+            if (!myListContainer) return;
+        
+            myListContainer.innerHTML = '<p>Cargando tu lista...</p>';
+        
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}/lista`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'No se pudo obtener la lista.');
+                }
+        
+                const songs = await response.json();
+                renderMyList(songs);
+            } catch (error) {
+                console.error('Error al obtener mi lista:', error);
+                myListContainer.innerHTML = `<p class="error-msg">${error.message}</p>`;
+            }
+        }
+        
+        // === 🧱 RENDERIZAR CANCIONES EN "MI LISTA" ===
+        function renderMyList(songs) {
+            const myListContainer = document.getElementById('my-song-list');
+            if (!myListContainer) return;
+        
+            if (!songs || songs.length === 0) {
+                myListContainer.innerHTML = '<p>No tienes canciones en tu lista todavía 🎤</p>';
+                return;
+            }
+        
+            myListContainer.innerHTML = songs.map(song => `
+                <li class="my-song-item">
+                    <div class="song-info">
+                        <img src="https://img.youtube.com/vi/${song.youtube_id}/default.jpg" alt="${song.titulo}" />
+                        <div>
+                            <p class="song-title">${song.titulo}</p>
+                            <p class="song-status">⏱ Estado: ${song.estado || 'pendiente'}</p>
+                        </div>
+                    </div>
+                    <button class="delete-song-btn" data-song-id="${song.id}">❌ Eliminar</button>
+                </li>
+            `).join('');
+        }
+        
+        // === 🗑️ ELIMINAR UNA CANCIÓN ===
+        async function handleDeleteSong(event) {
+            if (!event.target.classList.contains('delete-song-btn')) return;
+            if (!confirm('¿Seguro que quieres eliminar esta canción de tu lista?')) return;
+        
+            const button = event.target;
+            const songId = button.dataset.songId;
+            button.disabled = true;
+        
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/${songId}?usuario_id=${state.user.id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'No se pudo eliminar la canción.');
+                }
+                showNotification('Canción eliminada.');
+                fetchMyList();
+            } catch (error) {
+                console.error('Error al eliminar canción:', error);
+                showNotification(error.message, 4000);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
         async function fetchUserProfile() {
             try {
                 const response = await fetch(`${API_BASE_URL}/usuarios/${state.user.id}`);
@@ -983,7 +1010,7 @@
             dashboardView.classList.remove('hidden');
 
             connectWebSocket();            renderCart(); // Renderiza el carrito (y oculta el botón si está vacío)
-            fetchMyList(); 
+            fetchMyList();
         }
 
         function handleLogout() {
@@ -1134,9 +1161,6 @@
 
             const reactionButtons = document.getElementById('reaction-buttons');
             if (reactionButtons) reactionButtons.addEventListener('click', handleSendReaction);
-
-            const mySongList = document.getElementById('my-song-list');
-            if (mySongList) mySongList.addEventListener('click', handleDeleteSong);
 
             if (cancelOrderBtn) {
                 cancelOrderBtn.addEventListener('click', () => {
