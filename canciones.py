@@ -1,15 +1,16 @@
 import os
 import datetime
-from fastapi import APIRouter, Depends, HTTPException, Response, Body
+import asyncio
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from typing import List
 
 import crud, schemas, models, config
-from database import SessionLocal
+from database import SessionLocal # get_db se importará desde aquí
 import websocket_manager
 from security import api_key_auth
 
-router = APIRouter()
+router = APIRouter() # El prefijo y las etiquetas se pueden definir aquí o al incluir el router en main.py
 
 # Dependencia para obtener la sesión de la base de datos
 def get_db():
@@ -19,57 +20,70 @@ def get_db():
     finally:
         db.close()
 
+# --- AUTOPLAY: tarea en segundo plano ---
+async def check_and_trigger_autoplay(db: Session):
+    """
+    Tarea en segundo plano que se ejecuta después de un tiempo.
+    Verifica si el autoplay está activado y si es así, avanza la cola.
+    """
+    # Pequeña espera para que se completen transacciones anteriores
+    await asyncio.sleep(2)
+
+    if config.settings.AUTOPLAY_ENABLED:
+        await crud.avanzar_cola_automaticamente(db)
+        crud.create_admin_log_entry(
+            db,
+            action="AUTOPLAY_ADVANCE",
+            details="Autoplay avanzó la cola a la siguiente canción."
+        )
+
+# --- ENDPOINT: Avanzar la cola manualmente ---
 @router.post(
     "/siguiente",
     response_model=schemas.PlayNextResponse,
     responses={204: {"description": "No hay más canciones en la cola."}},
     summary="Avanzar la cola y obtener la siguiente canción para reproducir"
 )
-async def avanzar_cola(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+async def avanzar_cola(db: Session = Depends(get_db)):
     """
-    **[Admin/Player]** Orquesta el avance de la cola:
-    1. Marca la canción actual ('reproduciendo') como 'cantada'.
-    2. Marca la siguiente canción de la cola ('aprobado') como 'reproduciendo'.
-    3. Notifica a todos los clientes de la nueva cola.
+    Si el autoplay está desactivado, este endpoint actúa como un botón manual
+    para avanzar la cola a la siguiente canción.
     """
-    # Primero, marcamos la que terminó como 'cantada'
-    cancion_cantada = crud.marcar_cancion_actual_como_cantada(db)
+    if config.settings.AUTOPLAY_ENABLED:
+        # Si autoplay está activado, no forzamos nada manualmente
+        return Response(
+            status_code=202,
+            content="Autoplay está activo. El avance ocurre automáticamente."
+        )
 
-    # Si una canción fue marcada como cantada, notificamos su puntaje a todos los clientes.
-    # Esto mostrará el resultado en el reproductor y otras pantallas.
-    if cancion_cantada:
-        # El manager se encarga de construir el payload y enviarlo.
-        # El payload incluirá el título, el nick del usuario y la puntuación.
-        await websocket_manager.manager.broadcast_song_finished(cancion_cantada)
+    # Avanzamos la cola manualmente
+    nueva_cancion = await crud.avanzar_cola_automaticamente(db)
 
-    # Luego, marcamos la siguiente en la cola como 'reproduciendo'
-    nueva_cancion_reproduciendo = crud.marcar_siguiente_como_reproduciendo(db)
-
-    # Notificamos a todos los clientes (móviles, dashboard) que la cola ha cambiado
-    await websocket_manager.manager.broadcast_queue_update()
-
-    # Enviamos orden al reproductor para que inicie la nueva canción
-    if nueva_cancion_reproduciendo:
-        await websocket_manager.manager.broadcast_play_song(nueva_cancion_reproduciendo.youtube_id)
-
-    if not nueva_cancion_reproduciendo:
-        # Si no hay más canciones, devolvemos 204
+    if not nueva_cancion:
+        # Si no hay más canciones
         return Response(status_code=204)
 
-    # Construimos la URL de YouTube en modo embed para pantalla completa
-    youtube_url = f"https://www.youtube.com/embed/{nueva_cancion_reproduciendo.youtube_id}?autoplay=1&fs=1"
+    # Construimos la URL de YouTube en modo embed
+    youtube_url = f"https://www.youtube.com/embed/{nueva_cancion.youtube_id}?autoplay=1&fs=1"
 
     return schemas.PlayNextResponse(
         play_url=youtube_url,
-        cancion=nueva_cancion_reproduciendo
+        cancion=nueva_cancion
     )
 
-@router.post("/{usuario_id}", response_model=schemas.Cancion, summary="Añadir una canción a la lista de un usuario")
+# --- ENDPOINT: Añadir canción ---
+@router.post(
+    "/{usuario_id}",
+    response_model=schemas.Cancion,
+    summary="Añadir una canción a la lista de un usuario"
+)
 async def anadir_cancion(
-    usuario_id: int, cancion: schemas.CancionCreate, db: Session = Depends(get_db)
+    usuario_id: int,
+    cancion: schemas.CancionCreate,
+    db: Session = Depends(get_db)
 ):
     """
-    Añade una nueva canción a la lista personal de un usuario, si hay tiempo.
+    Añade una nueva canción a la lista personal de un usuario, si hay tiempo disponible.
     """
     db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
     if not db_usuario:
@@ -77,6 +91,7 @@ async def anadir_cancion(
     if db_usuario.is_silenced:
         raise HTTPException(status_code=403, detail="No tienes permiso para añadir más canciones.")
 
+    # Validar hora de cierre
     hora_cierre_str = config.settings.KARAOKE_CIERRE
     try:
         h, m = map(int, hora_cierre_str.split(':'))
@@ -90,6 +105,7 @@ async def anadir_cancion(
     if ahora >= hora_cierre:
         raise HTTPException(status_code=400, detail="Ya no se aceptan más canciones por hoy.")
 
+    # Verificar duración proyectada
     tiempo_restante_segundos = (hora_cierre - ahora).total_seconds()
     duracion_cola_actual = crud.get_duracion_total_cola_aprobada(db)
     duracion_total_proyectada = duracion_cola_actual + (cancion.duracion_seconds or 0)
@@ -100,6 +116,7 @@ async def anadir_cancion(
             detail="No hay tiempo suficiente para añadir esta canción antes del cierre."
         )
 
+    # Verificar duplicados
     cancion_existente = crud.check_if_song_in_user_list(db, usuario_id=usuario_id, youtube_id=cancion.youtube_id)
     if cancion_existente:
         raise HTTPException(
@@ -107,9 +124,14 @@ async def anadir_cancion(
             detail=f"Ya tienes '{cancion.titulo}' en tu lista."
         )
 
+    # Crear y aprobar canción
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
     cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+
+    # Si autoplay está activo, iniciar reproducción si la cola estaba vacía
+    await crud.start_next_song_if_autoplay_and_idle(db)
     await websocket_manager.manager.broadcast_queue_update()
+
     return cancion_aprobada
 
 @router.get("/{usuario_id}/lista", response_model=List[schemas.Cancion], summary="Ver la lista de canciones de un usuario")
@@ -126,6 +148,7 @@ async def aprobar_cancion(cancion_id: int, db: Session = Depends(get_db), api_ke
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada")
     crud.create_admin_log_entry(db, action="APPROVE_SONG", details=f"Canción '{db_cancion.titulo}' aprobada.")
+    await crud.start_next_song_if_autoplay_and_idle(db)
     await websocket_manager.manager.broadcast_queue_update()
     return db_cancion
 
@@ -142,7 +165,11 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
 async def admin_anadir_cancion(cancion: schemas.CancionCreate, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
     dj_user = crud.get_or_create_dj_user(db)
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=dj_user.id)
+    # La canción se aprueba automáticamente
     cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+    
+    # Si el autoplay está activo, intentamos iniciar la reproducción si la cola estaba vacía
+    await crud.start_next_song_if_autoplay_and_idle(db)
     await websocket_manager.manager.broadcast_queue_update()
     return cancion_aprobada
 

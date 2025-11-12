@@ -297,6 +297,48 @@
         #qr-code-container .btn-activate { background-color: var(--info-color); } /* Azul */
     </style>
     <style>
+        /* Estilos para el toggle switch de Autoplay */
+        .autoplay-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .autoplay-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 4px; bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+    </style>
+    <style>
         /* Estilos para la página de Cuentas por Mesa */
         .account-card {
             display: flex;
@@ -380,6 +422,14 @@
                         <input type="text" id="broadcast-message-input" placeholder="Ej: ¡Oferta en cervezas!">
                         <button class="form-btn" id="broadcast-btn" style="margin-top: 10px; background-color: var(--info-color);">Enviar a todos</button>
                     </div>
+                    <div>
+                        <label>Reproducción Automática</label>
+                        <label class="switch" style="margin-top: 10px;">
+                            <input type="checkbox" id="autoplay-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <p id="autoplay-status" class="item-meta" style="margin-top: 5px;">Autoplay Desactivado</p>
+                    </div>
                     <div class="dangerous-zone">
                         <label>Zona Peligrosa</label>
                         <button class="form-btn" id="reset-night-btn">Reiniciar Noche (Borrar Todo)</button>
@@ -406,7 +456,16 @@
             <h2>Cola de Canciones</h2>
             <div class="grid" style="grid-template-columns: 1fr 350px;">
                 <div class="card">
-                    <h3>Cola Aprobada</h3>
+                    <div class="autoplay-container">
+                        <h3>Cola Aprobada</h3>
+                        <div class="autoplay-label">
+                            <span>Autoplay</span>
+                            <label class="switch">
+                                <input type="checkbox" id="autoplay-toggle-queue">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
                     <ul id="approved-songs-list" class="item-list">
                         <p>Cargando cola de canciones...</p>
                     </ul>
@@ -1402,6 +1461,20 @@
             }
         }
 
+        async function handleToggleAutoplay() {
+            const toggle = document.getElementById('autoplay-toggle');
+            const statusText = document.getElementById('autoplay-status');
+            try {
+                const response = await apiFetch('/admin/autoplay/toggle', { method: 'POST' });
+                const newStatus = response.autoplay_status;
+                toggle.checked = newStatus;
+                statusText.textContent = `Autoplay ${newStatus ? 'Activado' : 'Desactivado'}`;
+                showNotification(`Reproducción automática ${newStatus ? 'activada' : 'desactivada'}.`, 'info');
+            } catch (error) {
+                showNotification(`Error al cambiar autoplay: ${error.message}`, 'error');
+                toggle.checked = !toggle.checked; // Revertir el cambio visual si falla
+            }
+        }
         // --- NUEVAS FUNCIONES PARA GESTIÓN DE COLA DEL ADMIN ---
 
         async function handleAdminSearch(event, karaokeMode = false) {
@@ -1626,6 +1699,8 @@
             document.getElementById('broadcast-btn').addEventListener('click', handleBroadcast);
             document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
+            document.getElementById('autoplay-toggle-queue').addEventListener('change', handleToggleAutoplay);
+            document.getElementById('autoplay-toggle').addEventListener('change', handleToggleAutoplay);
 
             // Queue Page
             document.getElementById('admin-search-songs-btn').addEventListener('click', (e) => handleAdminSearch(e, false));

@@ -1489,3 +1489,55 @@ def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
     return schemas.MesaEstadoPago(
         mesa_id=mesa.id, mesa_nombre=mesa.nombre, total_consumido=total_consumido, total_pagado=total_pagado, saldo_pendiente=saldo_pendiente, consumos=consumos_items, pagos=pagos_detalle
     ).dict()
+
+async def start_next_song_if_autoplay_and_idle(db: Session):
+    """
+    Verifica si el autoplay está activado, si no hay nada sonando y si hay
+    canciones en la cola. Si se cumplen las condiciones, inicia la siguiente canción.
+    """
+    import config
+    import websocket_manager
+
+    if not config.settings.AUTOPLAY_ENABLED:
+        return
+
+    # Verificamos si ya hay una canción en estado 'reproduciendo'
+    is_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    if is_playing:
+        return
+
+    # Si no hay nada sonando, marcamos la siguiente como 'reproduciendo'
+    next_song = marcar_siguiente_como_reproduciendo(db)
+
+    if next_song:
+        # Si se encontró una siguiente canción, notificamos a todos los clientes
+        # para que la cola se actualice y el reproductor comience a reproducir.
+        await websocket_manager.manager.broadcast_queue_update()
+        await websocket_manager.manager.broadcast_play_song(next_song.youtube_id)
+        create_admin_log_entry(db, action="AUTOPLAY_START", details=f"Autoplay inició la canción '{next_song.titulo}'.")
+
+async def avanzar_cola_automaticamente(db: Session):
+    """
+    Función central para avanzar la cola: marca la canción actual como cantada,
+    inicia la siguiente y notifica a todos los clientes.
+    Esta función es llamada tanto por el autoplay como por el botón manual.
+    """
+    import websocket_manager
+
+    # 1. Marcar la canción actual como 'cantada' y obtener sus datos
+    cancion_cantada = marcar_cancion_actual_como_cantada(db)
+    if cancion_cantada:
+        # Notificar a todos que la canción terminó (para mostrar puntajes, etc.)
+        await websocket_manager.manager.broadcast_song_finished(cancion_cantada)
+
+    # 2. Marcar la siguiente canción como 'reproduciendo'
+    siguiente_cancion = marcar_siguiente_como_reproduciendo(db)
+
+    # 3. Notificar a todos los clientes sobre la actualización de la cola
+    await websocket_manager.manager.broadcast_queue_update()
+
+    # 4. Si hay una nueva canción, enviar la orden de reproducción al player
+    if siguiente_cancion:
+        await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
+
+    return siguiente_cancion

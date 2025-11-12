@@ -110,3 +110,11 @@ class Pago(Base):
 
     # Relación: Un pago pertenece a una mesa
     mesa = relationship("Mesa", back_populates="pagos")
+
+
+class ConfiguracionGlobal(Base):
+    __tablename__ = "configuracion_global"
+
+    id = Column(Integer, primary_key=True, index=True)
+    clave = Column(String(100), unique=True, nullable=False)
+    valor = Column(String(100), nullable=False)

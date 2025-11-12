@@ -96,6 +96,33 @@ def get_closing_time(db: Session = Depends(get_db)):
     """
     return schemas.ClosingTimeUpdate(hora_cierre=config.settings.KARAOKE_CIERRE)
 
+@router.post("/autoplay/toggle", status_code=200, summary="Activar o desactivar el autoplay")
+async def toggle_autoplay(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Activa o desactiva el modo de reproducción automática.
+    Cuando está activo, las canciones en la cola se reproducirán una tras otra
+    sin necesidad de intervención manual.
+    """
+    current_value = config.settings.AUTOPLAY_ENABLED
+    new_value = not current_value
+
+    # Guardar en memoria
+    config.settings.AUTOPLAY_ENABLED = new_value
+
+    # Guardar en base de datos
+    crud.set_config(db, "AUTOPLAY_ENABLED", str(new_value))
+    crud.create_admin_log_entry(db, action="TOGGLE_AUTOPLAY", details=f"Autoplay {'activado' if new_value else 'desactivado'}.")
+
+    # Si se acaba de activar el autoplay, intentamos iniciar la cola si está parada
+    if new_value:
+        # Verificamos si algo ya está sonando
+        is_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+        if not is_playing:
+            # Si no hay nada sonando, llamamos a la función que avanza la cola
+            await crud.start_next_song_if_autoplay_and_idle(db)
+            # La función anterior ya emite el broadcast, así que no es necesario hacerlo aquí.
+    return {"autoplay_status": new_value}
+
 
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")
 def get_top_songs_report(db: Session = Depends(get_db), limit: int = 10):
