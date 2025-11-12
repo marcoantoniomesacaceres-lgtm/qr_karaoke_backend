@@ -317,6 +317,11 @@
             border-radius: 5px;
             max-height: 200px; overflow-y: auto;
         }
+        /* Estilo para el modal de confirmación de sobrepago */
+        #overpayment-card {
+            border: 2px solid var(--success-color);
+            box-shadow: 0 0 15px rgba(102, 187, 106, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -511,6 +516,19 @@
                 </form>
             </div>
         </div>
+
+        <!-- MODAL PARA CONFIRMAR SOBREPAGO -->
+        <div id="confirm-overpayment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2001; align-items:center; justify-content:center;">
+            <div class="card" id="overpayment-card" style="width: 450px;">
+                <h3>Confirmación de Sobrepago</h3>
+                <p id="overpayment-message">El monto ingresado es mayor que la deuda actual. ¿Deseas registrarlo como un pago adelantado?</p>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="button" id="confirm-overpayment-btn" class="form-btn" style="flex:1; background-color: var(--success-color);">Sí, continuar</button>
+                    <button type="button" id="cancel-overpayment-btn" class="form-btn" style="flex:1; background-color:var(--text-secondary);">No, cancelar</button>
+                </div>
+            </div>
+        </div>
+
 
         <!-- PÁGINA: REPORTES -->
         <div id="reports" class="page">
@@ -915,7 +933,7 @@
                         <div>Total Pagado: <strong style="color: var(--success-color);">$${totalPagadoNum.toFixed(2)}</strong></div>
                         <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
                     </div>
-                    <button class="form-btn register-payment-btn" data-mesa-id="${mesa.mesa_id}" data-mesa-nombre="${mesa.mesa_nombre}" style="margin-bottom: 15px;">Registrar Pago</button>
+                    <button class="form-btn register-payment-btn" data-mesa-id="${mesa.mesa_id}" data-mesa-nombre="${mesa.mesa_nombre}" data-saldo-pendiente="${saldoPendienteNum}" style="margin-bottom: 15px;">Registrar Pago</button>
                     
                     <!-- Detalles colapsables -->
                     <details>
@@ -953,10 +971,12 @@
             }
         }
 
-        function openPaymentModal(mesaId, mesaNombre) {
+        function openPaymentModal(mesaId, mesaNombre, saldoPendiente) {
             document.getElementById('payment-mesa-id').value = mesaId;
             document.getElementById('payment-modal-title').textContent = `Registrar Pago para ${mesaNombre}`;
             document.getElementById('payment-modal').style.display = 'flex';
+            // Guardamos el saldo pendiente en un atributo de datos del formulario para usarlo después
+            document.getElementById('payment-form').dataset.saldoPendiente = saldoPendiente;
         }
 
         function closePaymentModal() {
@@ -974,6 +994,47 @@
                 metodo_pago: formData.get('metodo_pago')
             };
 
+            const saldoPendiente = parseFloat(form.dataset.saldoPendiente || '0');
+
+            // Validación de pago excedente
+            // Función para proceder con el registro del pago
+            const proceedWithPayment = async () => {
+                try {
+                    await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
+                    showNotification('Pago registrado con éxito.', 'success');
+                    closePaymentModal();
+                    
+                    // Obtener el estado de cuenta actualizado para la mesa y enviarlo por WebSocket
+                    const updatedAccountStatus = await apiFetch(`/admin/tables/${paymentData.mesa_id}/payment-status`);
+                    enviarActualizacionCuenta(paymentData.mesa_id, updatedAccountStatus);
+                    loadAccountsPage(); // Recargar la vista de cuentas
+                } catch (error) {
+                    showNotification(`Error al registrar pago: ${error.message}`, 'error');
+                }
+            };
+
+            // Validación de pago excedente con modal personalizado
+            if (paymentData.monto > saldoPendiente) {
+                if (!confirm('El monto ingresado es mayor que la deuda actual. ¿Deseas registrarlo como un pago adelantado?')) {
+                    return; // El admin oprimió "Cancelar", se detiene la operación.
+                }
+                const modal = document.getElementById('confirm-overpayment-modal');
+                const confirmBtn = document.getElementById('confirm-overpayment-btn');
+                const cancelBtn = document.getElementById('cancel-overpayment-btn');
+                modal.style.display = 'flex';
+
+                confirmBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    proceedWithPayment();
+                };
+
+                cancelBtn.onclick = () => {
+                    modal.style.display = 'none';
+                };
+            } else {
+                // Si el pago no excede la deuda, proceder directamente
+                await proceedWithPayment();
+            }
             try {
                 await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
                 showNotification('Pago registrado con éxito.', 'success');
@@ -1674,7 +1735,12 @@
         // Listeners para el modal de pago
         document.getElementById('accounts-grid').addEventListener('click', (e) => {
             const btn = e.target.closest('.register-payment-btn');
-            if(btn) openPaymentModal(btn.dataset.mesaId, btn.dataset.mesaNombre);
+            if(btn) {
+                const mesaId = btn.dataset.mesaId;
+                const mesaNombre = btn.dataset.mesaNombre;
+                const saldoPendiente = btn.dataset.saldoPendiente;
+                openPaymentModal(mesaId, mesaNombre, saldoPendiente);
+            }
         });
         document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
         document.getElementById('payment-form').addEventListener('submit', handleRegisterPayment);
