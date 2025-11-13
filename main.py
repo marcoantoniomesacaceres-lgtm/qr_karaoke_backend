@@ -11,10 +11,15 @@ load_dotenv()
 # --- Bloque de prueba para verificar variables de entorno ---
 print("YOUTUBE_API_KEY cargada:", os.getenv("YOUTUBE_API_KEY"))
 
-from database import engine
-import models, crud, schemas, broadcast
-import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
+from database import engine, SessionLocal
+import models
 
+# Esto crea las tablas en la base de datos si no existen.
+# Es CRUCIAL que esto se ejecute ANTES de importar los módulos que pueden usar la BD.
+models.Base.metadata.create_all(bind=engine)
+
+import crud, schemas, broadcast
+import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 # --- Configuración de Logging a un archivo ---
 # Esto crea un logger que guarda todo en 'karaoke_debug.log'
 # y también lo muestra en la consola.
@@ -31,13 +36,6 @@ console_handler.setFormatter(log_formatter)
 logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
 logger = logging.getLogger(__name__)
 # ------------------------------------------------
-
-# Esto crea las tablas en la base de datos si no existen
-# En un entorno de producción, es mejor usar migraciones (ej. Alembic)
-models.Base.metadata.create_all(bind=engine)
-
-# --- Creación de entidades iniciales (como el usuario DJ) ---
-from database import SessionLocal
 
 def setup_initial_data():
     db = SessionLocal()

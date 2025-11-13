@@ -436,13 +436,21 @@ def get_productos_mas_consumidos(db: Session, limit: int = 10):
 
 def delete_producto(db: Session, producto_id: int):
     """Elimina un producto de la base de datos por su ID."""
-    db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
-    if db_producto:
-        # Opcional: verificar si tiene consumos asociados antes de borrar
+    db_producto = db.query(models.Producto).options(joinedload(models.Producto.consumos)).filter(models.Producto.id == producto_id).first()
+    if not db_producto:
+        return None, "Producto no encontrado."
+
+    # Si el producto tiene consumos asociados, no lo borramos, solo lo desactivamos.
+    if db_producto.consumos:
+        db_producto.is_active = False
+        db.commit()
+        db.refresh(db_producto)
+        return db_producto, "El producto tiene consumos asociados y ha sido desactivado en lugar de borrado."
+    else:
+        # Si no hay consumos, se puede borrar de forma segura.
         db.delete(db_producto)
         db.commit()
-        return db_producto
-    return None
+        return None, "Producto eliminado permanentemente."
 
 def get_total_ingresos(db: Session):
     """Calcula la suma total de todos los consumos de la noche."""
@@ -847,7 +855,7 @@ def update_producto(db: Session, producto_id: int, producto_update: schemas.Prod
     """
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
-        for key, value in producto_update.dict().items():
+        for key, value in producto_update.dict(exclude_unset=True).items():
             setattr(db_producto, key, value)
         db.commit()
         db.refresh(db_producto)
@@ -1066,6 +1074,26 @@ def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: i
         .limit(limit)
         .all()
     )
+
+def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
+    """
+    Registra una compra para un producto existente, aumentando su stock.
+    Opcionalmente, actualiza el precio de compra.
+    """
+    db_producto = db.query(models.Producto).filter(models.Producto.id == compra.producto_id).first()
+    if not db_producto:
+        return None, f"Producto con ID {compra.producto_id} no encontrado."
+
+    if compra.cantidad_comprada <= 0:
+        return None, "La cantidad comprada debe ser mayor que cero."
+
+    db_producto.stock += compra.cantidad_comprada
+    if compra.nuevo_precio_compra is not None:
+        db_producto.precio_compra = compra.nuevo_precio_compra
+
+    db.commit()
+    db.refresh(db_producto)
+    return db_producto, "Compra registrada y stock actualizado correctamente."
 
 def get_productos_mas_consumidos_por_mesa(db: Session, mesa_id: int, limit: int = 5):
     """
@@ -1557,3 +1585,23 @@ async def avanzar_cola_automaticamente(db: Session):
         await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
 
     return siguiente_cancion
+
+def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
+    """
+    Registra una compra para un producto existente, aumentando su stock.
+    Opcionalmente, actualiza el precio de compra.
+    """
+    db_producto = db.query(models.Producto).filter(models.Producto.id == compra.producto_id).first()
+    if not db_producto:
+        return None, f"Producto con ID {compra.producto_id} no encontrado."
+
+    if compra.cantidad_comprada <= 0:
+        return None, "La cantidad comprada debe ser mayor que cero."
+
+    db_producto.stock += compra.cantidad_comprada
+    if compra.nuevo_precio_compra is not None:
+        db_producto.precio_compra = compra.nuevo_precio_compra
+
+    db.commit()
+    db.refresh(db_producto)
+    return db_producto, "Compra registrada y stock actualizado correctamente."

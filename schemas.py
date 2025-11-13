@@ -146,6 +146,16 @@ class PlayNextResponse(BaseModel):
     cancion: CancionAdminView
 
 
+# --- Schema para ConfiguracionGlobal ---
+class ConfiguracionGlobalBase(BaseModel):
+    clave: str
+    valor: str
+
+class ConfiguracionGlobal(ConfiguracionGlobalBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 # --- Schema para la configuración ---
 class ClosingTimeUpdate(BaseModel):
     hora_cierre: str
@@ -351,6 +361,14 @@ class PagoCreate(PagoBase):
 class PagoView(PagoBase):
     id: int
     created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+# --- Schema para registrar compra de producto ---
+class CompraProducto(BaseModel):
+    producto_id: int
+    cantidad_comprada: int
+    nuevo_precio_compra: Optional[Decimal] = None
+
     model_config = ConfigDict(from_attributes=True)
 
 class MesaEstadoPago(BaseModel):
