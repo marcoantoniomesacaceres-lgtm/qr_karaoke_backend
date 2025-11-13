@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 import models 
-import crud, config, schemas
+import crud, schemas
+import config
 from database import SessionLocal
 import websocket_manager
 from security import api_key_auth
@@ -46,21 +47,6 @@ def get_my_table_account_status_public(usuario_id: int, db: Session = Depends(ge
         raise HTTPException(status_code=404, detail="No se pudo obtener el estado de la mesa.")
     return status
 
-@public_router.get("/mi-cuenta/{usuario_id}", response_model=schemas.MesaEstadoPago, summary="Obtener el estado de cuenta de mi mesa", tags=["Usuarios", "Cuentas"])
-def get_my_table_account_status_public(usuario_id: int, db: Session = Depends(get_db)):
-    """
-    **[Usuario]** Devuelve el estado de cuenta completo de la mesa a la que
-    pertenece el usuario, incluyendo consumos, pagos y saldo.
-    """
-    db_usuario = crud.get_usuario_by_id(db, usuario_id=usuario_id)
-    if not db_usuario or not db_usuario.mesa_id:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado o no está en una mesa.")
-
-    status = crud.get_table_payment_status(db, mesa_id=db_usuario.mesa_id)
-    if not status:
-        raise HTTPException(status_code=404, detail="No se pudo obtener el estado de la mesa.")
-    return status
-
 
 
 # --- Rutas de Administrador (protegidas por API Key) ---
@@ -85,7 +71,7 @@ def set_closing_time(closing_time: schemas.ClosingTimeUpdate, db: Session = Depe
     El formato debe ser "HH:MM".
     """
     # Aquí se podría añadir una validación del formato de la hora
-    config.settings.KARAOKE_CIERRE = closing_time.hora_cierre
+    config.settings.KARAOKE_CIERRE = closing_time.hora_cierre # Actualiza la hora de cierre en la configuración
     crud.create_admin_log_entry(db, action="SET_CLOSING_TIME", details=f"Hora de cierre actualizada a {config.settings.KARAOKE_CIERRE}")
     return {"mensaje": f"La hora de cierre ha sido actualizada a {config.settings.KARAOKE_CIERRE}"}
 
@@ -110,7 +96,7 @@ async def toggle_autoplay(db: Session = Depends(get_db)):
     config.settings.AUTOPLAY_ENABLED = new_value
 
     # Guardar en base de datos
-    crud.set_config(db, "AUTOPLAY_ENABLED", str(new_value))
+    crud.update_config(db, "AUTOPLAY_ENABLED", str(new_value))
     crud.create_admin_log_entry(db, action="TOGGLE_AUTOPLAY", details=f"Autoplay {'activado' if new_value else 'desactivado'}.")
 
     # Si se acaba de activar el autoplay, intentamos iniciar la cola si está parada

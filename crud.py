@@ -1294,6 +1294,22 @@ def delete_consumo(db: Session, consumo_id: int):
 
     return True
 
+def get_config(db: Session, key: str):
+    """Obtiene un valor de configuración por su clave."""
+    return db.query(models.Config).filter(models.Config.key == key).first()
+
+def update_config(db: Session, key: str, value: str):
+    """Establece o actualiza un valor de configuración."""
+    db_config = db.query(models.Config).filter(models.Config.key == key).first()
+    if db_config:
+        db_config.value = value
+    else:
+        db_config = models.Config(key=key, value=value)
+        db.add(db_config)
+    db.commit()
+    db.refresh(db_config)
+    return db_config
+
 def get_or_create_dj_user(db: Session) -> models.Usuario:
     """
     Busca al usuario 'DJ'. Si no existe, lo crea sin asociarlo a una mesa.
