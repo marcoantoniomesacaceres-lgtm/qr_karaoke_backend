@@ -1295,16 +1295,16 @@ def delete_consumo(db: Session, consumo_id: int):
     return True
 
 def get_config(db: Session, key: str):
-    """Obtiene un valor de configuración por su clave."""
-    return db.query(models.Config).filter(models.Config.key == key).first()
+    """Obtiene un valor de configuración por su clave (clave)."""
+    return db.query(models.ConfiguracionGlobal).filter(models.ConfiguracionGlobal.clave == key).first()
 
 def update_config(db: Session, key: str, value: str):
-    """Establece o actualiza un valor de configuración."""
-    db_config = db.query(models.Config).filter(models.Config.key == key).first()
+    """Establece o actualiza un valor de configuración (clave)."""
+    db_config = db.query(models.ConfiguracionGlobal).filter(models.ConfiguracionGlobal.clave == key).first()
     if db_config:
         db_config.value = value
     else:
-        db_config = models.Config(key=key, value=value)
+        db_config = models.ConfiguracionGlobal(clave=key, valor=value)
         db.add(db_config)
     db.commit()
     db.refresh(db_config)
