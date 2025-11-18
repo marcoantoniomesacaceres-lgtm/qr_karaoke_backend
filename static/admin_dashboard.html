@@ -1207,9 +1207,7 @@
                                 showNotification(data.payload?.mensaje || 'Notificación', 'info');
                                 break;
                             case 'product_update':
-                                if (data.type === 'notification' || data.type === 'admin_notification') {
-                                    showNotification(data.payload.mensaje, 'admin-global-message');
-                                }
+                                showNotification('El inventario de productos ha sido actualizado.', 'info');
                                  // Re-fetch products if inventory page is active
                                 if (document.getElementById('inventory').classList.contains('active')) {
                                     loadInventoryPage();
@@ -1536,32 +1534,11 @@
             // if (statusText) statusText.textContent = `Autoplay ${isAutoplayOn ? 'Activado' : 'Desactivado'}`;
         }
 
-        
-        async function handleToggleAutoplay(event) {
-            const enabled = event.target.checked;
-
-            try {
-                const response = await apiFetch(`/settings/autoplay`, {
-                    method: "POST",
-                    body: JSON.stringify({ enabled })
-                });
-
-                updateAutoplayStatus(response.autoplay_status);
-
-                showNotification(
-                    `Reproducción automática ${response.autoplay_status ? "activada" : "desactivada"}`,
-                    "info"
-                );
-
-            } catch (err) {
-                console.error("Error actualizando autoplay:", err);
-                showNotification("Error al actualizar autoplay", "error");
-            }
-        }
          
         async function handleToggleAutoplay(event) {
             try {
-                const response = await apiFetch("/autoplay/toggle", { method: "POST" });
+                const enabled = event.target.checked;
+                const response = await apiFetch("/admin/autoplay/toggle", { method: "POST", body: JSON.stringify({ enabled }) });
                 updateAutoplayStatus(response.autoplay_status);
 
                 showNotification(
