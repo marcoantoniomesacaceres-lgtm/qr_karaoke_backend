@@ -69,6 +69,14 @@ def get_cancion_by_id(db: Session, cancion_id: int):
     """Busca una canción por su ID."""
     return db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
 
+def get_cancion_actual(db: Session):
+    """
+    Retorna la canción que está actualmente en reproducción,
+    o None si no hay ninguna activa.
+    """
+    return db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+
+
 def get_canciones_pendientes(db: Session):
     """Busca todas las canciones en estado 'pendiente'."""
     return db.query(models.Cancion).filter(models.Cancion.estado == 'pendiente').order_by(models.Cancion.id).all()

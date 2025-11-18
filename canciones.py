@@ -1,7 +1,9 @@
 import os
 import datetime
 import asyncio
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -50,10 +52,17 @@ async def avanzar_cola(db: Session = Depends(get_db)):
     para avanzar la cola a la siguiente canción.
     """
     if config.settings.AUTOPLAY_ENABLED:
-        # Si autoplay está activado, no forzamos nada manualmente
-        return Response(
-            status_code=202,
-            content="Autoplay está activo. El avance ocurre automáticamente."
+        # Si autoplay está activo, no forzamos el avance, pero devolvemos
+        # la canción actual para que el frontend pueda mostrarla.
+        cancion_actual = crud.get_cancion_actual(db)
+        if not cancion_actual:
+            return Response(status_code=204)
+
+        youtube_url = f"https://www.youtube.com/embed/{cancion_actual.youtube_id}?autoplay=1&fs=1"
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content={"message": "Autoplay está activo. El avance ocurre automáticamente.",
+                     "play_url": youtube_url, "cancion": jsonable_encoder(schemas.Cancion.from_orm(cancion_actual))}
         )
 
     # Avanzamos la cola manualmente

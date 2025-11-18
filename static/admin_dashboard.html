@@ -76,7 +76,7 @@
             display: block;
         }
         h2 { color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 0;}
-        .grid { display: grid; gap: 20px; }
+        .grid { display: grid; gap: 20px; }        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
         .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 
@@ -123,6 +123,7 @@
         .btn-deactivate { background-color: var(--error-color); }
         .btn-approve { background-color: var(--success-color); }
         .btn-generate-qr { background-color: var(--success-color) !important; } /* Verde */
+        .btn-delete { background-color: var(--error-color); } /* Añadido para el botón de eliminar */
         .btn-reject { background-color: var(--error-color); }
         .btn-action { background-color: var(--info-color); }
         
@@ -385,10 +386,14 @@
         <!-- PÁGINA: DASHBOARD -->
         <div id="dashboard" class="page active">
             <h2>Dashboard</h2>
-            <div class="grid grid-3" id="summary-container">
+            <div class="grid grid-4" id="summary-container">
                 <div class="card summary-card">
                     <h3>Ingresos Totales</h3>
                     <p class="summary-value" id="summary-income">$0.00</p>
+                </div>
+                <div class="card summary-card">
+                    <h3>Ganancias Totales</h3>
+                    <p class="summary-value" id="summary-profits" style="color: var(--success-color);">$0.00</p>
                 </div>
                 <div class="card summary-card">
                     <h3>Canciones Cantadas</h3>
@@ -421,14 +426,6 @@
                         <label for="broadcast-message-input">Enviar Mensaje Global</label>
                         <input type="text" id="broadcast-message-input" placeholder="Ej: ¡Oferta en cervezas!">
                         <button class="form-btn" id="broadcast-btn" style="margin-top: 10px; background-color: var(--info-color);">Enviar a todos</button>
-                    </div>
-                    <div>
-                        <label>Reproducción Automática</label>
-                        <label class="switch" style="margin-top: 10px;">
-                            <input type="checkbox" id="autoplay-toggle">
-                            <span class="slider"></span>
-                        </label>
-                        <p id="autoplay-status" class="item-meta" style="margin-top: 5px;">Autoplay Desactivado</p>
                     </div>
                     <div class="dangerous-zone">
                         <label>Zona Peligrosa</label>
@@ -477,6 +474,12 @@
                             <label for="admin-search-input">Buscar en YouTube</label>
                             <input type="text" id="admin-search-input" placeholder="Artista, canción o URL de YouTube" required>
                         </div>
+                        <div class="form-group">
+                            <label for="admin-target-table">Añadir a:</label>
+                            <select id="admin-target-table" name="target_table">
+                                <!-- Las mesas se cargarán aquí dinámicamente -->
+                            </select>
+                        </div>
                         <div class="form-group" style="display: flex; gap: 10px;">
                             <button type="button" class="form-btn" id="admin-search-songs-btn" style="background-color: var(--primary-color); flex: 1;">Canciones</button>
                             <button type="button" class="form-btn" id="admin-search-karaoke-btn" style="background-color: var(--success-color); flex: 1;">Karaoke</button>
@@ -511,7 +514,11 @@
                             <input type="text" id="categoria" name="categoria" required>
                         </div>
                         <div class="form-group">
-                            <label for="valor">Precio ($)</label>
+                            <label for="costo">Precio de Compra ($)</label>
+                            <input type="number" id="costo" name="costo" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="valor">Precio de Venta ($)</label>
                             <input type="number" id="valor" name="valor" step="0.01" min="0" required>
                         </div>
                         <div class="form-group">
@@ -664,6 +671,7 @@
         async function apiFetch(endpoint, options = {}) {
             const headers = { ...options.headers, 'X-API-Key': apiKey };
             // Solo añadir Content-Type si hay un body. Evita errores 422 en POSTs vacíos.
+            // FIX: El content-type se debe añadir si el body no es FormData
             if (options.body) {
                 headers['Content-Type'] = 'application/json';
             }
@@ -724,13 +732,14 @@
                     <div class="item-details">
                         <div class="item-title">${product.nombre}</div>
                         <div class="item-meta">
-                            ${product.categoria} &bull; $${product.valor} &bull; Stock: <span class="item-stock ${stockClass}">${product.stock}</span>
+                            ${product.categoria} &bull; Compra: $${product.costo || 'N/A'} &bull; Venta: $${product.valor} &bull; Stock: <span class="item-stock ${stockClass}">${product.stock}</span>
                         </div>
                     </div>
                     <div class="item-status">
                         ${statusBadge}
                     </div>
                     <div class="item-actions">
+                        <button class="btn-delete" data-id="${product.id}">Eliminar</button>
                         ${actionButton}
                         <button class="btn-action upload-img-btn" data-id="${product.id}">Imagen</button>
                     </div>
@@ -745,22 +754,30 @@
                 listElement.innerHTML = '<p>La cola de canciones está vacía.</p>';
                 return;
             }
-            songs.forEach(song => {
+            songs.forEach((song, index) => {
                 const li = document.createElement('li');
                 li.className = 'item';
-                
+
                 // Determinar qué mostrar: el nombre de la mesa o el nick del usuario (ej: DJ)
                 let addedBy = 'Desconocido';
                 if (song.usuario) {
                     addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
                 }
 
+                // El botón de reiniciar solo se muestra para la primera canción (la que está sonando)
+                const restartButton = index === 0
+                    ? `<button class="btn-action" data-id="${song.id}" data-action="restart" title="Reiniciar la canción actual">Reiniciar</button>`
+                    : '';
+
                 li.innerHTML = `
                     <div class="item-details song-item-info">
                         <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
                         <div>
                             <div class="item-title">${song.titulo}</div>
-                            <div class="item-meta">Por: <strong>${addedBy}</strong></div>
+                            <div class="item-meta">
+                                Por: <strong>${addedBy}</strong>
+                                ${index === 0 ? '<span class="status-badge status-reproduciendo" style="margin-left: 10px;">Reproduciendo</span>' : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="item-actions">
@@ -768,6 +785,7 @@
                         <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
                         <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
                         <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
+                        ${restartButton}
                     </div>
                 `;
                 listElement.appendChild(li);
@@ -802,7 +820,7 @@
                 listElement.innerHTML = '<p>No hay mesas creadas en el sistema.</p>';
                 document.getElementById('qr-code-container').innerHTML = '<p>No hay mesas para mostrar.</p>';
                 return;
-        }
+            }
 
         // Añadir estáticamente la opción para el reproductor
         listElement.innerHTML += `
@@ -894,10 +912,16 @@
                     const ingresosRaw = summary.ingresos_totales;
                     const ingresosNum = (typeof ingresosRaw === 'number') ? ingresosRaw : Number(ingresosRaw);
                     const ingresos = Number.isFinite(ingresosNum) ? ingresosNum : 0;
+                    // Asumimos que el backend ahora devuelve las ganancias
+                    const gananciasRaw = summary.ganancias_totales;
+                    const gananciasNum = (typeof gananciasRaw === 'number') ? gananciasRaw : Number(gananciasRaw);
+                    const ganancias = Number.isFinite(gananciasNum) ? gananciasNum : 0;
+                    document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
                     document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
                     document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
                     document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
                 // Cargar últimos pedidos también
+                updateAutoplayStatus((await apiFetch('/admin/autoplay/status')).autoplay_status);
                 loadRecentOrders();
             } catch (error) {
                 showNotification(`Error al cargar resumen: ${error.message}`, 'error');
@@ -1168,8 +1192,6 @@
                                     }
                                 }
                                 break;
-                            case 'pedido_created':
-                                // Activar la alerta visual y sonora
                             case 'song_finished':
                                 const songInfo = data.payload;
                                 const lastSungContainer = document.getElementById('last-sung-info');
@@ -1198,11 +1220,6 @@
                                 // Esto asegura que si el admin cambia de pestaña, verá la cola más reciente.
                                 loadQueuePage();
                                 break;
-                            default:
-                                // Si el mensaje no tiene un 'type' conocido, podría ser la actualización de la cola.
-                                loadQueuePage();
-                                // unknown type: ignore
-                                break;
                             case 'reaction':
                                 const reactionPayload = data.payload;
                                 if (reactionPayload && reactionPayload.reaction) {
@@ -1216,6 +1233,13 @@
                                     
                                     document.getElementById('reaction-container').appendChild(emoji);
                                     setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
+                                }
+                                break;
+                            default:
+                                // Si el mensaje no tiene un 'type' conocido, podría ser la actualización de la cola.
+                                // Solo procesar si es un objeto con estructura de cola
+                                if (data.now_playing || data.upcoming) {
+                                    renderApprovedSongs(data, document.getElementById('approved-songs-list'));
                                 }
                                 break;
                         }
@@ -1252,6 +1276,21 @@
                     allSongs = allSongs.concat(queueData.upcoming);
                 }
                 renderApprovedSongs(allSongs, approvedSongsList);
+            } catch (error) {
+                showNotification(`Error al cargar cola: ${error.message}`, 'error');
+            }
+            // Cargar mesas para el dropdown del DJ
+            try {
+                const tables = await apiFetch('/mesas/');
+                const targetTableSelect = document.getElementById('admin-target-table');
+                targetTableSelect.innerHTML = '<option value="">DJ (Cola General)</option>'; // Opción por defecto
+                
+                const activeTables = tables.filter(t => t.is_active);
+
+                activeTables.forEach(table => {
+                    targetTableSelect.innerHTML += `<option value="${table.id}">${table.nombre}</option>`;
+                });
+
             } catch (error) {
                 showNotification(`Error al cargar cola: ${error.message}`, 'error');
             }
@@ -1292,6 +1331,15 @@
             }
         }
 
+        async function loadReportsPage() {
+            try {
+                // Esta página puede expandirse para cargar datos de reportes
+                // Por ahora solo muestra una interfaz estática
+                console.log('Reportes cargados');
+            } catch (error) {
+                showNotification(`Error al cargar reportes: ${error.message}`, 'error');
+            }
+        }
 
         // --- EVENT HANDLERS ---
 
@@ -1314,6 +1362,7 @@
                 case 'inventory': loadInventoryPage(); break;
                 case 'settings': loadSettingsPage(); break;
                 case 'accounts': loadAccountsPage(); break;
+                case 'reports': loadReportsPage(); break;
                 case 'tables': loadTablesPage(); break;
             }
         }
@@ -1323,6 +1372,7 @@
             const formData = new FormData(form);
             const productData = Object.fromEntries(formData.entries());
             
+            productData.costo = parseFloat(productData.costo);
             productData.valor = parseFloat(productData.valor);
             productData.stock = parseInt(productData.stock, 10);
 
@@ -1353,6 +1403,21 @@
             }
         }
 
+        async function handleDeleteProduct(event) {
+            const button = event.target;
+            if (!button.matches('.btn-delete')) return;
+            const productId = button.dataset.id;
+
+            if (!confirm('¿Estás seguro de que quieres ELIMINAR este producto permanentemente? Esta acción no se puede deshacer.')) return;
+
+            try {
+                await apiFetch(`/productos/${productId}`, { method: 'DELETE' });
+                showNotification('Producto eliminado con éxito.', 'info');
+                loadInventoryPage();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        }
         async function handleProductImageUpload(event) {
             const fileInput = event.target;
             const productId = fileInput.dataset.productId;
@@ -1461,20 +1526,55 @@
             }
         }
 
-        async function handleToggleAutoplay() {
-            const toggle = document.getElementById('autoplay-toggle');
-            const statusText = document.getElementById('autoplay-status');
+        function updateAutoplayStatus(isAutoplayOn) {
+            const toggle1 = document.getElementById('autoplay-toggle');
+            const toggle2 = document.getElementById('autoplay-toggle-queue');
+            // const statusText = document.getElementById('autoplay-status'); // Ya no es necesario
+            
+            if (toggle1) toggle1.checked = isAutoplayOn;
+            toggle2.checked = isAutoplayOn;
+            // if (statusText) statusText.textContent = `Autoplay ${isAutoplayOn ? 'Activado' : 'Desactivado'}`;
+        }
+
+        
+        async function handleToggleAutoplay(event) {
+            const enabled = event.target.checked;
+
             try {
-                const response = await apiFetch('/admin/autoplay/toggle', { method: 'POST' });
-                const newStatus = response.autoplay_status;
-                toggle.checked = newStatus;
-                statusText.textContent = `Autoplay ${newStatus ? 'Activado' : 'Desactivado'}`;
-                showNotification(`Reproducción automática ${newStatus ? 'activada' : 'desactivada'}.`, 'info');
-            } catch (error) {
-                showNotification(`Error al cambiar autoplay: ${error.message}`, 'error');
-                toggle.checked = !toggle.checked; // Revertir el cambio visual si falla
+                const response = await apiFetch(`/settings/autoplay`, {
+                    method: "POST",
+                    body: JSON.stringify({ enabled })
+                });
+
+                updateAutoplayStatus(response.autoplay_status);
+
+                showNotification(
+                    `Reproducción automática ${response.autoplay_status ? "activada" : "desactivada"}`,
+                    "info"
+                );
+
+            } catch (err) {
+                console.error("Error actualizando autoplay:", err);
+                showNotification("Error al actualizar autoplay", "error");
             }
         }
+         
+        async function handleToggleAutoplay(event) {
+            try {
+                const response = await apiFetch("/autoplay/toggle", { method: "POST" });
+                updateAutoplayStatus(response.autoplay_status);
+
+                showNotification(
+                    `Reproducción automática ${response.autoplay_status ? "activada" : "desactivada"}`,
+                    "info"
+                );
+
+            } catch (err) {
+                console.error("Error actualizando autoplay:", err);
+                showNotification("Error al actualizar autoplay", "error");
+            }
+        }
+
         // --- NUEVAS FUNCIONES PARA GESTIÓN DE COLA DEL ADMIN ---
 
         async function handleAdminSearch(event, karaokeMode = false) {
@@ -1538,10 +1638,29 @@
                 youtube_id: button.dataset.youtubeId,
                 duracion_seconds: parseInt(button.dataset.duration, 10)
             };
-
+ 
+            const targetTableId = document.getElementById('admin-target-table').value;
+            let endpoint = '/canciones/admin/add'; // Endpoint por defecto para el DJ
+ 
+            if (targetTableId) {
+                // Si se selecciona una mesa, encontramos un usuario de esa mesa para asignarle la canción.
+                // Esto hace que aparezca como si la mesa la hubiera pedido.
+                try {
+                    const users = await apiFetch(`/admin/tables/${targetTableId}/users`);
+                    if (users && users.length > 0) {
+                        const representativeUser = users.find(u => u.is_active) || users[0];
+                        endpoint = `/canciones/${representativeUser.id}`; // Usamos el endpoint de usuario normal
+                    }
+                } catch (error) {
+                    showNotification(`No se pudo encontrar un usuario para la mesa. ${error.message}`, 'error');
+                    button.disabled = false;
+                    button.textContent = 'Añadir';
+                    return;
+                }
+            }
+ 
             try {
-                // Usamos un endpoint específico para el admin
-                const response = await apiFetch(`/canciones/admin/add`, {
+                await apiFetch(endpoint, {
                     method: 'POST',
                     body: JSON.stringify(songData)
                 });
@@ -1581,6 +1700,10 @@
                     } else if (response.ok) {
                         const data = await response.json();
                         showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
+                    } else {
+                        // Si la respuesta no es OK pero tampoco 204, mostramos el error
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || 'Error al intentar reproducir la canción.');
                     }
 
                 } else if (action === 'remove') {
@@ -1608,6 +1731,10 @@
                     // Enviamos el nuevo orden al backend
                     await apiFetch('/admin/reorder-queue', { method: 'POST', body: JSON.stringify({ canciones_ids: songIds }) });
                     showNotification('Cola reordenada.', 'info');
+                } else if (action === 'restart') {
+                    // Llama al endpoint para reiniciar la canción actual
+                    await apiFetch(`/admin/canciones/restart`, { method: 'POST' });
+                    showNotification('Reiniciando la canción actual.', 'info');
                 }
             } catch (error) {
                 showNotification(`Error: ${error.message}`, 'error');
@@ -1700,7 +1827,8 @@
             document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
             document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
             document.getElementById('autoplay-toggle-queue').addEventListener('change', handleToggleAutoplay);
-            document.getElementById('autoplay-toggle').addEventListener('change', handleToggleAutoplay);
+            const autoplayToggle = document.getElementById('autoplay-toggle');
+            if (autoplayToggle) autoplayToggle.addEventListener('change', handleToggleAutoplay);
 
             // Queue Page
             document.getElementById('admin-search-songs-btn').addEventListener('click', (e) => handleAdminSearch(e, false));
@@ -1712,6 +1840,7 @@
             // Inventory Page
             document.getElementById('create-product-form').addEventListener('submit', (e) => handleCreateProduct(e, e.target));
             document.getElementById('product-list').addEventListener('click', handleToggleProductActive);
+            document.getElementById('product-list').addEventListener('click', handleDeleteProduct);
 
             // Listener para el botón de subir imagen (delegado)
             document.getElementById('product-list').addEventListener('click', (e) => {
@@ -1780,31 +1909,21 @@
                     // Iteramos para aplicar la acción a cada ID de consumo
                     for (const id of consumoIds) {
                         const finalEndpoint = endpoint.replace('{consumo_id}', id);
-                        await apiFetch(finalEndpoint, { method: isDeleteAction ? 'DELETE' : 'POST' });
+
+                        await apiFetch(finalEndpoint, { 
+                            method: isDeleteAction ? 'DELETE' : 'POST'
+                        });
                     }
 
-                    if (li) li.remove(); // Eliminar el elemento de la lista
-                    showNotification(successMessage, 'info');
-                } catch (err) {
-                    showNotification(`Error cancelando pedido: ${err.message}`, 'error');
+                    showNotification(successMessage, 'success');
+                    // Recargar la lista de pedidos recientes
+                    loadDashboardPage();
+                } catch (error) {
+                    console.error("Error procesando consumos:", error);
+                    showNotification("Error procesando consumos", "error");
                 }
             });
         });
-
-        // Listeners para el modal de pago
-        document.getElementById('accounts-grid').addEventListener('click', (e) => {
-            const btn = e.target.closest('.register-payment-btn');
-            if(btn) {
-                const mesaId = btn.dataset.mesaId;
-                const mesaNombre = btn.dataset.mesaNombre;
-                const saldoPendiente = btn.dataset.saldoPendiente;
-                openPaymentModal(mesaId, mesaNombre, saldoPendiente);
-            }
-        });
-        document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
-        document.getElementById('payment-form').addEventListener('submit', handleRegisterPayment);
     </script>
-
-
 </body>
 </html>

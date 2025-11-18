@@ -18,7 +18,7 @@ import models
 # Es CRUCIAL que esto se ejecute ANTES de importar los módulos que pueden usar la BD.
 models.Base.metadata.create_all(bind=engine)
 
-import crud, schemas, broadcast
+import crud, schemas, broadcast, thumbnails
 import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
 # --- Configuración de Logging a un archivo ---
 # Esto crea un logger que guarda todo en 'karaoke_debug.log'
@@ -117,6 +117,7 @@ app.include_router(admin.router, prefix="/api/v1/admin", tags=["Administración"
 app.include_router(admin.public_router, prefix="/api/v1", tags=["Público"]) # Añadir el router público
 app.include_router(productos.router, prefix="/api/v1/productos", tags=["Productos"])
 app.include_router(broadcast.router, prefix="/api/v1/broadcast", tags=["Broadcast"])
+app.include_router(thumbnails.router)
 
 # Monta la carpeta 'static' (sirve archivos estáticos en /static)
 app.mount("/static", StaticFiles(directory="static"), name="static")

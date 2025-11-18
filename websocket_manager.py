@@ -22,6 +22,25 @@ class ConnectionManager:
             # already removed
             pass
 
+    async def _broadcast(self, message: str):
+        """Método auxiliar para enviar un mensaje a todas las conexiones activas."""
+        dead_connections = []
+        # Hacemos una copia de la lista para poder modificarla mientras iteramos
+        for connection in self.active_connections[:]:
+            try:
+                await connection.send_text(message)
+            except Exception:
+                # Si el envío falla, marcamos la conexión para eliminarla.
+                dead_connections.append(connection)
+
+        # Eliminamos las conexiones muertas de la lista activa.
+        for connection in dead_connections:
+            try:
+                self.active_connections.remove(connection)
+            except ValueError:
+                # La conexión ya fue eliminada, lo ignoramos.
+                pass
+
     async def broadcast_queue_update(self):
         """Obtiene la cola actualizada y la envía a todos los clientes."""
         db = SessionLocal()
@@ -41,228 +60,47 @@ class ConnectionManager:
             # y luego json.dumps para crear la cadena JSON. Esto maneja correctamente los objetos de la DB.
             json_payload = json.dumps(jsonable_encoder(cola_view))
 
-            # Enviamos el JSON a todos los clientes conectados
-            # Si una conexión falla, la eliminamos para evitar que futuras emisiones fallen.
-            dead = []
-            for connection in list(self.active_connections):
-                try:
-                    await connection.send_text(json_payload)
-                except Exception:
-                    # Intentamos desconectar y marcamos como muerta
-                    try:
-                        # close() is async on WebSocket so await it if possible
-                        await connection.close()
-                    except Exception:
-                        pass
-                    dead.append(connection)
-            # Remove any dead connections from the active list
-            for d in dead:
-                if d in self.active_connections:
-                    try:
-                        self.active_connections.remove(d)
-                    except ValueError:
-                        pass
-
-            # return number removed for observability (not required)
-            return len(dead)
+            await self._broadcast(json_payload)
         finally:
             db.close()
 
     async def broadcast_notification(self, mensaje: str):
         """Envía un mensaje de notificación general a todos los clientes."""
-        payload = {
-            "type": "notification",
-            "payload": {"mensaje": mensaje}
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+        payload = {"type": "notification", "payload": {"mensaje": mensaje}}
+        await self._broadcast(json.dumps(payload))
 
     async def broadcast_product_update(self):
         """Envía una notificación para que los clientes recarguen el catálogo de productos."""
-        payload = {
-            "type": "product_update"
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+        payload = {"type": "product_update"}
+        await self._broadcast(json.dumps(payload))
 
     async def broadcast_consumo_created(self, consumo_payload: dict):
         """
         Envía un evento indicando que se creó un nuevo consumo.
-        El payload debe ser un diccionario serializable que contenga
-        fields como producto_nombre, usuario_nick, mesa_nombre, cantidad, created_at, etc.
         """
-        payload = {
-            "type": "consumo_created",
-            "payload": consumo_payload
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+        payload = {"type": "consumo_created", "payload": consumo_payload}
+        await self._broadcast(json.dumps(payload, default=str))
 
     async def broadcast_pedido_created(self, pedido_payload: dict):
         """
         Envía un evento indicando que se creó un nuevo pedido consolidado.
         """
-        payload = {
-            "type": "pedido_created",
-            "payload": pedido_payload
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload, default=str)) # Usar default=str para fechas
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+        payload = {"type": "pedido_created", "payload": pedido_payload}
+        await self._broadcast(json.dumps(payload, default=str))
 
     async def broadcast_consumo_deleted(self, consumo_payload: dict):
         """
         Envía un evento indicando que un consumo fue eliminado.
-        El payload típicamente contiene al menos {'id': consumo_id}.
         """
-        payload = {
-            "type": "consumo_deleted",
-            "payload": consumo_payload
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                try:
-                    self.active_connections.remove(d)
-                except ValueError:
-                    pass
-        return len(dead)
+        payload = {"type": "consumo_deleted", "payload": consumo_payload}
+        await self._broadcast(json.dumps(payload))
 
     async def broadcast_reaction(self, reaction_payload: dict):
         """
         Envía una reacción (emoticono) a todos los clientes.
-        El payload debe ser un diccionario con 'reaction' y 'sender'.
         """
-        payload = {
-            "type": "reaction",
-            "payload": reaction_payload
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try:
-                    await connection.close()
-                except Exception:
-                    pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections:
-                self.active_connections.remove(d)
-        return len(dead)
-
-    async def broadcast_song_finished(self, cancion: models.Cancion):
-        """
-        Envía un evento indicando que una canción ha terminado y su puntuación.
-        """
-        payload = {
-            "type": "song_finished",
-            "payload": {
-                "titulo": cancion.titulo,
-                "usuario_nick": cancion.usuario.nick if cancion.usuario else "N/A",
-                "puntuacion_ia": cancion.puntuacion_ia
-            }
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try: await connection.close()
-                except Exception: pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections: self.active_connections.remove(d)
-
-    async def broadcast_play_song(self, youtube_id: str):
-        """
-        Envía un evento para reproducir una canción en el reproductor.
-        """
-        payload = {
-            "type": "play_song",
-            "payload": {
-                "youtube_id": youtube_id
-            }
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try: await connection.close()
-                except Exception: pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections: self.active_connections.remove(d)
+        payload = {"type": "reaction", "payload": reaction_payload}
+        await self._broadcast(json.dumps(payload))
 
     async def broadcast_song_finished(self, cancion: models.Cancion):
         """
@@ -278,36 +116,15 @@ class ConnectionManager:
                 "puntuacion_ia": cancion.puntuacion_ia
             }
         }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try: await connection.close()
-                except Exception: pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections: self.active_connections.remove(d)
+        await self._broadcast(json.dumps(payload))
 
     async def broadcast_play_song(self, youtube_id: str):
         """
-        Envía un evento para reproducir una canción en el reproductor.
+        Envía un evento para reproducir una canción en el reproductor,
+        utilizando el dominio de youtube-nocookie para mayor privacidad.
         """
-        payload = {
-            "type": "play_song",
-            "payload": {
-                "youtube_id": youtube_id
-            }
-        }
-        dead = []
-        for connection in list(self.active_connections):
-            try:
-                await connection.send_text(json.dumps(payload))
-            except Exception:
-                try: await connection.close()
-                except Exception: pass
-                dead.append(connection)
-        for d in dead:
-            if d in self.active_connections: self.active_connections.remove(d)
+        video_url = f"https://www.youtube-nocookie.com/embed/{youtube_id}"
+        payload = {"type": "play_song", "payload": {"youtube_url": video_url}}
+        await self._broadcast(json.dumps(payload))
 
 manager = ConnectionManager()

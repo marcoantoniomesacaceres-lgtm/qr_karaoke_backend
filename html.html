@@ -192,7 +192,7 @@
             <h2>Catálogo de Productos</h2>
             <div id="product-catalog-list" class="product-catalog-grid">
                 <!-- Los productos se insertarán aquí -->
-            </div>
+            </ul>
         </div>
 
         <!-- Pestaña de Mi Lista -->
@@ -294,7 +294,7 @@
             return `
                 <li class="song-item" id="song-${song.id}">
                     <div class="song-item-info">
-                        <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
+                        <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura" crossorigin="anonymous">
                         <div>
                             <div class="song-title">${song.titulo}</div>
                             ${song.usuario ? `<div class="song-user">por: ${song.usuario.nick}</div>` : ''}
