@@ -109,6 +109,15 @@ async def toggle_autoplay(db: Session = Depends(get_db)):
             # La función anterior ya emite el broadcast, así que no es necesario hacerlo aquí.
     return {"autoplay_status": new_value}
 
+@router.get("/autoplay/status", status_code=200, summary="Consultar el estado del autoplay")
+def get_autoplay_status(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Devuelve el estado actual del modo de reproducción automática.
+    """
+    # Leemos el valor directamente desde la configuración en memoria
+    current_value = config.settings.AUTOPLAY_ENABLED
+    return {"autoplay_status": current_value}
+
 
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")
 def get_top_songs_report(db: Session = Depends(get_db), limit: int = 10):

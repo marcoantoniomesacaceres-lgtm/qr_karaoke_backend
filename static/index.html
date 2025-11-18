@@ -834,13 +834,13 @@
             container.innerHTML = '<p>Cargando estado de cuenta...</p>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/mi-cuenta/${state.user.id}`);
+                const response = await fetch(`${API_BASE_URL}/admin/tables/${state.user.mesa.id}/payment-status`);
                 if (!response.ok) {
                     const err = await response.json();
                     throw new Error(err.detail || 'No se pudo cargar la cuenta.');
                 }
                 const data = await response.json();
-
+                
                 // Convertir a número antes de comparar y formatear
                 const saldoPendienteNum = parseFloat(data.saldo_pendiente); 
                 const totalConsumidoNum = parseFloat(data.total_consumido);
@@ -1194,66 +1194,7 @@
             }
 
         });
-
-        // === ACTUALIZACIÓN DE CUENTA EN TIEMPO REAL ===
-
-        // Asumiendo que ya tienes socket abierto, por ejemplo:
-        const socket = state.websocket;
-
-        // Este ID o número de mesa debería venir del login o del backend
-        // Ejemplo: mesa actual del cliente (puedes ajustarlo según tu lógica)
-        const mesaActual = state.tableQrCode;
-
-        // Escuchar mensajes desde el WebSocket
-        state.websocket.addEventListener('message', (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.type === 'update_account' && data.mesa === mesaActual) {
-                    actualizarCuentaCliente(data.cuenta);
-                }
-            } catch (err) {
-                console.error('Error al procesar mensaje de cuenta:', err);
-            }
-        });
-
-        // Función que actualiza la UI del cliente
-        function actualizarCuentaCliente(cuenta) {
-            const totalConsumidoEl = document.getElementById('consumo-total');
-            const totalPagadoEl = document.getElementById('consumo-pagado');
-            const saldoEl = document.getElementById('consumo-saldo');
-            const listaConsumos = document.getElementById('lista-consumos');
-            const listaPagos = document.getElementById('lista-pagos');
-
-            if (totalConsumidoEl) totalConsumidoEl.textContent = `$${cuenta.total_consumido.toFixed(2)}`;
-            if (totalPagadoEl) totalPagadoEl.textContent = `$${cuenta.total_pagado.toFixed(2)}`;
-            if (saldoEl) saldoEl.textContent = `$${cuenta.saldo_pendiente.toFixed(2)}`;
-
-            if (listaConsumos) {
-                listaConsumos.innerHTML = '';
-                if (cuenta.consumos.length > 0) {
-                    cuenta.consumos.forEach(c => {
-                        const li = document.createElement('li');
-                        li.textContent = `${c.cantidad}x ${c.producto} - $${c.precio.toFixed(2)}`;
-                        listaConsumos.appendChild(li);
-                    });
-                } else {
-                    listaConsumos.innerHTML = '<li>No hay consumos.</li>';
-                }
-            }
-
-            if (listaPagos) {
-                listaPagos.innerHTML = '';
-                if (cuenta.pagos.length > 0) {
-                    cuenta.pagos.forEach(p => {
-                        const li = document.createElement('li');
-                        li.textContent = `$${p.monto.toFixed(2)} (${p.fecha})`;
-                        listaPagos.appendChild(li);
-                    });
-                } else {
-                    listaPagos.innerHTML = '<li>No hay pagos registrados.</li>';
-            }
-        }
-    } // ✅ cierre correcto de la función
+    </script>
 </script>
 </body>
 </html>

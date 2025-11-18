@@ -1017,7 +1017,7 @@
                         <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
                     </div>
                     <button class="form-btn register-payment-btn" data-mesa-id="${mesa.mesa_id}" data-mesa-nombre="${mesa.mesa_nombre}" data-saldo-pendiente="${saldoPendienteNum}" style="margin-bottom: 15px;">Registrar Pago</button>
-                    
+
                     <!-- Detalles colapsables -->
                     <details>
                         <summary style="cursor:pointer; color: var(--secondary-color);">Ver Detalles de Consumos y Pagos</summary>
@@ -1537,8 +1537,7 @@
          
         async function handleToggleAutoplay(event) {
             try {
-                const enabled = event.target.checked;
-                const response = await apiFetch("/admin/autoplay/toggle", { method: "POST", body: JSON.stringify({ enabled }) });
+                const response = await apiFetch("/admin/autoplay/toggle", { method: "POST" });
                 updateAutoplayStatus(response.autoplay_status);
 
                 showNotification(
@@ -1615,35 +1614,28 @@
                 youtube_id: button.dataset.youtubeId,
                 duracion_seconds: parseInt(button.dataset.duration, 10)
             };
- 
+
             const targetTableId = document.getElementById('admin-target-table').value;
-            let endpoint = '/canciones/admin/add'; // Endpoint por defecto para el DJ
- 
+            let endpoint;
+            let body = JSON.stringify(songData);
+
             if (targetTableId) {
-                // Si se selecciona una mesa, encontramos un usuario de esa mesa para asignarle la canción.
-                // Esto hace que aparezca como si la mesa la hubiera pedido.
-                try {
-                    const users = await apiFetch(`/admin/tables/${targetTableId}/users`);
-                    if (users && users.length > 0) {
-                        const representativeUser = users.find(u => u.is_active) || users[0];
-                        endpoint = `/canciones/${representativeUser.id}`; // Usamos el endpoint de usuario normal
-                    }
-                } catch (error) {
-                    showNotification(`No se pudo encontrar un usuario para la mesa. ${error.message}`, 'error');
-                    button.disabled = false;
-                    button.textContent = 'Añadir';
-                    return;
-                }
+                // Endpoint para añadir una canción a una mesa específica como admin
+                endpoint = `/admin/canciones/add-to-table/${targetTableId}`;
+            } else {
+                // Endpoint para añadir una canción a la cola general del DJ
+                endpoint = '/canciones/admin/add';
             }
- 
+
             try {
                 await apiFetch(endpoint, {
                     method: 'POST',
-                    body: JSON.stringify(songData)
+                    body: body
                 });
-                showNotification(`'${songData.titulo}' añadida a la cola por el DJ.`);
+                const targetName = targetTableId ? `la mesa seleccionada` : 'la cola general';
+                showNotification(`'${songData.titulo}' añadida a ${targetName}.`);
                 document.getElementById('admin-search-results').innerHTML = ''; // Limpiar resultados
-                // La cola se actualizará por websocket
+                // La cola se actualizará automáticamente vía websocket
             } catch (error) {
                 showNotification(error.message, 'error');
             } finally {
