@@ -907,19 +907,16 @@
 
         async function loadDashboardPage() {
             try {
-                    const summary = await apiFetch('/admin/summary');
-                    // Defensive coercion: backend may return Decimal/strings for numeric values
-                    const ingresosRaw = summary.ingresos_totales;
-                    const ingresosNum = (typeof ingresosRaw === 'number') ? ingresosRaw : Number(ingresosRaw);
-                    const ingresos = Number.isFinite(ingresosNum) ? ingresosNum : 0;
-                    // Asumimos que el backend ahora devuelve las ganancias
-                    const gananciasRaw = summary.ganancias_totales;
-                    const gananciasNum = (typeof gananciasRaw === 'number') ? gananciasRaw : Number(gananciasRaw);
-                    const ganancias = Number.isFinite(gananciasNum) ? gananciasNum : 0;
-                    document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
-                    document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
-                    document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
-                    document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
+                const summary = await apiFetch('/admin/summary');
+                // Coerción defensiva: el backend puede devolver Decimal/cadenas para valores numéricos
+                const ingresos = Number(summary.ingresos_totales) || 0;
+                const costos = Number(summary.costos_totales) || 0;
+                const ganancias = ingresos - costos;
+
+                document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
+                document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
+                document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
+                document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
                 // Cargar últimos pedidos también
                 updateAutoplayStatus((await apiFetch('/admin/autoplay/status')).autoplay_status);
                 loadRecentOrders();
@@ -1620,8 +1617,8 @@
             let body = JSON.stringify(songData);
 
             if (targetTableId) {
-                // Endpoint para añadir una canción a una mesa específica como admin
-                endpoint = `/admin/canciones/add-to-table/${targetTableId}`;
+                // CORRECCIÓN: El endpoint correcto para añadir a una mesa como admin.
+                endpoint = `/admin/mesas/${targetTableId}/add-song`;
             } else {
                 // Endpoint para añadir una canción a la cola general del DJ
                 endpoint = '/canciones/admin/add';
