@@ -81,3 +81,15 @@ def conectar_usuario_a_mesa(
         raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
 
     return crud.create_usuario_en_mesa(db=db, usuario=usuario, mesa_id=db_mesa.id)
+
+@router.get("/{mesa_id}/payment-status", response_model=schemas.MesaEstadoPago, summary="Obtener estado de cuenta de una mesa")
+def get_mesa_payment_status(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    Endpoint público que devuelve el estado de cuenta de una mesa específica.
+    Incluye total consumido, total pagado, saldo pendiente, y listas de consumos y pagos.
+    Este endpoint es accesible desde la dashboard de usuarios para ver "Mi Cuenta".
+    """
+    status = crud.get_table_payment_status(db, mesa_id=mesa_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+    return status

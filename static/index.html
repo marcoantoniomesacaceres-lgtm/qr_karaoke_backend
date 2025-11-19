@@ -648,9 +648,14 @@
                 if (!response.ok) {
                     throw new Error(data.detail || 'Ocurrió un error al conectar.');
                 }
+                // Asignar la respuesta de la API a state.user
                 state.user = data;
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
                 sessionStorage.setItem('karaokeTable', state.tableQrCode);
+
+                // Ahora, obtenemos el perfil completo para asegurarnos de tener todos los datos (incluida la mesa)
+                await fetchUserProfile();
+
                 showDashboard();
             } catch (error) {
                 errorMessage.textContent = error.message;
@@ -828,16 +833,21 @@
         }
 
         async function fetchTableAccountStatus() {
-            if (!state.user) return;
+            // Ensure user and table information is available before attempting to fetch.
+            if (!state.user || !state.user.mesa || !state.user.mesa.id) {
+                console.warn("User or table information is missing, cannot fetch account status.");
+                const container = document.getElementById('my-account-content');
+                container.innerHTML = '<p class="error-msg">No se pudo cargar el estado de cuenta. Información de mesa no disponible.</p>';
+                return;
+            }
 
             const container = document.getElementById('my-account-content');
             container.innerHTML = '<p>Cargando estado de cuenta...</p>';
 
             try {
-                const apiKey = sessionStorage.getItem('adminApiKey');
-                const response = await fetch(`${API_BASE_URL}/admin/tables/${state.user.mesa.id}/payment-status`, {
-                    headers: { 'X-API-Key': apiKey }
-                });
+                // For the user dashboard, we should not use an admin API key or an admin-specific endpoint.
+                // Using the public endpoint for table payment status.
+                const response = await fetch(`${API_BASE_URL}/mesas/${state.user.mesa.id}/payment-status`);
 
                 if (!response.ok) {
                     const err = await response.json();
@@ -991,6 +1001,20 @@
                 // --- FIN DE LA CORRECCIÓN ---
                 const profile = await response.json(); // Esperamos a que el perfil se resuelva
                 state.user = profile; // Actualizamos el estado local del usuario
+                
+                // Ensure mesa information is present - if not, fetch it separately
+                if (!state.user.mesa || !state.user.mesa.id) {
+                    try {
+                        const mesaResponse = await fetch(`${API_BASE_URL}/mesas/${encodeURIComponent(state.tableQrCode)}`);
+                        if (mesaResponse.ok) {
+                            const mesaData = await mesaResponse.json();
+                            state.user.mesa = mesaData;
+                        }
+                    } catch (error) {
+                        console.warn('Could not fetch mesa details:', error);
+                    }
+                }
+                
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
                 updateProfileCard();
             } catch (error) {
@@ -1070,52 +1094,7 @@
             }
         }
 
-        function updateProfileCard() {
-            document.getElementById('user-nick').textContent = state.user.nick;
-            document.getElementById('user-points').textContent = state.user.puntos;
-            const levelEl = document.getElementById('user-level');
-            levelEl.textContent = state.user.nivel.charAt(0).toUpperCase() + state.user.nivel.slice(1);
-            levelEl.className = `profile-level level-${state.user.nivel}`;
-        }
 
-        function showDashboard() {
-            document.getElementById('table-name').textContent = state.tableQrCode;
-            updateProfileCard();
-
-            loginContainer.classList.add('hidden');
-            dashboardView.classList.remove('hidden');
-
-            connectWebSocket();            renderCart();
-            fetchMyList(); 
-        }
-
-        function handleLogout() {
-            sessionStorage.removeItem('karaokeUser');
-            sessionStorage.removeItem('karaokeTable');
-            if (state.websocket) state.websocket.close();
-            state.user = null;
-            // No recargamos el QR code desde el parámetro, ya lo tenemos en state.tableQrCode
-            dashboardView.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-            nickInput.value = '';
-            errorMessage.textContent = '';
-        }
-
-        async function handleSendReaction(event) {
-            const emojiSpan = event.target.closest('#reaction-buttons span');
-            if (!emojiSpan) return;
-
-            const reaction = emojiSpan.textContent;
-            const payload = {
-                reaction: reaction,
-                sender: state.user ? state.user.nick : "Anónimo" // Usar el nick del usuario si está logueado
-            };
-            try {
-                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            } catch (error) {
-                console.error("Error enviando reacción:", error);
-            }
-        }
 
         function getQueryParam(param) {
             return new URLSearchParams(window.location.search).get(param);
@@ -1135,6 +1114,10 @@
 
             if (storedUser && storedTable === state.tableQrCode) {
                 state.user = JSON.parse(storedUser);
+                // Ensure mesa information is present when loading from session storage
+                if (!state.user.mesa || !state.user.mesa.id) {
+                    fetchUserProfile(); // This will also fetch mesa info if needed
+                }
                 showDashboard();
             }
 
@@ -1199,6 +1182,6 @@
 
         });
     </script>
-</script>
+
 </body>
 </html>
