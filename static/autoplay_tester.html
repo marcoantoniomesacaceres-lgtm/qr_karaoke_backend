@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tester Autoplay YouTube</title>
+</head>
+<body>
+    <h2>Prueba de Autoplay YouTube</h2>
+    <p>Si el video se reproduce automáticamente, el autoplay funciona. Si ves la flecha de play, presiona para probar manualmente.</p>
+    <div id="test-container"></div>
+    <script>
+        // Cambia este ID por cualquier video de YouTube
+        const videoId = "1a3REFH83WA";
+        const container = document.getElementById('test-container');
+        container.innerHTML = `
+            <iframe 
+                width="560" 
+                height="315" 
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&showinfo=0&iv_load_policy=3&modestbranding=1" 
+                frameborder="0" 
+                allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                referrerpolicy="no-referrer">
+            </iframe>
+            <div style="margin-top:20px;color:#c00;font-weight:bold;">Si el video no inicia automáticamente, tu navegador está bloqueando el autoplay.</div>
+        `;
+    </script>
+</body>
+</html>

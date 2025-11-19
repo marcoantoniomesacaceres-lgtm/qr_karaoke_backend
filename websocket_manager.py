@@ -120,11 +120,9 @@ class ConnectionManager:
 
     async def broadcast_play_song(self, youtube_id: str):
         """
-        Envía un evento para reproducir una canción en el reproductor,
-        utilizando el dominio de youtube-nocookie para mayor privacidad.
+        Envía un evento para reproducir una canción en el reproductor.
         """
-        video_url = f"https://www.youtube-nocookie.com/embed/{youtube_id}"
-        payload = {"type": "play_song", "payload": {"youtube_url": video_url}}
+        payload = {"type": "play_song", "payload": {"youtube_id": youtube_id}}
         await self._broadcast(json.dumps(payload))
 
 manager = ConnectionManager()
