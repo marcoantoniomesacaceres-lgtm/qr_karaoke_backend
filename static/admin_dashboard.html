@@ -1831,6 +1831,13 @@
             document.getElementById('tables-list').addEventListener('click', handleTableClickForQr);
             document.getElementById('qr-code-container').addEventListener('click', handleToggleTableActive);
 
+            // Accounts Page (Cuentas por Mesa) - Event Delegation
+            document.getElementById('accounts-grid').addEventListener('click', (e) => {
+                if (e.target.classList.contains('register-payment-btn')) {
+                    openPaymentModal(e.target.dataset.mesaId, e.target.dataset.mesaNombre, e.target.dataset.saldoPendiente);
+                }
+            });
+
             // Poll recent orders every 5 seconds while admin is on dashboard
             // Se elimina el intervalo para evitar el parpadeo. La actualización se hará por WebSockets.
             // Delegated handler for cancel buttons on recent orders
@@ -1892,6 +1899,11 @@
                     showNotification("Error procesando consumos", "error");
                 }
             });
+
+            // Payment Modal Handlers
+            document.getElementById('payment-form').addEventListener('submit', handleRegisterPayment);
+            document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
+
         });
     </script>
 </body>

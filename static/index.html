@@ -834,7 +834,11 @@
             container.innerHTML = '<p>Cargando estado de cuenta...</p>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/admin/tables/${state.user.mesa.id}/payment-status`);
+                const apiKey = sessionStorage.getItem('adminApiKey');
+                const response = await fetch(`${API_BASE_URL}/admin/tables/${state.user.mesa.id}/payment-status`, {
+                    headers: { 'X-API-Key': apiKey }
+                });
+
                 if (!response.ok) {
                     const err = await response.json();
                     throw new Error(err.detail || 'No se pudo cargar la cuenta.');
