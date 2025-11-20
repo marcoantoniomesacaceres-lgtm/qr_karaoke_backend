@@ -196,17 +196,14 @@
     <div id="reaction-container" class="reaction-container"></div>
 
     <script>
-        // YouTube API será cargado de forma asíncrona
-        // Esto evita los problemas de Tracking Prevention en contextos de terceros
+        // NO cargar YouTube API JS - evita conflictos con Tracking Prevention y CORS
+        // Usaremos solo iframes simples que funcionan sin problemas
         window.onYouTubeIframeAPIReady = function() {
-            console.log("API de YouTube lista.");
-            window.youtubeAPIReady = true;
+            console.log("YouTube API ready (but we don't use it).");
         };
     </script>
-    <script src="https://www.youtube.com/iframe_api" defer></script>
     <script>
         const WEBSOCKET_URL = `ws://${window.location.host}/ws/cola`;
-        let player;
         let standbyScreen = document.getElementById('standby-screen');
         let backgroundCarousel = document.getElementById('background-carousel');
         let infoOverlay = document.getElementById('info-overlay');
@@ -244,18 +241,14 @@
             backgroundCarousel.classList.remove('active');
         }
 
-        // 1. Carga de la API de YouTube
-        let youtubeAPIReady = false;
-        let playQueueOnReady = [];
-        
-        // Timeout para verificar si la API se cargó
-        setTimeout(() => {
-            if (!youtubeAPIReady && typeof YT === 'undefined') {
-                console.warn('YouTube API not loaded after 15 seconds. Will retry on playVideo() call.');
-            }
-        }, 15000);
+        // 1. Carga de la API de YouTube - NO USAREMOS ESTO
+        // Evitamos completamente la API de YouTube JS para evitar:
+        // - Conflictos CORS (HTTP local vs HTTPS YouTube)
+        // - Problemas de Tracking Prevention
+        // - Storage access blocking
+        // Usaremos solo iframes que funcionan sin problemas
 
-        // 2. Función para crear y controlar el reproductor
+        // 2. Función para crear reproductor con iframe
         function playVideo(videoId) {
             console.log('playVideo called with:', videoId);
             stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
@@ -266,109 +259,28 @@
                 return;
             }
             
-            // Limpiar el contenedor primero
+            // Limpiar el contenedor
             container.innerHTML = '';
             
-            // Verificar que YT esté disponible
-            if (typeof YT === 'undefined' || !YT.Player) {
-                console.warn('YouTube API not available. Using iframe fallback for video:', videoId);
-
-                // Usar iframe directo como fallback, con autoplay y controles
-                container.innerHTML = `
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&showinfo=0&iv_load_policy=3&modestbranding=1" 
-                        frameborder="0" 
-                        allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen
-                        referrerpolicy="no-referrer">
-                    </iframe>
-                    <div style="position:absolute;top:10%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;padding:20px;border-radius:10px;z-index:1000;font-size:2vw;max-width:80vw;text-align:center;">
-                        <b>Si el video no inicia automáticamente, haz clic en el botón de reproducir ▶️.<br>Esto es por restricciones del navegador.</b>
-                    </div>
-                `;
-                console.log('iframe inserted into DOM');
-
-                // Destruir reproductor anterior si existe
-                if (player) {
-                    try {
-                        player.destroy();
-                    } catch (e) {}
-                    player = null;
-                }
-
-                // Intentar cargar YouTube API si aún no está disponible
-                if (typeof YT === 'undefined') {
-                    console.log('Attempting to load YouTube API...');
-                    const script = document.createElement('script');
-                    script.src = 'https://www.youtube.com/iframe_api';
-                    script.defer = true;
-                    document.head.appendChild(script);
-                }
-
-                // Reintentar después de 5 segundos para ver si YT cargó
-                setTimeout(() => {
-                    if (typeof YT !== 'undefined' && YT.Player) {
-                        console.log('YouTube API loaded, replacing with official player');
-                        playVideo(videoId);
-                    }
-                }, 5000);
-                return;
-            }
-
-            if (player) {
-                console.log('Replacing existing video with:', videoId);
-                player.loadVideoById(videoId);
-            } else {
-                console.log('Creating new YouTube player with:', videoId);
-                player = new YT.Player('player-container', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0, // Ocultar controles de YouTube
-                        'rel': 0,
-                        'showinfo': 0,
-                        'iv_load_policy': 3,
-                        'modestbranding': 1
-                    },
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onStateChange': onPlayerStateChange
-                    }
-                });
-            }
-        }
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
-
-        function onPlayerStateChange(event) {
-            // Cuando el video termina (estado 0)
-            try {
-                if (event.data == YT.PlayerState.ENDED) {
-                    console.log("Video terminado. Mostrando pantalla de espera.");
-                    startCarousel(); // Muestra standby, oculta overlay e inicia carrusel
-                    if (player) {
-                        try {
-                            player.destroy();
-                        } catch (e) {
-                            console.warn("Error destroying player:", e);
-                        }
-                        player = null;
-                    }
-                }
-                
-                // Manejar errores del reproductor
-                if (event.data == YT.PlayerState.UNSTARTED || event.data == -1) {
-                    console.log("Player not ready or encountered error");
-                }
-            } catch (error) {
-                console.error("Error in onPlayerStateChange:", error);
-            }
+            // Usar iframe directo sin API de YouTube - más confiable
+            console.log('Insertando iframe para video:', videoId);
+            container.innerHTML = `
+                <iframe 
+                    id="youtube-iframe"
+                    width="100%" 
+                    height="100%" 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&showinfo=0&iv_load_policy=3&modestbranding=1&fs=1" 
+                    frameborder="0" 
+                    allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen
+                    referrerpolicy="no-referrer"
+                    style="border:none;">
+                </iframe>
+                <div style="position:absolute;bottom:2%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#FFF;padding:15px 25px;border-radius:8px;z-index:1000;font-size:1.2vw;max-width:85vw;text-align:center;border:2px solid #4CAF50;">
+                    <b>▶️ Si el video no inicia, haz clic en reproducir</b>
+                </div>
+            `;
+            console.log('iframe del video insertado exitosamente');
         }
 
         // 3. Conexión WebSocket para recibir órdenes
