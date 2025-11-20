@@ -1359,6 +1359,23 @@ def get_or_create_dj_user(db: Session) -> models.Usuario:
         db.refresh(dj_user)
     return dj_user
 
+def get_o_crear_usuario_admin_para_mesa(db: Session, mesa_id: int) -> models.Usuario:
+    """
+    Busca o crea un usuario administrador para una mesa específica.
+    Este usuario se utiliza para las canciones añadidas por el admin a través del dashboard.
+    El nick será "ADMIN_Mesa_{mesa_id}".
+    """
+    admin_nick = f"ADMIN_Mesa_{mesa_id}"
+    admin_user = db.query(models.Usuario).filter(models.Usuario.nick == admin_nick).first()
+    
+    if not admin_user:
+        admin_user = models.Usuario(nick=admin_nick, mesa_id=mesa_id)
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+    
+    return admin_user
+
 def get_cola_completa(db: Session):
     """
     Obtiene la cola completa, incluyendo la canción que está sonando y las próximas.

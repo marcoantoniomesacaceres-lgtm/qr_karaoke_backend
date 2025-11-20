@@ -941,6 +941,43 @@ def get_table_consumption_history(mesa_id: int, db: Session = Depends(get_db)):
     consumos = crud.get_consumo_por_mesa(db, mesa_id=mesa_id)
     return consumos
 
+@router.post("/mesas/{mesa_id}/add-song", response_model=schemas.Cancion, summary="Añadir una canción a una mesa específica")
+async def admin_add_song_to_mesa(
+    mesa_id: int,
+    cancion: schemas.CancionCreate,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(api_key_auth)
+):
+    """
+    **[Admin]** Permite al administrador añadir una canción directamente a la cola
+    de una mesa específica. La canción se aprueba automáticamente.
+    """
+    # Verificar que la mesa existe
+    db_mesa = crud.get_mesa_by_id(db, mesa_id=mesa_id)
+    if not db_mesa:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+
+    # Obtener o crear un usuario DJ para la mesa
+    # Primero buscamos si hay un usuario admin/DJ ya asociado a esta mesa
+    db_usuario = crud.get_o_crear_usuario_admin_para_mesa(db, mesa_id=mesa_id)
+    
+    # Crear la canción asociada a este usuario
+    db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=db_usuario.id)
+    
+    # Aprobar automáticamente la canción
+    cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+    
+    # Si autoplay está activo, intentar iniciar la reproducción si estaba vacío
+    import asyncio
+    await crud.start_next_song_if_autoplay_and_idle(db)
+    
+    # Notificar a todos los clientes sobre la nueva cola
+    await websocket_manager.manager.broadcast_queue_update()
+    
+    crud.create_admin_log_entry(db, action="ADMIN_ADD_SONG_TO_TABLE", details=f"Canción '{cancion_aprobada.titulo}' añadida a la mesa ID {mesa_id}.")
+    
+    return cancion_aprobada
+
 # --- Gestión de Claves de API ---
 
 @router.post("/api-keys", response_model=schemas.AdminApiKeyView, status_code=201, summary="Crear una nueva clave de API")
