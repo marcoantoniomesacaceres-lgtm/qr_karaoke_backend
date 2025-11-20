@@ -881,6 +881,51 @@
             nameElement.textContent = tableName;
             container.appendChild(nameElement);
 
+            // Mostrar la URL directa (si aplica) y botón para abrir reproductor
+            try {
+                let url;
+                if (tableQrCode && tableQrCode.startsWith('/')) {
+                    url = `${window.location.origin}${tableQrCode}`;
+                } else if (tableQrCode) {
+                    url = `${window.location.origin}/?table=${tableQrCode}`;
+                }
+
+                if (url) {
+                    const urlWrap = document.createElement('div');
+                    urlWrap.style.marginTop = '10px';
+                    urlWrap.style.display = 'flex';
+                    urlWrap.style.flexDirection = 'column';
+                    urlWrap.style.alignItems = 'center';
+
+                    const urlElement = document.createElement('p');
+                    urlElement.className = 'item-meta';
+                    urlElement.style.wordBreak = 'break-all';
+                    urlElement.style.margin = '6px 0';
+                    urlElement.textContent = url;
+
+                    const openBtn = document.createElement('button');
+                    openBtn.className = 'form-btn';
+                    openBtn.style.marginTop = '8px';
+                    openBtn.style.width = '220px';
+                    openBtn.textContent = tableId === 'player' ? 'Abrir Reproductor' : 'Abrir en nueva pestaña';
+                    openBtn.onclick = () => {
+                        try {
+                            // Abrir en nueva pestaña la URL del reproductor
+                            window.open(url, '_blank');
+                        } catch (e) {
+                            // Fallback: navegar en la misma pestaña
+                            window.location.href = url;
+                        }
+                    };
+
+                    urlWrap.appendChild(urlElement);
+                    urlWrap.appendChild(openBtn);
+                    container.appendChild(urlWrap);
+                }
+            } catch (err) {
+                console.warn('No se pudo construir la URL para la mesa:', err);
+            }
+
             // Crear el botón para generar el QR
             const generateQrBtn = document.createElement('button');
             generateQrBtn.className = 'form-btn btn-generate-qr';

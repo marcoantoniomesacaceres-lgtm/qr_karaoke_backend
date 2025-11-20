@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-src 'self' https://www.youtube.com; style-src 'self' 'unsafe-inline';">
     <title>LA CANTA QUE RANA - Reproductor</title>
     <style>
         :root {
@@ -32,6 +33,7 @@
             width: 100%;
             height: 100%;
             z-index: 0; /* Detrás de todo */
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
             background-size: cover;
             background-position: center center;
             background-color: var(--bg-color);
@@ -211,17 +213,15 @@
 
         // --- Lógica del Carrusel de Fondos ---
         const backgroundImages = [
-            "https://images.unsplash.com/photo-1594125674939-57342526a84c?q=80&w=2070&auto=format&fit=crop&referrerPolicy=no-referrer", // Mujer cantando con micrófono
-            "https://images.unsplash.com/photo-1524230659264-3a2d413b5359?q=80&w=2070&auto=format&fit=crop&referrerPolicy=no-referrer", // Grupo de amigos cantando
-            "https://images.unsplash.com/photo-1567446452963-234832486438?q=80&w=1932&auto=format&fit=crop&referrerPolicy=no-referrer", // Mujer cantando en un bar
-            "https://images.unsplash.com/photo-1516280440614-37939fb98186?q=80&w=2070&auto=format&fit=crop&referrerPolicy=no-referrer"  // Hombre cantando con pasión
+            // URLs de imágenes deshabilitadas para evitar OpaqueResponseBlocking
+            // Usar gradiente CSS en su lugar
         ];
         let currentImageIndex = 0;
         let carouselInterval;
 
         function changeBackgroundImage() {
-            backgroundCarousel.style.backgroundImage = `url('${backgroundImages[currentImageIndex]}')`;
-            currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+            // El fondo se manejará con gradiente CSS en su lugar
+            // Esto evita los bloques CORS de Unsplash
         }
 
         function startCarousel() {
@@ -229,8 +229,8 @@
             standbyScreen.style.opacity = '1';
             infoOverlay.style.opacity = '0';
             backgroundCarousel.classList.add('active');
-            changeBackgroundImage(); // Carga la primera imagen inmediatamente
-            carouselInterval = setInterval(changeBackgroundImage, 7000); // Cambia cada 7 segundos
+            // Sin cambiar imagen - usar solo CSS gradiente
+            // carouselInterval = setInterval(changeBackgroundImage, 7000);
         }
 
         function stopCarousel() {
@@ -264,17 +264,22 @@
             
             // Usar iframe directo sin API de YouTube - más confiable
             console.log('Insertando iframe para video:', videoId);
+            
+            // Construir URL del embed con parámetros optimizados para Firefox
+            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1&cc_load_policy=0&playsinline=1`;
+            
             container.innerHTML = `
                 <iframe 
                     id="youtube-iframe"
+                    title="YouTube video player"
                     width="100%" 
                     height="100%" 
-                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&rel=0&showinfo=0&iv_load_policy=3&modestbranding=1&fs=1" 
-                    frameborder="0" 
-                    allow="autoplay; encrypted-media; accelerometer; clipboard-write; gyroscope; picture-in-picture; web-share" 
+                    src="${embedUrl}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowfullscreen
-                    referrerpolicy="no-referrer"
-                    style="border:none;">
+                    loading="lazy"
+                    style="border:none; display:block;">
                 </iframe>
                 <div style="position:absolute;bottom:2%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#FFF;padding:15px 25px;border-radius:8px;z-index:1000;font-size:1.2vw;max-width:85vw;text-align:center;border:2px solid #4CAF50;">
                     <b>▶️ Si el video no inicia, haz clic en reproducir</b>
