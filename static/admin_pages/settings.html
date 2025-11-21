@@ -1,0 +1,21 @@
+<h2>Configuración</h2>
+<div class="grid grid-2">
+    <div class="card">
+        <h3>Hora de Cierre</h3>
+        <div class="form-group">
+            <label for="closing-time-input">Hora de cierre (formato HH:MM)</label>
+            <input type="text" id="closing-time-input" placeholder="23:59">
+        </div>
+        <button class="form-btn" id="set-closing-time-btn">Actualizar Hora</button>
+    </div>
+    <div class="card">
+        <h3>Claves de API</h3>
+        <div class="form-group">
+            <label for="api-key-desc-input">Descripción para nueva clave</label>
+            <input type="text" id="api-key-desc-input" placeholder="Ej: Clave para DJ">
+        </div>
+        <button class="form-btn" id="create-api-key-btn">Crear Nueva Clave</button>
+        <h4 style="margin-top: 20px;">Claves Existentes</h4>
+        <ul id="api-keys-list" class="item-list"></ul>
+    </div>
+</div>

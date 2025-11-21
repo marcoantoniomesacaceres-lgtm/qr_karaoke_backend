@@ -1,0 +1,36 @@
+<h2>Gestión de Inventario</h2>
+<div class="grid" style="grid-template-columns: 1fr 350px;">
+    <div class="card">
+        <h3>Productos</h3>
+        <ul id="product-list" class="item-list">
+            <p>Cargando inventario...</p>
+        </ul>
+    </div>
+    <div class="card">
+        <h3>Crear Nuevo Producto</h3>
+        <form id="create-product-form">
+            <div class="form-group">
+                <label for="nombre">Nombre del Producto</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="categoria">Categoría</label>
+                <input type="text" id="categoria" name="categoria" required>
+            </div>
+            <div class="form-group">
+                <label for="costo">Precio de Compra ($)</label>
+                <input type="number" id="costo" name="costo" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="valor">Precio de Venta ($)</label>
+                <input type="number" id="valor" name="valor" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="stock">Stock Inicial</label>
+                <input type="number" id="stock" name="stock" min="0" required>
+            </div>
+            <button type="submit" class="form-btn">Crear Producto</button>
+        </form>
+    </div>
+</div>
+<input type="file" id="product-image-upload" style="display: none;" accept="image/*">

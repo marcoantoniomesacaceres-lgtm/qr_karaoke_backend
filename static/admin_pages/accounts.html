@@ -1,0 +1,50 @@
+<h2>Cuentas por Mesa</h2>
+<div class="grid" style="grid-template-columns: 1fr 350px;">
+    <div class="card">
+        <h3>Cuentas Registradas</h3>
+        <div id="accounts-grid" class="grid grid-3">
+            <!-- Las tarjetas de estado de cuenta se generarán aquí -->
+        </div>
+    </div>
+    <div class="card">
+        <h3>Crear Nueva Cuenta</h3>
+        <form id="create-account-form">
+            <div class="form-group">
+                <label for="account-usuario">Usuario/Mesa</label>
+                <input type="text" id="account-usuario" name="usuario" required>
+            </div>
+            <div class="form-group">
+                <label for="account-telefono">Teléfono/Email</label>
+                <input type="text" id="account-telefono" name="telefono_email" required>
+            </div>
+            <div class="form-group">
+                <label for="account-banco">Banco</label>
+                <input type="text" id="account-banco" name="banco" required>
+            </div>
+            <div class="form-group">
+                <label for="account-numero">Número de Cuenta</label>
+                <input type="text" id="account-numero" name="numero_cuenta" required>
+            </div>
+            <div class="form-group">
+                <label for="account-comision">Comisión (%)</label>
+                <input type="number" id="account-comision" name="comision_percentage" min="0" max="100" value="15" required>
+            </div>
+            <button type="submit" class="form-btn">Crear Cuenta</button>
+        </form>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="payment-modal" style="display: none;" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>Registrar Pago</h3>
+        <form id="payment-form">
+            <div class="form-group">
+                <label for="payment-amount">Monto ($)</label>
+                <input type="number" id="payment-amount" name="amount" step="0.01" min="0.01" required>
+            </div>
+            <button type="submit" class="btn-primary">Registrar Pago</button>
+        </form>
+    </div>
+</div>

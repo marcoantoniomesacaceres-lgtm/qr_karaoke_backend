@@ -384,177 +384,19 @@
 
     <div class="main-content">
         <!-- PÁGINA: DASHBOARD -->
-        <div id="dashboard" class="page active">
-            <h2>Dashboard</h2>
-            <div class="grid grid-4" id="summary-container">
-                <div class="card summary-card">
-                    <h3>Ingresos Totales</h3>
-                    <p class="summary-value" id="summary-income">$0.00</p>
-                </div>
-                <div class="card summary-card">
-                    <h3>Ganancias Totales</h3>
-                    <p class="summary-value" id="summary-profits" style="color: var(--success-color);">$0.00</p>
-                </div>
-                <div class="card summary-card">
-                    <h3>Canciones Cantadas</h3>
-                    <p class="summary-value" id="summary-songs">0</p>
-                </div>
-                <div class="card summary-card">
-                    <h3>Usuarios Activos</h3>
-                    <p class="summary-value" id="summary-users">0</p>
-                </div>
-            </div>
-            <!-- Última canción cantada -->
-            <div class="card" style="margin-top:20px;" id="last-sung-card">
-                <h3>Última Canción Cantada</h3>
-                <div id="last-sung-info">
-                    <p>Aún no se ha cantado ninguna canción.</p>
-                </div>
-            </div>
-
-            <!-- Últimos pedidos -->
-            <div class="card" style="margin-top:20px;" id="recent-orders-card">
-                <h3>Últimos Pedidos</h3>
-                <ul id="recent-orders-list" class="item-list">
-                    <li><p>Cargando últimos pedidos...</p></li>
-                </ul>
-            </div>
-            <div class="card" style="margin-top: 30px;">
-                <h3>Acciones Rápidas</h3>
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label for="broadcast-message-input">Enviar Mensaje Global</label>
-                        <input type="text" id="broadcast-message-input" placeholder="Ej: ¡Oferta en cervezas!">
-                        <button class="form-btn" id="broadcast-btn" style="margin-top: 10px; background-color: var(--info-color);">Enviar a todos</button>
-                    </div>
-                    <div class="dangerous-zone">
-                        <label>Zona Peligrosa</label>
-                        <button class="form-btn" id="reset-night-btn">Reiniciar Noche (Borrar Todo)</button>
-                    </div>
-                </div>
-            </div>
-            <!-- NUEVA SECCIÓN DE REACCIONES -->
-            <div class="card" style="margin-top: 30px;">
-                <h3>Enviar Reacción</h3>
-                <div id="reaction-buttons" style="display: flex; gap: 15px; font-size: 1.5em; cursor: pointer;">
-                    <span title="¡Genial!">😊</span>
-                    <span title="¡Me gusta!">👍</span>
-                    <span title="¡Fuego!">🔥</span>
-                    <span title="¡Increíble!">🤩</span>
-                    <span title="¡Buena voz!">🎤</span>
-                    <span title="¡Salud!">🍻</span>
-                </div>
-                <p class="item-meta">Haz clic en un emoticono para enviarlo a todos.</p>
-            </div>
-        </div>
+        <div id="dashboard" class="page active"></div>
 
         <!-- PÁGINA: COLA DE CANCIONES -->
-        <div id="queue" class="page">
-            <h2>Cola de Canciones</h2>
-            <div class="grid" style="grid-template-columns: 1fr 350px;">
-                <div class="card">
-                    <div class="autoplay-container">
-                        <h3>Cola Aprobada</h3>
-                        <div class="autoplay-label">
-                            <span>Autoplay</span>
-                            <label class="switch">
-                                <input type="checkbox" id="autoplay-toggle-queue">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    <ul id="approved-songs-list" class="item-list">
-                        <p>Cargando cola de canciones...</p>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3>Añadir Canción (DJ)</h3>
-                    <form id="admin-search-form">
-                        <div class="form-group">
-                            <label for="admin-search-input">Buscar en YouTube</label>
-                            <input type="text" id="admin-search-input" placeholder="Artista, canción o URL de YouTube" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="admin-target-table">Añadir a:</label>
-                            <select id="admin-target-table" name="target_table">
-                                <!-- Las mesas se cargarán aquí dinámicamente -->
-                            </select>
-                        </div>
-                        <div class="form-group" style="display: flex; gap: 10px;">
-                            <button type="button" class="form-btn" id="admin-search-songs-btn" style="background-color: var(--primary-color); flex: 1;">Canciones</button>
-                            <button type="button" class="form-btn" id="admin-search-karaoke-btn" style="background-color: var(--success-color); flex: 1;">Karaoke</button>
-                        </div>
-                    </form>
-                    <div id="admin-search-results" class="item-list" style="margin-top: 20px; max-height: 400px; overflow-y: auto;">
-                        <!-- Resultados de búsqueda del admin -->
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div id="queue" class="page"></div>
 
         <!-- PÁGINA: INVENTARIO -->
-        <div id="inventory" class="page">
-            <h2>Gestión de Inventario</h2>
-            <div class="grid" style="grid-template-columns: 1fr 350px;">
-                <div class="card">
-                    <h3>Productos</h3>
-                    <ul id="product-list" class="item-list">
-                        <p>Cargando inventario...</p>
-                    </ul>
-                </div>
-                <div class="card">
-                    <h3>Crear Nuevo Producto</h3>
-                    <form id="create-product-form">
-                        <div class="form-group">
-                            <label for="nombre">Nombre del Producto</label>
-                            <input type="text" id="nombre" name="nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="categoria">Categoría</label>
-                            <input type="text" id="categoria" name="categoria" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="costo">Precio de Compra ($)</label>
-                            <input type="number" id="costo" name="costo" step="0.01" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="valor">Precio de Venta ($)</label>
-                            <input type="number" id="valor" name="valor" step="0.01" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="stock">Stock Inicial</label>
-                            <input type="number" id="stock" name="stock" min="0" required>
-                        </div>
-                        <button type="submit" class="form-btn">Crear Producto</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <div id="inventory" class="page"></div>
 
         <!-- PÁGINA: MESAS Y QR -->
-        <div id="tables" class="page">
-            <h2>Mesas y Códigos QR</h2>
-            <div class="grid" style="grid-template-columns: 350px 1fr;">
-                <div class="card">
-                    <h3>Mesas del Sistema</h3>
-                    <ul id="tables-list" class="item-list" style="max-height: 70vh; overflow-y: auto;">
-                        <p>Cargando mesas...</p>
-                    </ul>
-                </div>
-                <div class="card" style="text-align: center;">
-                    <h3>Código QR de la Mesa</h3>
-                    <div id="qr-code-container" style="margin-top: 20px;"><p>Selecciona una mesa de la lista para ver su código QR.</p></div>
-                </div>
-            </div>
-        </div>
+        <div id="tables" class="page"></div>
 
         <!-- PÁGINA: CUENTAS POR MESA -->
-        <div id="accounts" class="page">
-            <h2>Cuentas por Mesa</h2>
-            <div id="accounts-grid" class="grid grid-3">
-                <!-- Las tarjetas de estado de cuenta se generarán aquí -->
-            </div>
-        </div>
+        <div id="accounts" class="page"></div>
 
         <!-- MODAL PARA REGISTRAR PAGO -->
         <div id="payment-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; align-items:center; justify-content:center;">
@@ -597,46 +439,10 @@
 
 
         <!-- PÁGINA: REPORTES -->
-        <div id="reports" class="page">
-            <h2>Reportes de la Noche</h2>
-            <div class="card">
-                <h3>Reportes Disponibles</h3>
-                <p>Esta sección puede ser expandida para mostrar gráficos y tablas con los datos de los reportes.</p>
-                <select id="report-selector" class="form-group">
-                    <option value="">Selecciona un reporte...</option>
-                    <option value="top-songs">Top Canciones Más Cantadas</option>
-                    <option value="top-products">Top Productos Más Consumidos</option>
-                    <option value="total-income">Ingresos Totales</option>
-                    <!-- Agrega más opciones de reportes aquí -->
-                </select>
-                <div id="report-output"></div>
-            </div>
-        </div>
+        <div id="reports" class="page"></div>
 
         <!-- PÁGINA: CONFIGURACIÓN -->
-        <div id="settings" class="page">
-            <h2>Configuración</h2>
-            <div class="grid grid-2">
-                <div class="card">
-                    <h3>Hora de Cierre</h3>
-                    <div class="form-group">
-                        <label for="closing-time-input">Hora de cierre (formato HH:MM)</label>
-                        <input type="text" id="closing-time-input" placeholder="23:59">
-                    </div>
-                    <button class="form-btn" id="set-closing-time-btn">Actualizar Hora</button>
-                </div>
-                <div class="card">
-                    <h3>Claves de API</h3>
-                    <div class="form-group">
-                        <label for="api-key-desc-input">Descripción para nueva clave</label>
-                        <input type="text" id="api-key-desc-input" placeholder="Ej: Clave para DJ">
-                    </div>
-                    <button class="form-btn" id="create-api-key-btn">Crear Nueva Clave</button>
-                    <h4 style="margin-top: 20px;">Claves Existentes</h4>
-                    <ul id="api-keys-list" class="item-list"></ul>
-                </div>
-            </div>
-        </div>
+        <div id="settings" class="page"></div>
     </div>
 
     <!-- Input oculto para la subida de archivos -->
@@ -652,6 +458,13 @@
     <div id="notification"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script src="/static/admin_pages/dashboard.js"></script>
+    <script src="/static/admin_pages/queue.js"></script>
+    <script src="/static/admin_pages/inventory.js"></script>
+    <script src="/static/admin_pages/accounts.js"></script>
+    <script src="/static/admin_pages/tables.js"></script>
+    <script src="/static/admin_pages/reports.js"></script>
+    <script src="/static/admin_pages/settings.js"></script>
     <script>
         const API_BASE_URL = '/api/v1';
         const notification = document.getElementById('notification');
@@ -698,152 +511,41 @@
                 console.warn("WebSocket no está conectado para enviar actualización de cuenta.");
             }
         }
+        
+        // --- AUTOPLAY UTILITIES (shared) ---
+        async function handleToggleAutoplay(event) {
+            // Toggle autoplay on the server (endpoint toggles state)
+            try {
+                const result = await apiFetch('/admin/autoplay/toggle', { method: 'POST' });
+                const status = result && typeof result.autoplay_status !== 'undefined' ? result.autoplay_status : null;
+                if (status !== null) {
+                    updateAutoplayStatus(status);
+                    showNotification(`Autoplay ${status ? 'activado' : 'desactivado'}.`, 'info');
+                }
+            } catch (err) {
+                showNotification(err.message || 'Error cambiando autoplay', 'error');
+            }
+        }
+
+        function updateAutoplayStatus(enabled) {
+            const el = document.getElementById('autoplay-toggle-queue');
+            if (el) el.checked = !!enabled;
+        }
+
+        // startCarousel may be defined in player.html; provide a noop fallback for admin
+        function startCarousel() {
+            // noop for admin dashboard; player.html provides real implementation
+            return;
+        }
         // --- RENDER FUNCTIONS ---
 
-        function renderProducts(products, productList) {
-            productList.innerHTML = '';
-            if (products.length === 0) {
-                productList.innerHTML = '<p>No hay productos en el inventario. ¡Crea el primero!</p>';
-                return;
-            }
+        // Inventory rendering moved to `static/admin_pages/inventory.js` (renderProducts)
 
-            // Ordenamos: activos primero, luego por nombre
-            products.sort((a, b) => {
-                if (a.is_active === b.is_active) {
-                    return a.nombre.localeCompare(b.nombre);
-                }
-                return a.is_active ? -1 : 1;
-            });
+        // Queue rendering moved to `static/admin_pages/queue.js` (renderApprovedSongs)
 
-            products.forEach(product => {
-                const stockClass = product.stock === 0 ? 'stock-out' : (product.stock < 10 ? 'stock-low' : '');
-                const itemClass = product.is_active ? '' : 'inactive';
-                const statusBadge = product.is_active 
-                    ? '<span class="status-badge status-active">Activo</span>'
-                    : '<span class="status-badge status-inactive">Inactivo</span>';
+        // API keys rendering moved to `static/admin_pages/settings.js` (render API keys)
 
-                const actionButton = product.is_active
-                    ? `<button class="btn-deactivate" data-id="${product.id}">Desactivar</button>`
-                    : `<button class="btn-activate" data-id="${product.id}">Activar</button>`;
-
-                const li = document.createElement('li');
-                li.className = `item ${itemClass}`;
-                li.innerHTML = `
-                    <div class="item-details">
-                        <div class="item-title">${product.nombre}</div>
-                        <div class="item-meta">
-                            ${product.categoria} &bull; Compra: $${product.costo || 'N/A'} &bull; Venta: $${product.valor} &bull; Stock: <span class="item-stock ${stockClass}">${product.stock}</span>
-                        </div>
-                    </div>
-                    <div class="item-status">
-                        ${statusBadge}
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-delete" data-id="${product.id}">Eliminar</button>
-                        ${actionButton}
-                        <button class="btn-action upload-img-btn" data-id="${product.id}">Imagen</button>
-                    </div>
-                `;
-                productList.appendChild(li);
-            });
-        }
-
-        function renderApprovedSongs(songs, listElement) {
-            listElement.innerHTML = '';
-            if (songs.length === 0) {
-                listElement.innerHTML = '<p>La cola de canciones está vacía.</p>';
-                return;
-            }
-            songs.forEach((song, index) => {
-                const li = document.createElement('li');
-                li.className = 'item';
-
-                // Determinar qué mostrar: el nombre de la mesa o el nick del usuario (ej: DJ)
-                let addedBy = 'Desconocido';
-                if (song.usuario) {
-                    addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
-                }
-
-                // El botón de reiniciar solo se muestra para la primera canción (la que está sonando)
-                const restartButton = index === 0
-                    ? `<button class="btn-action" data-id="${song.id}" data-action="restart" title="Reiniciar la canción actual">Reiniciar</button>`
-                    : '';
-
-                li.innerHTML = `
-                    <div class="item-details song-item-info">
-                        <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
-                        <div>
-                            <div class="item-title">${song.titulo}</div>
-                            <div class="item-meta">
-                                Por: <strong>${addedBy}</strong>
-                                ${index === 0 ? '<span class="status-badge status-reproduciendo" style="margin-left: 10px;">Reproduciendo</span>' : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
-                        <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
-                        <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
-                        <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
-                        ${restartButton}
-                    </div>
-                `;
-                listElement.appendChild(li);
-            });
-        }
-
-        function renderApiKeys(keys, listElement) {
-            listElement.innerHTML = '';
-            if (keys.length === 0) {
-                listElement.innerHTML = '<p>No hay claves de API creadas.</p>';
-                return;
-            }
-            keys.forEach(key => {
-                const li = document.createElement('li');
-                li.className = `item ${key.is_active ? '' : 'inactive'}`;
-                li.innerHTML = `
-                    <div class="item-details">
-                        <div class="item-title">${key.description || 'Sin descripción'}</div>
-                        <div class="item-meta">Creada: ${new Date(key.created_at).toLocaleString()}</div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-deactivate" data-id="${key.id}">Eliminar</button>
-                    </div>
-                `;
-                listElement.appendChild(li);
-            });
-        }
-
-        function renderTablesForQr(tables, listElement, activeQrCode) {
-            listElement.innerHTML = '';
-            if (tables.length === 0) {
-                listElement.innerHTML = '<p>No hay mesas creadas en el sistema.</p>';
-                document.getElementById('qr-code-container').innerHTML = '<p>No hay mesas para mostrar.</p>';
-                return;
-            }
-
-        // Añadir estáticamente la opción para el reproductor
-        listElement.innerHTML += `
-            <li class="item" style="cursor: pointer;" data-qr-code="/player" data-table-name="Pantalla del Reproductor" data-table-id="player" data-is-active="true">
-                <div class="item-details"><div class="item-title">📺 Pantalla del Reproductor</div><div class="item-meta">Acceso principal</div></div>
-            </li>
-        `;
-
-            tables.forEach(table => {
-                const li = document.createElement('li');
-                li.className = 'item';
-                li.style.cursor = 'pointer';
-                li.dataset.qrCode = table.qr_code;
-                li.dataset.tableName = table.nombre;
-                li.dataset.tableId = table.id;
-                li.dataset.isActive = table.is_active;
-                if (table.qr_code === activeQrCode) {
-                    li.classList.add('active'); // Marcar como activo si es el seleccionado
-                }
-                li.innerHTML = `<div class="item-details"><div class="item-title">${table.nombre}</div><div class="item-meta">${table.is_active ? 'Activa' : 'Inactiva'}</div></div>`;
-                listElement.appendChild(li);
-            });
-        }
+        // Tables rendering moved to `static/admin_pages/tables.js` (renderTablesList)
 
         function generateQrForTable(canvas, tableQrCode) {
             let url;
@@ -950,213 +652,10 @@
         }
         // --- PAGE LOADERS ---
 
-        async function loadDashboardPage() {
-            try {
-                const summary = await apiFetch('/admin/summary');
-                // Coerción defensiva: el backend puede devolver Decimal/cadenas para valores numéricos
-                const ingresos = Number(summary.ingresos_totales) || 0;
-                const costos = Number(summary.costos_totales) || 0;
-                const ganancias = ingresos - costos;
-
-                document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
-                document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
-                document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
-                document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
-                // Cargar últimos pedidos también
-                updateAutoplayStatus((await apiFetch('/admin/autoplay/status')).autoplay_status);
-                loadRecentOrders();
-            } catch (error) {
-                showNotification(`Error al cargar resumen: ${error.message}`, 'error');
-            }
-        }
-
-        // CARGA Y RENDER DE ÚLTIMOS PEDIDOS
-        async function loadRecentOrders() {
-        const listEl = document.getElementById('recent-orders-list');
-        try {
-            const pedidos = await apiFetch('/admin/recent-consumos?limit=25'); // Pedimos más para tener margen de agrupación
-            listEl.innerHTML = '';
-            if (!pedidos || pedidos.length === 0) {
-                listEl.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
-                return;
-            }
-
-            // 1. Agrupar pedidos por mesa
-            const pedidosPorMesa = pedidos.reduce((acc, pedido) => {
-                const mesaNombre = pedido.mesa_nombre || 'Pedidos sin mesa';
-                if (!acc[mesaNombre]) {
-                    acc[mesaNombre] = {
-                        items: [],
-                        ultimaFecha: new Date(0),
-                        nicks: new Set()
-                    };
-                }
-                acc[mesaNombre].items.push(pedido);
-                acc[mesaNombre].nicks.add(pedido.usuario_nick);
-                if (new Date(pedido.created_at) > acc[mesaNombre].ultimaFecha) {
-                    acc[mesaNombre].ultimaFecha = new Date(pedido.created_at);
-                }
-                return acc;
-            }, {});
-
-            // 2. Renderizar cada grupo en una tarjeta
-            Object.keys(pedidosPorMesa).sort((a, b) => pedidosPorMesa[b].ultimaFecha - pedidosPorMesa[a].ultimaFecha).forEach(mesaNombre => {
-                const grupo = pedidosPorMesa[mesaNombre];
-                const li = document.createElement('li');
-                li.className = 'item';
-                
-                const itemsHtml = grupo.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
-                const allConsumoIds = grupo.items.map(item => item.id).join(',');
-
-                li.innerHTML = `
-                    <div class="item-details">
-                        <div class="item-title">
-                            ${mesaNombre} pidió:
-                            <span class="order-alert-icon shaking">🔔</span>
-                        </div>
-                        <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
-                        <div class="item-meta">
-                            Por: ${[...grupo.nicks].join(', ')} — Último pedido a las ${grupo.ultimaFecha.toLocaleTimeString()}
-                        </div>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-despachado" data-ids="${allConsumoIds}" title="Marcar todo como despachado">Despachado</button>
-                        <button class="btn-no-despachado" data-ids="${allConsumoIds}" title="Cancelar todo el pedido">No Despachado</button>
-                    </div>
-                `;
-                listEl.appendChild(li);
-            });
-
-        } catch (error) {
-            listEl.innerHTML = `<li><p style="color: var(--error-color);">Error cargando pedidos: ${error.message}</p></li>`;
-        }
-    }
-
-        // --- NUEVAS FUNCIONES PARA LA PÁGINA DE CUENTAS ---
-
-        function renderAccountStatus(statusList) {
-            const gridEl = document.getElementById('accounts-grid');
-            gridEl.innerHTML = '';
-
-            if (!statusList || statusList.length === 0) {
-                gridEl.innerHTML = '<p>No hay mesas con actividad para mostrar.</p>';
-                return;
-            }
-
-            statusList.forEach(mesa => {
-                // FIX: Convertir a número antes de comparar
-                const saldoPendienteNum = parseFloat(mesa.saldo_pendiente);
-                const totalConsumidoNum = parseFloat(mesa.total_consumido);
-                const totalPagadoNum = parseFloat(mesa.total_pagado);
-                const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
-                const card = document.createElement('div');
-                card.className = 'card account-card';
-                card.innerHTML = `
-                    <h3>${mesa.mesa_nombre}</h3>
-                    <div class="account-summary">
-                        <div>Total Consumido: <strong>$${totalConsumidoNum.toFixed(2)}</strong></div>
-                        <div>Total Pagado: <strong style="color: var(--success-color);">$${totalPagadoNum.toFixed(2)}</strong></div>
-                        <div class="saldo-pendiente ${saldoClass}">Saldo: <strong>$${saldoPendienteNum.toFixed(2)}</strong></div>
-                    </div>
-                    <button class="form-btn register-payment-btn" data-mesa-id="${mesa.mesa_id}" data-mesa-nombre="${mesa.mesa_nombre}" data-saldo-pendiente="${saldoPendienteNum}" style="margin-bottom: 15px;">Registrar Pago</button>
-
-                    <!-- Detalles colapsables -->
-                    <details>
-                        <summary style="cursor:pointer; color: var(--secondary-color);">Ver Detalles de Consumos y Pagos</summary>
-                        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <h4>Consumos</h4>
-                            <div class="details-section">
-                                <ul class="item-list">
-                                ${mesa.consumos.length > 0 ? mesa.consumos.map(c => `
-                                    <li style="font-size:0.9em; padding: 4px 0;">${c.cantidad}x ${c.producto_nombre} - $${parseFloat(c.valor_total).toFixed(2)} <span style="color: var(--text-secondary); font-size: 0.9em;">(${new Date(c.created_at).toLocaleTimeString()})</span></li>
-                                `).join('') : '<li>No hay consumos.</li>'}
-                                </ul>
-                            </div>
-                            <h4 style="margin-top:10px;">Pagos</h4>
-                            <div class="details-section">
-                                <ul class="item-list">
-                                ${mesa.pagos.length > 0 ? mesa.pagos.map(p => `
-                                    <li style="font-size:0.9em; padding: 4px 0;">$${parseFloat(p.monto).toFixed(2)} (${p.metodo_pago}) - <span style="color: var(--text-secondary); font-size: 0.9em;">${new Date(p.created_at).toLocaleTimeString()}</span></li>
-                                `).join('') : '<li>No hay pagos registrados.</li>'}
-                                </ul>
-                            </div>
-                        </div>
-                    </details>
-                `;
-                gridEl.appendChild(card);
-            });
-        }
-
-        async function loadAccountsPage() {
-            try {
-                const statusList = await apiFetch('/admin/reports/table-payment-status');
-                renderAccountStatus(statusList);
-            } catch (error) {
-                document.getElementById('accounts-grid').innerHTML = `<p style="color: var(--error-color);">Error al cargar estado de cuentas: ${error.message}</p>`;
-            }
-        }
-
-        function openPaymentModal(mesaId, mesaNombre, saldoPendiente) {
-            document.getElementById('payment-mesa-id').value = mesaId;
-            document.getElementById('payment-modal-title').textContent = `Registrar Pago para ${mesaNombre}`;
-            document.getElementById('payment-modal').style.display = 'flex';
-            // Guardamos el saldo pendiente en un atributo de datos del formulario para usarlo después
-            document.getElementById('payment-form').dataset.saldoPendiente = saldoPendiente;
-        }
-
-        function closePaymentModal() {
-            document.getElementById('payment-form').reset();
-            document.getElementById('payment-modal').style.display = 'none';
-        }
-
-        async function handleRegisterPayment(event) {
-            event.preventDefault();
-            const form = document.getElementById('payment-form');
-            const formData = new FormData(form);
-            const paymentData = {
-                mesa_id: parseInt(formData.get('mesa_id'), 10),
-                monto: parseFloat(formData.get('monto')),
-                metodo_pago: formData.get('metodo_pago')
-            };
-
-            const saldoPendiente = parseFloat(form.dataset.saldoPendiente || '0');
-
-            // Función para proceder con el registro del pago
-            const proceedWithPayment = async () => {
-                try {
-                    await apiFetch('/admin/pagos', { method: 'POST', body: JSON.stringify(paymentData) });
-                    showNotification('Pago registrado con éxito.', 'success');
-                    closePaymentModal();
-                    
-                    // Obtener el estado de cuenta actualizado para la mesa y enviarlo por WebSocket
-                    const updatedAccountStatus = await apiFetch(`/admin/tables/${paymentData.mesa_id}/payment-status`);
-                    enviarActualizacionCuenta(paymentData.mesa_id, updatedAccountStatus);
-                    loadAccountsPage(); // Recargar la vista de cuentas
-                } catch (error) {
-                    showNotification(`Error al registrar pago: ${error.message}`, 'error');
-                }
-            };
-
-            // Validación de pago excedente con modal personalizado
-            if (paymentData.monto > saldoPendiente) {
-                const modal = document.getElementById('confirm-overpayment-modal');
-                const confirmBtn = document.getElementById('confirm-overpayment-btn');
-                const cancelBtn = document.getElementById('cancel-overpayment-btn');
-                modal.style.display = 'flex';
-
-                confirmBtn.onclick = () => {
-                    modal.style.display = 'none';
-                    proceedWithPayment();
-                };
-
-                cancelBtn.onclick = () => {
-                    modal.style.display = 'none';
-                };
-            } else {
-                // Si el pago no excede la deuda, proceder directamente
-                await proceedWithPayment();
-            }
-        }
+        // Page loaders and account UI moved to modules:
+        // - Dashboard: `static/admin_pages/dashboard.js` (loadDashboardPage, loadRecentOrders, reactions, broadcast)
+        // - Accounts: `static/admin_pages/accounts.js` (loadAccountsPage, payment modal handlers)
+        // The WebSocket handlers below will call these module functions when messages arrive.
 
 
         // WEBSOCKET: Conexión para actualizaciones en tiempo real (cola, notificaciones, consumos)
@@ -1279,7 +778,20 @@
                                 // Si el mensaje no tiene un 'type' conocido, podría ser la actualización de la cola.
                                 // Solo procesar si es un objeto con estructura de cola
                                 if (data.now_playing || data.upcoming) {
-                                    renderApprovedSongs(data, document.getElementById('approved-songs-list'));
+                                    const approvedListEl = document.getElementById('approved-songs-list');
+                                    // Prefer module-managed render if available (queue.js defines renderApprovedSongs)
+                                    if (typeof renderApprovedSongs === 'function') {
+                                        try {
+                                            renderApprovedSongs(data, approvedListEl);
+                                        } catch (e) {
+                                            console.error('Error in renderApprovedSongs:', e);
+                                            // Fallback: ask the queue module to reload its data
+                                            if (typeof loadQueuePage === 'function') loadQueuePage();
+                                        }
+                                    } else {
+                                        // If module not loaded yet, trigger the queue page loader to ensure data/rendering
+                                        if (typeof loadQueuePage === 'function') loadQueuePage();
+                                    }
                                 }
                                 break;
                         }
@@ -1302,84 +814,13 @@
             }
         }
 
-        async function loadQueuePage() {
-            try {
-                // La cola ahora viene del websocket, pero hacemos una carga inicial
-                const queueData = await apiFetch('/canciones/cola');
-                const approvedSongsList = document.getElementById('approved-songs-list');
-                
-                let allSongs = [];
-                if (queueData.now_playing) {
-                    allSongs.push(queueData.now_playing);
-                }
-                if (queueData.upcoming) {
-                    allSongs = allSongs.concat(queueData.upcoming);
-                }
-                renderApprovedSongs(allSongs, approvedSongsList);
-            } catch (error) {
-                showNotification(`Error al cargar cola: ${error.message}`, 'error');
-            }
-            // Cargar mesas para el dropdown del DJ
-            try {
-                const tables = await apiFetch('/mesas/');
-                const targetTableSelect = document.getElementById('admin-target-table');
-                targetTableSelect.innerHTML = '<option value="">DJ (Cola General)</option>'; // Opción por defecto
-                
-                const activeTables = tables.filter(t => t.is_active);
-
-                activeTables.forEach(table => {
-                    targetTableSelect.innerHTML += `<option value="${table.id}">${table.nombre}</option>`;
-                });
-
-            } catch (error) {
-                showNotification(`Error al cargar cola: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadInventoryPage() {
-            const productList = document.getElementById('product-list');
-            try {
-                const products = await apiFetch('/productos/');
-                renderProducts(products, productList);
-            } catch (error) {
-                productList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
-            }
-        }
-
-        async function loadSettingsPage() {
-            try {
-                const closingTime = await apiFetch('/admin/get-closing-time');
-                document.getElementById('closing-time-input').value = closingTime.hora_cierre;
-
-                const apiKeys = await apiFetch('/admin/api-keys');
-                renderApiKeys(apiKeys, document.getElementById('api-keys-list'));
-            } catch (error) {
-                showNotification(`Error al cargar configuración: ${error.message}`, 'error');
-            }
-        }
-
-        async function loadTablesPage() {
-            const tablesList = document.getElementById('tables-list');
-            const activeItem = tablesList.querySelector('li.active');
-            const activeQrCode = activeItem ? activeItem.dataset.qrCode : null;
-            try {
-                const tables = await apiFetch('/mesas/'); // Asume que este endpoint devuelve todas las mesas
-                renderTablesForQr(tables, tablesList, activeQrCode);
-            } catch (error) {
-                showNotification(`Error al cargar mesas: ${error.message}`, 'error');
-                tablesList.innerHTML = `<p style="color: var(--error-color);">Error cargando mesas: ${error.message}</p>`;
-            }
-        }
-
-        async function loadReportsPage() {
-            try {
-                // Esta página puede expandirse para cargar datos de reportes
-                // Por ahora solo muestra una interfaz estática
-                console.log('Reportes cargados');
-            } catch (error) {
-                showNotification(`Error al cargar reportes: ${error.message}`, 'error');
-            }
-        }
+        // Page loaders for queue/inventory/settings/tables/reports moved to per-page modules:
+        // - `static/admin_pages/queue.js` (loadQueuePage)
+        // - `static/admin_pages/inventory.js` (loadInventoryPage)
+        // - `static/admin_pages/settings.js` (loadSettingsPage)
+        // - `static/admin_pages/tables.js` (loadTablesPage)
+        // - `static/admin_pages/reports.js` (loadReportsPage)
+        // The navigation handler calls those module functions via handleNavigation().
 
         // --- EVENT HANDLERS ---
 
@@ -1395,364 +836,51 @@
             const pageId = link.getAttribute('href').substring(1);
             document.getElementById(pageId).classList.add('active');
 
-            // Cargar datos de la página activa
+            // Cargar datos y configurar listeners de la página activa
             switch (pageId) {
-                case 'dashboard': loadDashboardPage(); break;
-                case 'queue': loadQueuePage(); break;
-                case 'inventory': loadInventoryPage(); break;
-                case 'settings': loadSettingsPage(); break;
-                case 'accounts': loadAccountsPage(); break;
-                case 'reports': loadReportsPage(); break;
-                case 'tables': loadTablesPage(); break;
+                case 'dashboard':
+                    loadDashboardPage();
+                    setupDashboardListeners();
+                    break;
+                case 'queue':
+                    loadQueuePage();
+                    setupQueueListeners();
+                    break;
+                case 'inventory':
+                    loadInventoryPage();
+                    setupInventoryListeners();
+                    break;
+                case 'settings':
+                    loadSettingsPage();
+                    setupSettingsListeners();
+                    break;
+                case 'accounts':
+                    loadAccountsPage();
+                    setupAccountsListeners();
+                    break;
+                case 'reports':
+                    loadReportsPage();
+                    setupReportsListeners();
+                    break;
+                case 'tables':
+                    loadTablesPage();
+                    setupTablesListeners();
+                    break;
             }
         }
 
-        async function handleCreateProduct(event, form) {
-            event.preventDefault();
-            const formData = new FormData(form);
-            const productData = Object.fromEntries(formData.entries());
-            
-            productData.costo = parseFloat(productData.costo);
-            productData.valor = parseFloat(productData.valor);
-            productData.stock = parseInt(productData.stock, 10);
+        // Inventory, Tables, Settings, Accounts functions now in respective modules
 
-            try {
-                const result = await apiFetch('/productos/', { method: 'POST', body: JSON.stringify(productData) });
-                showNotification(`Producto '${result.nombre}' creado con éxito.`);
-                form.reset();
-                loadInventoryPage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
+        // Settings and API functions now in settings.js module
 
-        async function handleToggleProductActive(event) {
-            const button = event.target;
-            if (!button.matches('.btn-activate, .btn-deactivate')) return;
+        // Broadcast and reset functions now in dashboard.js module
 
-            const productId = button.dataset.id;
-            const activate = button.classList.contains('btn-activate');
-            const endpoint = `/productos/${productId}/${activate ? 'activate' : 'deactivate'}`;
+        // Autoplay toggle now in queue.js module
 
-            try {
-                const result = await apiFetch(endpoint, { method: 'POST' });
-                showNotification(`Producto '${result.nombre}' ${activate ? 'activado' : 'desactivado'}.`);
-                loadInventoryPage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
+        // Queue/search logic (add song) moved to per-page module:
+        // see `static/admin_pages/queue.js` -> `handleAdminAddSong` / `loadQueuePage`
 
-        async function handleDeleteProduct(event) {
-            const button = event.target;
-            if (!button.matches('.btn-delete')) return;
-            const productId = button.dataset.id;
-
-            if (!confirm('¿Estás seguro de que quieres ELIMINAR este producto permanentemente? Esta acción no se puede deshacer.')) return;
-
-            try {
-                await apiFetch(`/productos/${productId}`, { method: 'DELETE' });
-                showNotification('Producto eliminado con éxito.', 'info');
-                loadInventoryPage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-        async function handleProductImageUpload(event) {
-            const fileInput = event.target;
-            const productId = fileInput.dataset.productId;
-            if (!fileInput.files || fileInput.files.length === 0 || !productId) {
-                return;
-            }
-
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Mostramos una notificación de carga
-            showNotification('Subiendo imagen...', 'info', 10000);
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/productos/${productId}/upload-image`, {
-                    method: 'POST',
-                    headers: { 'X-API-Key': apiKey },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Error al subir la imagen.');
-                }
-
-                showNotification('Imagen actualizada con éxito.', 'success');
-                loadInventoryPage(); // Recargar para ver la nueva imagen (si la mostráramos)
-
-            } catch (error) {
-                showNotification(error.message, 'error');
-            } finally {
-                // Limpiar el input para permitir subir el mismo archivo de nuevo
-                fileInput.value = '';
-            }
-        }
-
-        async function handleSetClosingTime() {
-            const time = document.getElementById('closing-time-input').value;
-            if (!/^\d{2}:\d{2}$/.test(time)) {
-                showNotification('Formato de hora inválido. Usa HH:MM.', 'error');
-                return;
-            }
-            try {
-                await apiFetch('/admin/set-closing-time', { method: 'POST', body: JSON.stringify({ hora_cierre: time }) });
-                showNotification(`Hora de cierre actualizada a ${time}.`);
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
-        async function handleCreateApiKey() {
-            const description = document.getElementById('api-key-desc-input').value.trim();
-            if (!description) {
-                showNotification('Por favor, introduce una descripción para la clave.', 'error');
-                return;
-            }
-            try {
-                const newKey = await apiFetch('/admin/api-keys', { method: 'POST', body: JSON.stringify({ description }) });
-                alert(`¡Clave creada con éxito! Guárdala en un lugar seguro, no se mostrará de nuevo:\n\n${newKey.key}`);
-                document.getElementById('api-key-desc-input').value = '';
-                loadSettingsPage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
-        async function handleDeleteApiKey(event) {
-            const button = event.target;
-            if (!button.matches('.btn-deactivate')) return;
-            if (!confirm('¿Estás seguro de que quieres eliminar esta clave de API permanentemente?')) return;
-
-            const keyId = button.dataset.id;
-            try {
-                await apiFetch(`/admin/api-keys/${keyId}`, { method: 'DELETE' });
-                showNotification('Clave de API eliminada.', 'info');
-                loadSettingsPage();
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
-        async function handleBroadcast() {
-            const message = document.getElementById('broadcast-message-input').value.trim();
-            if (!message) {
-                showNotification('El mensaje no puede estar vacío.', 'error');
-                return;
-            }
-            try {
-                await apiFetch('/admin/broadcast-message', { method: 'POST', body: JSON.stringify({ mensaje: message }) });
-                showNotification('Mensaje enviado a todos los usuarios.', 'success');
-                document.getElementById('broadcast-message-input').value = '';
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
-        async function handleResetNight() {
-            if (!confirm('¡ACCIÓN DESTRUCTIVA!\n\n¿Estás seguro de que quieres reiniciar la noche? Se borrarán TODAS las mesas, usuarios, canciones y consumos.')) return;
-            try {
-                await apiFetch('/admin/reset-night', { method: 'POST' });
-                showNotification('El sistema ha sido reiniciado para una nueva noche.', 'info');
-                loadDashboardPage(); // Recargar datos
-            } catch (error) {
-                showNotification(error.message, 'error');
-            }
-        }
-
-        function updateAutoplayStatus(isAutoplayOn) {
-            const toggle1 = document.getElementById('autoplay-toggle');
-            const toggle2 = document.getElementById('autoplay-toggle-queue');
-            // const statusText = document.getElementById('autoplay-status'); // Ya no es necesario
-            
-            if (toggle1) toggle1.checked = isAutoplayOn;
-            toggle2.checked = isAutoplayOn;
-            // if (statusText) statusText.textContent = `Autoplay ${isAutoplayOn ? 'Activado' : 'Desactivado'}`;
-        }
-
-         
-        async function handleToggleAutoplay(event) {
-            try {
-                const response = await apiFetch("/admin/autoplay/toggle", { method: "POST" });
-                updateAutoplayStatus(response.autoplay_status);
-
-                showNotification(
-                    `Reproducción automática ${response.autoplay_status ? "activada" : "desactivada"}`,
-                    "info"
-                );
-
-            } catch (err) {
-                console.error("Error actualizando autoplay:", err);
-                showNotification("Error al actualizar autoplay", "error");
-            }
-        }
-
-        // --- NUEVAS FUNCIONES PARA GESTIÓN DE COLA DEL ADMIN ---
-
-        async function handleAdminSearch(event, karaokeMode = false) {
-            event.preventDefault();
-            const query = document.getElementById('admin-search-input').value.trim();
-            if (!query) return;
-
-            const songsButton = document.getElementById('admin-search-songs-btn');
-            const karaokeButton = document.getElementById('admin-search-karaoke-btn');
-            songsButton.disabled = true;
-            karaokeButton.disabled = true;
-            
-            // Cambiar texto del botón presionado
-            const clickedButton = karaokeMode ? karaokeButton : songsButton;
-            const originalText = clickedButton.textContent;
-            clickedButton.textContent = 'Buscando...';
-
-            const resultsContainer = document.getElementById('admin-search-results');
-            resultsContainer.innerHTML = '<p>Buscando...</p>';
-
-            try {
-                const url = `/youtube/search?q=${encodeURIComponent(query)}${karaokeMode ? '&karaoke_mode=true' : ''}`;
-                const results = await apiFetch(url);
-
-                resultsContainer.innerHTML = '';
-                if (results.length > 0) {
-                    results.forEach(song => {
-                        resultsContainer.innerHTML += `
-                            <li class="item">
-                                <div class="item-details song-item-info">
-                                    <img src="${song.thumbnail}" alt="Miniatura">
-                                    <div>
-                                        <div class="item-title">${song.title}</div>
-                                    </div>
-                                </div>
-                                <button class="btn-approve admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
-                            </li>
-                        `;
-                    });
-                } else {
-                    resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
-                }
-            } catch (error) {
-                resultsContainer.innerHTML = `<p class="error-msg">Error: ${error.message}</p>`;
-            } finally {
-                songsButton.disabled = false;
-                karaokeButton.disabled = false;
-                clickedButton.textContent = originalText;
-            }
-        }
-
-        async function handleAdminAddSong(event) {
-            if (!event.target.classList.contains('admin-add-song-btn')) return;
-
-            const button = event.target;
-            button.disabled = true;
-            button.textContent = 'Añadiendo...';
-
-            const songData = {
-                titulo: button.dataset.title,
-                youtube_id: button.dataset.youtubeId,
-                duracion_seconds: parseInt(button.dataset.duration, 10)
-            };
-
-            const targetTableId = document.getElementById('admin-target-table').value;
-            let endpoint;
-            let body = JSON.stringify(songData);
-
-            if (targetTableId) {
-                // CORRECCIÓN: El endpoint correcto para añadir a una mesa como admin.
-                endpoint = `/admin/mesas/${targetTableId}/add-song`;
-            } else {
-                // Endpoint para añadir una canción a la cola general del DJ
-                endpoint = '/canciones/admin/add';
-            }
-
-            try {
-                await apiFetch(endpoint, {
-                    method: 'POST',
-                    body: body
-                });
-                const targetName = targetTableId ? `la mesa seleccionada` : 'la cola general';
-                showNotification(`'${songData.titulo}' añadida a ${targetName}.`);
-                document.getElementById('admin-search-results').innerHTML = ''; // Limpiar resultados
-                // La cola se actualizará automáticamente vía websocket
-            } catch (error) {
-                showNotification(error.message, 'error');
-            } finally {
-                button.disabled = false;
-                button.textContent = 'Añadir';
-            }
-        }
-
-        async function handleQueueActions(event) {
-            const button = event.target.closest('button[data-action]');
-            if (!button) return;
-
-            const songId = button.dataset.id;
-            const action = button.dataset.action;
-
-            if (!songId || !action) return;
-
-            button.disabled = true;
-
-            try {
-                if (action === 'play') {
-                    const response = await fetch("/api/v1/canciones/siguiente", {
-                        method: "POST",
-                        headers: {
-                            "X-API-Key": apiKey // Usamos la variable 'apiKey' que ya contiene la clave de la sesión
-                        }
-                    });
-
-                    if (response.status === 204) {
-                        showNotification('No hay más canciones en la cola.', 'info');
-                    } else if (response.ok) {
-                        const data = await response.json();
-                        showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
-                    } else {
-                        // Si la respuesta no es OK pero tampoco 204, mostramos el error
-                        const errorData = await response.json();
-                        throw new Error(errorData.detail || 'Error al intentar reproducir la canción.');
-                    }
-
-                } else if (action === 'remove') {
-                    if (confirm('¿Seguro que quieres eliminar esta canción de la cola?')) {
-                        // Usamos el endpoint de rechazar que la saca de la cola
-                        await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
-                        showNotification('Canción eliminada de la cola.', 'info');
-                    }
-                } else if (action === 'move-up' || action === 'move-down') {
-                    // Obtenemos el orden actual de la cola desde el DOM
-                    const listElement = document.getElementById('approved-songs-list');
-                    const songItems = Array.from(listElement.querySelectorAll('li.item'));
-                    const songIds = songItems.map(item => item.querySelector('button').dataset.id);
-                    const currentIndex = songIds.indexOf(songId);
-
-                    if (action === 'move-up' && currentIndex > 0) {
-                        [songIds[currentIndex - 1], songIds[currentIndex]] = [songIds[currentIndex], songIds[currentIndex - 1]];
-                    } else if (action === 'move-down' && currentIndex < songIds.length - 1) {
-                        [songIds[currentIndex], songIds[currentIndex + 1]] = [songIds[currentIndex + 1], songIds[currentIndex]];
-                    } else {
-                        button.disabled = false; // No se puede mover más
-                        return;
-                    }
-
-                    // Enviamos el nuevo orden al backend
-                    await apiFetch('/admin/reorder-queue', { method: 'POST', body: JSON.stringify({ canciones_ids: songIds }) });
-                    showNotification('Cola reordenada.', 'info');
-                } else if (action === 'restart') {
-                    // Llama al endpoint para reiniciar la canción actual
-                    await apiFetch(`/admin/canciones/restart`, { method: 'POST' });
-                    showNotification('Reiniciando la canción actual.', 'info');
-                }
-            } catch (error) {
-                showNotification(`Error: ${error.message}`, 'error');
-            } finally {
-                // El websocket recargará la lista, por lo que no es necesario re-habilitar el botón aquí.
-            }
-        }
+        // handleQueueActions moved to the per-page module: static/admin_pages/queue.js
 
         function handleTableClickForQr(event) {
             const tableItem = event.target.closest('li.item');
@@ -1771,44 +899,10 @@
             showTableDetails(tableId, tableName, qrCode, isActive);
         }
 
-        async function handleToggleTableActive(event) {
-            const button = event.target.closest('.btn-activate, .btn-deactivate');
-            if (!button) return;
-            const tableId = button.dataset.tableId;
-            const isActivating = button.classList.contains('btn-activate');
-            const endpoint = isActivating ? `/admin/tables/${tableId}/activate` : `/admin/tables/${tableId}/deactivate`;
-            
-            try {
-                // 1. Realizar la acción
-                const updatedTable = await apiFetch(endpoint, { method: 'POST' });
-                showNotification(`Mesa '${updatedTable.nombre}' ${isActivating ? 'activada' : 'desactivada'}.`, 'info');
-
-                // 2. Recargar la lista de la izquierda para reflejar el estado
-                await loadTablesPage();
-
-                // 3. Volver a renderizar la vista de detalles con la información actualizada
-                showTableDetails(updatedTable.id, updatedTable.nombre, updatedTable.qr_code, updatedTable.is_active);
-            } catch (error) {
-                showNotification(`Error: ${error.message}`, 'error');
-            }
-        }
+        // Table activation handler moved to per-page module: static/admin_pages/tables.js -> handleToggleTableActive
 
         // --- NUEVA FUNCIÓN PARA ENVIAR REACCIONES ---
-        async function handleSendReaction(event) {
-            const emojiSpan = event.target.closest('#reaction-buttons span');
-            if (!emojiSpan) return;
-
-            const reaction = emojiSpan.textContent;
-            const payload = {
-                reaction: reaction,
-                sender: "Admin" // El admin siempre envía como "Admin"
-            };
-            try {
-                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            } catch (error) {
-                console.error("Error enviando reacción:", error);
-            }
-        }
+        // Reactions handler moved to per-page module: static/admin_pages/dashboard.js -> handleSendReaction
 
         function handleLogout() {
             sessionStorage.removeItem('adminApiKey');
@@ -1816,7 +910,30 @@
         }
 
         // --- INITIALIZATION ---
-        window.addEventListener('DOMContentLoaded', () => {
+        // Helpers to load per-page HTML fragments (module separation)
+        function loadFragment(pageId) {
+            const mapping = {
+                'dashboard': '/static/admin_pages/dashboard.html',
+                'queue': '/static/admin_pages/queue.html',
+                'inventory': '/static/admin_pages/inventory.html',
+                'tables': '/static/admin_pages/tables.html',
+                'accounts': '/static/admin_pages/accounts.html',
+                'reports': '/static/admin_pages/reports.html',
+                'settings': '/static/admin_pages/settings.html',
+                'player': '/static/admin_pages/player_dashboard_placeholder.html'
+            };
+            const url = mapping[pageId];
+            if (!url) return Promise.resolve();
+            return fetch(url, { cache: 'no-store' })
+                .then(r => { if (!r.ok) throw new Error('Fragment not found'); return r.text(); })
+                .then(html => { const el = document.getElementById(pageId); if (el) el.innerHTML = html; })
+                .catch(err => { console.warn('Failed to load fragment', pageId, err); });
+        }
+
+        function loadAllFragments() {
+            return Promise.all(['dashboard','queue','inventory','tables','accounts','reports','settings'].map(loadFragment));
+        }
+        window.addEventListener('DOMContentLoaded', () => { loadAllFragments().then(() => {
             apiKey = sessionStorage.getItem('adminApiKey');
             if (!apiKey) {
                 window.location.href = '/admin';
@@ -1829,124 +946,15 @@
             // Setup WebSocket for realtime updates (consume events and others)
             setupAdminWebSocket();
 
-            // Event Listeners
+            // Event Listeners - Global only
             document.querySelector('.nav-menu').addEventListener('click', handleNavigation);
             document.getElementById('logout-btn').addEventListener('click', handleLogout);
 
-            // Dashboard Page
-            document.getElementById('broadcast-btn').addEventListener('click', handleBroadcast);
-            document.getElementById('reset-night-btn').addEventListener('click', handleResetNight);
-            document.getElementById('reaction-buttons').addEventListener('click', handleSendReaction);
-            document.getElementById('autoplay-toggle-queue').addEventListener('change', handleToggleAutoplay);
-            const autoplayToggle = document.getElementById('autoplay-toggle');
-            if (autoplayToggle) autoplayToggle.addEventListener('change', handleToggleAutoplay);
+            // Page modules handle their own event listeners via setupXxxListeners()
+            // Called automatically when pages load via handleNavigation()
+            setupDashboardListeners(); // Setup initial page listeners
 
-            // Queue Page
-            document.getElementById('admin-search-songs-btn').addEventListener('click', (e) => handleAdminSearch(e, false));
-            document.getElementById('admin-search-karaoke-btn').addEventListener('click', (e) => handleAdminSearch(e, true));
-            document.getElementById('admin-search-results').addEventListener('click', handleAdminAddSong);
-            document.getElementById('approved-songs-list').addEventListener('click', handleQueueActions);
-
-
-            // Inventory Page
-            document.getElementById('create-product-form').addEventListener('submit', (e) => handleCreateProduct(e, e.target));
-            document.getElementById('product-list').addEventListener('click', handleToggleProductActive);
-            document.getElementById('product-list').addEventListener('click', handleDeleteProduct);
-
-            // Listener para el botón de subir imagen (delegado)
-            document.getElementById('product-list').addEventListener('click', (e) => {
-                if (e.target.classList.contains('upload-img-btn')) {
-                    const productId = e.target.dataset.id;
-                    const fileInput = document.getElementById('product-image-upload');
-                    fileInput.dataset.productId = productId; // Guardamos el ID en el input
-                    fileInput.click(); // Abrimos el selector de archivos
-                }
-            });
-            document.getElementById('product-image-upload').addEventListener('change', handleProductImageUpload);
-
-            // Settings Page
-            document.getElementById('set-closing-time-btn').addEventListener('click', handleSetClosingTime);
-            document.getElementById('create-api-key-btn').addEventListener('click', handleCreateApiKey);
-            document.getElementById('api-keys-list').addEventListener('click', handleDeleteApiKey);
-
-            // Tables & QR Page
-            document.getElementById('tables-list').addEventListener('click', handleTableClickForQr);
-            document.getElementById('qr-code-container').addEventListener('click', handleToggleTableActive);
-
-            // Accounts Page (Cuentas por Mesa) - Event Delegation
-            document.getElementById('accounts-grid').addEventListener('click', (e) => {
-                if (e.target.classList.contains('register-payment-btn')) {
-                    openPaymentModal(e.target.dataset.mesaId, e.target.dataset.mesaNombre, e.target.dataset.saldoPendiente);
-                }
-            });
-
-            // Poll recent orders every 5 seconds while admin is on dashboard
-            // Se elimina el intervalo para evitar el parpadeo. La actualización se hará por WebSockets.
-            // Delegated handler for cancel buttons on recent orders
-            // Modificado para manejar los dos nuevos botones: Despachado y No Despachado
-            document.getElementById('recent-orders-list').addEventListener('click', async (e) => {
-                const btnDespachado = e.target.closest('.btn-despachado');
-                const btnNoDespachado = e.target.closest('.btn-no-despachado');
-
-                let consumoIds; // Puede ser uno o varios
-                let endpoint;
-                let confirmMessage;
-                let successMessage;
-                let isDeleteAction = false; // Indica si la acción es eliminar el registro de la DB
-
-                if (btnDespachado) {
-                    consumoIds = (btnDespachado.dataset.id || btnDespachado.dataset.ids || '').split(',');
-                    // Marcamos cada consumo como despachado
-                    endpoint = `/admin/consumos/{consumo_id}/mark-despachado`;
-                    confirmMessage = '¿Confirmas que este pedido ha sido despachado?';
-                    successMessage = 'Pedido marcado como despachado.';
-                    isDeleteAction = false;
-                } else if (btnNoDespachado) {
-                    consumoIds = (btnNoDespachado.dataset.id || btnNoDespachado.dataset.ids || '').split(',');
-                    // Eliminamos cada consumo
-                    endpoint = `/admin/consumos/{consumo_id}`;
-                    confirmMessage = '¿Estás seguro de que quieres CANCELAR este pedido? Se eliminará del sistema.';
-                    successMessage = 'Pedido cancelado y eliminado del sistema.';
-                    isDeleteAction = true;
-                } else {
-                    return; // No es ninguno de nuestros botones
-                }
-
-                if (!consumoIds || consumoIds.length === 0 || consumoIds[0] === '') return;
-                if (!confirm(confirmMessage)) return;
-                
-                const li = btnDespachado ? btnDespachado.closest('li') : btnNoDespachado.closest('li');
-
-                // Detener la animación de la campana al procesar el pedido
-                const bellIcon = li ? li.querySelector('.order-alert-icon') : null;
-                if (bellIcon) {
-                    bellIcon.classList.remove('shaking');
-                }
-
-                try {
-                    // Iteramos para aplicar la acción a cada ID de consumo
-                    for (const id of consumoIds) {
-                        const finalEndpoint = endpoint.replace('{consumo_id}', id);
-
-                        await apiFetch(finalEndpoint, { 
-                            method: isDeleteAction ? 'DELETE' : 'POST'
-                        });
-                    }
-
-                    showNotification(successMessage, 'success');
-                    // Recargar la lista de pedidos recientes
-                    loadDashboardPage();
-                } catch (error) {
-                    console.error("Error procesando consumos:", error);
-                    showNotification("Error procesando consumos", "error");
-                }
-            });
-
-            // Payment Modal Handlers
-            document.getElementById('payment-form').addEventListener('submit', handleRegisterPayment);
-            document.getElementById('payment-modal-close').addEventListener('click', closePaymentModal);
-
-        });
+            }).catch(err=>{ console.warn('Error loading fragments',err); apiKey = sessionStorage.getItem('adminApiKey'); if (!apiKey) { window.location.href = '/admin'; return; } loadDashboardPage(); setupAdminWebSocket(); startCarousel(); }); });
     </script>
 </body>
 </html>

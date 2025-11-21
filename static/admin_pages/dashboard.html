@@ -1,0 +1,61 @@
+<h2>Dashboard</h2>
+<div class="grid grid-4" id="summary-container">
+    <div class="card summary-card">
+        <h3>Ingresos Totales</h3>
+        <p class="summary-value" id="summary-income">$0.00</p>
+    </div>
+    <div class="card summary-card">
+        <h3>Ganancias Totales</h3>
+        <p class="summary-value" id="summary-profits" style="color: var(--success-color);">$0.00</p>
+    </div>
+    <div class="card summary-card">
+        <h3>Canciones Cantadas</h3>
+        <p class="summary-value" id="summary-songs">0</p>
+    </div>
+    <div class="card summary-card">
+        <h3>Usuarios Activos</h3>
+        <p class="summary-value" id="summary-users">0</p>
+    </div>
+</div>
+<!-- Última canción cantada -->
+<div class="card" style="margin-top:20px;" id="last-sung-card">
+    <h3>Última Canción Cantada</h3>
+    <div id="last-sung-info">
+        <p>Aún no se ha cantado ninguna canción.</p>
+    </div>
+</div>
+
+<!-- Últimos pedidos -->
+<div class="card" style="margin-top:20px;" id="recent-orders-card">
+    <h3>Últimos Pedidos</h3>
+    <ul id="recent-orders-list" class="item-list">
+        <li><p>Cargando últimos pedidos...</p></li>
+    </ul>
+</div>
+<div class="card" style="margin-top: 30px;">
+    <h3>Acciones Rápidas</h3>
+    <div class="grid grid-2">
+        <div class="form-group">
+            <label for="broadcast-message-input">Enviar Mensaje Global</label>
+            <input type="text" id="broadcast-message-input" placeholder="Ej: ¡Oferta en cervezas!">
+            <button class="form-btn" id="broadcast-btn" style="margin-top: 10px; background-color: var(--info-color);">Enviar a todos</button>
+        </div>
+        <div class="dangerous-zone">
+            <label>Zona Peligrosa</label>
+            <button class="form-btn" id="reset-night-btn">Reiniciar Noche (Borrar Todo)</button>
+        </div>
+    </div>
+</div>
+<!-- NUEVA SECCIÓN DE REACCIONES -->
+<div class="card" style="margin-top: 30px;">
+    <h3>Enviar Reacción</h3>
+    <div id="reaction-buttons" style="display: flex; gap: 15px; font-size: 1.5em; cursor: pointer;">
+        <span title="¡Genial!">😊</span>
+        <span title="¡Me gusta!">👍</span>
+        <span title="¡Fuego!">🔥</span>
+        <span title="¡Increíble!">🤩</span>
+        <span title="¡Buena voz!">🎤</span>
+        <span title="¡Salud!">🍻</span>
+    </div>
+    <p class="item-meta">Haz clic en un emoticono para enviarlo a todos.</p>
+</div>

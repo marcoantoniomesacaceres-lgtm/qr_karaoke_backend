@@ -1,0 +1,40 @@
+<h2>Cola de Canciones</h2>
+<div class="grid" style="grid-template-columns: 1fr 350px;">
+    <div class="card">
+        <div class="autoplay-container">
+            <h3>Cola Aprobada</h3>
+            <div class="autoplay-label">
+                <span>Autoplay</span>
+                <label class="switch">
+                    <input type="checkbox" id="autoplay-toggle-queue">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        <ul id="approved-songs-list" class="item-list">
+            <p>Cargando cola de canciones...</p>
+        </ul>
+    </div>
+    <div class="card">
+        <h3>Añadir Canción (DJ)</h3>
+        <form id="admin-search-form">
+            <div class="form-group">
+                <label for="admin-search-input">Buscar en YouTube</label>
+                <input type="text" id="admin-search-input" placeholder="Artista, canción o URL de YouTube" required>
+            </div>
+            <div class="form-group">
+                <label for="admin-target-table">Añadir a:</label>
+                <select id="admin-target-table" name="target_table">
+                    <!-- Las mesas se cargarán aquí dinámicamente -->
+                </select>
+            </div>
+            <div class="form-group" style="display: flex; gap: 10px;">
+                <button type="button" class="form-btn" id="admin-search-songs-btn" style="background-color: var(--primary-color); flex: 1;">Canciones</button>
+                <button type="button" class="form-btn" id="admin-search-karaoke-btn" style="background-color: var(--success-color); flex: 1;">Karaoke</button>
+            </div>
+        </form>
+        <div id="admin-search-results" class="item-list" style="margin-top: 20px; max-height: 400px; overflow-y: auto;">
+            <!-- Resultados de búsqueda del admin -->
+        </div>
+    </div>
+</div>
