@@ -12,8 +12,9 @@ class Mesa(Base):
     qr_code = Column(String, unique=True, index=True)
     is_active = Column(Boolean, default=True) # Nuevo campo para activar/desactivar
 
-    # Relación: Una mesa puede tener muchos usuarios
+    # Relaciones: Una mesa puede tener muchos usuarios y consumos
     usuarios = relationship("Usuario", back_populates="mesa")
+    consumos = relationship("Consumo", back_populates="mesa")  # NUEVO: Relación con consumos
     pagos = relationship("Pago", back_populates="mesa") # Relación con Pagos
 
 class Usuario(Base):
@@ -25,13 +26,14 @@ class Usuario(Base):
     nivel = Column(String, default="bronce")  # bronce, plata, oro
     last_active = Column(DateTime, default=datetime.datetime.utcnow)
     is_silenced = Column(Boolean, default=False) # Nuevo campo para silenciar
+    is_active = Column(Boolean, default=True)  # Para desconectar usuarios sin eliminar
     
     mesa_id = Column(Integer, ForeignKey("mesas.id"))
 
-    # Relaciones: Un usuario pertenece a una mesa y puede tener muchas canciones y consumos
+    # Relaciones: Un usuario pertenece a una mesa y puede tener muchas canciones
     mesa = relationship("Mesa", back_populates="usuarios")
     canciones = relationship("Cancion", back_populates="usuario")
-    consumos = relationship("Consumo", back_populates="usuario")
+    # Los consumos ahora se asignan a la mesa, no al usuario individual
 
 class Cancion(Base):
     __tablename__ = "canciones"
@@ -71,10 +73,12 @@ class Consumo(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     producto_id = Column(Integer, ForeignKey("productos.id"))
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"))
+    mesa_id = Column(Integer, ForeignKey("mesas.id"))  # CAMBIO: Consumos asignados a mesa, no usuario
+    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=True)  # Referencia opcional para tracking
     
     producto = relationship("Producto", back_populates="consumos")
-    usuario = relationship("Usuario", back_populates="consumos")
+    mesa = relationship("Mesa", back_populates="consumos")  # Relación con mesa
+    usuario = relationship("Usuario")  # Relación sin backref (solo para consultas)
 
 class BannedNick(Base):
     __tablename__ = "banned_nicks"

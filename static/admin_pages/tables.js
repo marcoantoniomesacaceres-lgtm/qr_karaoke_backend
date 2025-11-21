@@ -31,14 +31,14 @@ function renderTablesList(tables, tablesList) {
         li.className = `table-item ${table.is_active ? 'active' : 'inactive'}`;
         li.innerHTML = `
             <div class="table-info">
-                <h4>Mesa ${table.numero}</h4>
-                <p>QR Code: ${table.qr_code_name || 'No generado'}</p>
+                <h4>${table.nombre}</h4>
+                <p>QR Code: ${table.qr_code || 'No generado'}</p>
                 <span class="status-badge ${table.is_active ? 'status-active' : 'status-inactive'}">
                     ${table.is_active ? 'Activa' : 'Inactiva'}
                 </span>
             </div>
             <div class="table-actions">
-                <button class="btn-qr" data-id="${table.id}" data-qr="${table.qr_code_url || ''}">Ver QR</button>
+                <button class="btn-qr" data-id="${table.id}" data-qr-code="${table.qr_code}">Generar QR</button>
                 ${table.is_active 
                     ? `<button class="btn-deactivate" data-id="${table.id}">Desactivar</button>`
                     : `<button class="btn-activate" data-id="${table.id}">Activar</button>`
@@ -55,21 +55,27 @@ function handleShowQR(event) {
     if (!button.matches('.btn-qr')) return;
 
     const tableId = button.dataset.id;
-    const qrUrl = button.dataset.qr;
+    const qrCode = button.dataset.qrCode;
     const displayArea = document.getElementById('qr-display-area');
 
     if (!displayArea) return;
 
-    if (!qrUrl) {
-        displayArea.innerHTML = `<p style="color: var(--warning-color);">No hay código QR disponible para esta mesa. Intenta generar uno.</p>`;
+    if (!qrCode) {
+        displayArea.innerHTML = `<p style="color: var(--warning-color);">No hay código QR disponible para esta mesa.</p>`;
         return;
     }
 
+    // Generar URL del QR dinámicamente usando qrserver.com
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCode)}`;
+    const tableNameEl = button.closest('.table-item')?.querySelector('h4');
+    const tableName = tableNameEl ? tableNameEl.textContent : `Mesa ${tableId}`;
+
     displayArea.innerHTML = `
         <div class="qr-container">
-            <img src="${qrUrl}" alt="QR Code" class="qr-image">
-            <p>Mesa ${button.closest('.table-item')?.querySelector('h4')?.textContent || tableId}</p>
-            <a href="${qrUrl}" download="qr-mesa-${tableId}.png" class="btn-primary">Descargar QR</a>
+            <img src="${qrImageUrl}" alt="QR Code" class="qr-image" style="border: 2px solid #ddd; padding: 10px;">
+            <p><strong>${tableName}</strong></p>
+            <p style="font-size: 0.9em; color: #666;">Código: ${qrCode}</p>
+            <a href="${qrImageUrl}" download="qr-${qrCode}.png" class="btn-primary">Descargar QR</a>
         </div>
     `;
 }

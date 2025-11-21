@@ -166,12 +166,19 @@ def update_producto_imagen(db: Session, producto_id: int, imagen_url: str):
     return db_producto
 
 def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usuario_id: int):
-    """Crea un nuevo consumo, lo asocia a un usuario y actualiza su nivel."""
-    # Definimos los umbrales para cada nivel
-    SILVER_THRESHOLD = 50.0
-    GOLD_THRESHOLD = 150.0
+    """
+    Crea un nuevo consumo. CAMBIO: El consumo se asigna a la MESA, no al usuario individual.
+    Todos los consumos de los 10 usuarios en una mesa se consolidan en la cuenta de la mesa.
+    """
+    # 1. Obtener el usuario y su mesa
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not db_usuario:
+        return None, "Usuario no encontrado."
+    
+    if not db_usuario.mesa_id:
+        return None, "El usuario no está asociado a ninguna mesa."
 
-    # 1. Obtener el producto del catálogo para saber su precio
+    # 2. Obtener el producto del catálogo para saber su precio
     db_producto = db.query(models.Producto).filter(models.Producto.id == consumo.producto_id).first()
     if not db_producto:
         return None, "Producto no encontrado en el catálogo."
@@ -185,39 +192,39 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
     if not db_producto.is_active:
         return None, "El producto no está disponible actualmente."
 
-    # 2. Calcular el valor total de la transacción
+    # 3. Calcular el valor total de la transacción
     valor_total_transaccion = db_producto.valor * consumo.cantidad
 
-    # 3. Crear el registro de consumo
+    # 4. Crear el registro de consumo ASIGNADO A LA MESA (no al usuario)
     db_consumo = models.Consumo(
         producto_id=consumo.producto_id,
         cantidad=consumo.cantidad,
         valor_total=valor_total_transaccion,
-        usuario_id=usuario_id
+        mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
+        usuario_id=usuario_id  # Mantener referencia al usuario que pidió (tracking)
     )
-
-    # Obtenemos el usuario para poder actualizarlo
-    db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
-    if not db_usuario:
-        db.rollback()
-        return None, "Usuario no encontrado."
 
     # 5. Descontar del stock
     db_producto.stock -= consumo.cantidad
 
-    # 6. Otorgar puntos al usuario (ej: 1 punto por cada 10 de moneda gastados)
+    # 6. Otorgar puntos al usuario individual (ej: 1 punto por cada 10 de moneda gastados)
     db_usuario.puntos += int(valor_total_transaccion / 10)
 
     db.add(db_consumo)
     db.commit()
     db.refresh(db_consumo)
 
-    # 4. Actualizar el nivel del usuario
-    total_consumido = db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
+    # 7. Actualizar el nivel del usuario basado en su consumo individual
+    total_consumido_usuario = db.query(func.sum(models.Consumo.valor_total)).filter(
+        models.Consumo.usuario_id == usuario_id
+    ).scalar() or 0
 
-    if total_consumido >= GOLD_THRESHOLD:
+    SILVER_THRESHOLD = 50.0
+    GOLD_THRESHOLD = 150.0
+
+    if total_consumido_usuario >= GOLD_THRESHOLD:
         db_usuario.nivel = "oro"
-    elif total_consumido >= SILVER_THRESHOLD:
+    elif total_consumido_usuario >= SILVER_THRESHOLD:
         db_usuario.nivel = "plata"
 
     db.commit()
@@ -227,6 +234,7 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
 def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usuario_id: int):
     """
     Crea múltiples registros de consumo a partir de un carrito de compras.
+    CAMBIO: Los consumos se asignan a la MESA, no al usuario individual.
     Toda la operación se maneja como una única transacción.
     """
     SILVER_THRESHOLD = 50.0
@@ -235,6 +243,9 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if not db_usuario:
         return None, "Usuario no encontrado."
+    
+    if not db_usuario.mesa_id:
+        return None, "El usuario no está asociado a ninguna mesa."
 
     consumos_creados = []
     valor_total_pedido = Decimal(0)
@@ -257,12 +268,13 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
             valor_linea = db_producto.valor * item.cantidad
             valor_total_pedido += valor_linea
 
-            # Creamos el objeto Consumo pero aún no lo guardamos (sin db.add o db.commit)
+            # Creamos el objeto Consumo ASIGNADO A LA MESA
             db_consumo = models.Consumo(
                 producto_id=item.producto_id,
                 cantidad=item.cantidad,
                 valor_total=valor_linea,
-                usuario_id=usuario_id
+                mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
+                usuario_id=usuario_id  # Mantener referencia al usuario que pidió
             )
             db.add(db_consumo)
             consumos_creados.append(db_consumo)
@@ -270,9 +282,11 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
             # Descontamos el stock
             db_producto.stock -= item.cantidad
 
-        # Si todo fue bien, actualizamos los puntos y el nivel del usuario
+        # Si todo fue bien, actualizamos los puntos y el nivel del usuario INDIVIDUAL
         db_usuario.puntos += int(valor_total_pedido / 10)
-        total_consumido_historico = (db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0) + valor_total_pedido
+        total_consumido_historico = (db.query(func.sum(models.Consumo.valor_total)).filter(
+            models.Consumo.usuario_id == usuario_id
+        ).scalar() or 0) + valor_total_pedido
 
         if total_consumido_historico >= GOLD_THRESHOLD:
             db_usuario.nivel = "oro"
@@ -1519,16 +1533,17 @@ def get_all_tables_payment_status(db: Session) -> List[dict]:
 def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
     """
     Obtiene un estado de cuenta detallado para una mesa específica.
+    CAMBIO: Ahora los consumos se consultan directamente de mesa_id (no por usuario).
+    Todos los consumos de los 10 usuarios se consolidan en la cuenta de la mesa.
     """
     mesa = get_mesa_by_id(db, mesa_id=mesa_id)
     if not mesa:
         return None
 
-    # 1. Calcular total consumido
+    # 1. Calcular total consumido POR LA MESA (consolidando todos sus usuarios)
     total_consumido = (
         db.query(func.sum(models.Consumo.valor_total))
-        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
-        .filter(models.Usuario.mesa_id == mesa.id)
+        .filter(models.Consumo.mesa_id == mesa.id)
         .scalar() or Decimal('0.00')
     )
 
@@ -1542,8 +1557,11 @@ def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
     # 3. Calcular saldo pendiente
     saldo_pendiente = total_consumido - total_pagado
 
-    # 4. Obtener detalles de consumos y pagos
-    consumos_detalle = db.query(models.Consumo).join(models.Usuario).filter(models.Usuario.mesa_id == mesa.id).order_by(models.Consumo.created_at.asc()).all()
+    # 4. Obtener detalles de consumos y pagos (ahora directo de mesa_id)
+    consumos_detalle = db.query(models.Consumo).filter(
+        models.Consumo.mesa_id == mesa.id
+    ).order_by(models.Consumo.created_at.asc()).all()
+    
     pagos_detalle = db.query(models.Pago).filter(models.Pago.mesa_id == mesa.id).order_by(models.Pago.created_at.asc()).all()
 
     consumos_items = [

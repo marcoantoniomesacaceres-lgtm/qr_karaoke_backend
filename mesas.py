@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-import crud, schemas
+import crud, schemas, models
 import re # Importar para el filtro de groserías
 from database import SessionLocal
 from security import api_key_auth
@@ -49,7 +49,19 @@ def create_mesa_endpoint(
     db_mesa = crud.get_mesa_by_qr(db, qr_code=mesa.qr_code)
     if db_mesa:
         raise HTTPException(status_code=400, detail="El código QR ya está registrado")
-    return crud.create_mesa(db=db, mesa=mesa)
+    try:
+        return crud.create_mesa(db=db, mesa=mesa)
+    except Exception as e:
+        # Manejar colisiones de unique constraint en caso de condiciones de carrera
+        try:
+            from sqlalchemy.exc import IntegrityError
+            if isinstance(e, IntegrityError):
+                raise HTTPException(status_code=400, detail="El código QR ya está registrado (conflicto).")
+        except Exception:
+            # si sqlalchemy no está disponible por alguna razón, continuar con manejo genérico
+            pass
+        # Si no es un IntegrityError, relanzamos como 500 para no ocultar errores inesperados
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{qr_code}/conectar", response_model=schemas.Usuario, summary="Conectar un usuario a una mesa")
 def conectar_usuario_a_mesa(
@@ -57,6 +69,7 @@ def conectar_usuario_a_mesa(
 ):
     """
     Busca una mesa por su QR y crea un nuevo usuario asociado a ella.
+    LIMITACIÓN: Máximo 10 usuarios pueden estar conectados a la misma mesa.
     Este es el endpoint que el cliente usa al escanear el QR.
     """
     db_mesa = crud.get_mesa_by_qr(db, qr_code=qr_code)
@@ -65,6 +78,18 @@ def conectar_usuario_a_mesa(
 
     if not db_mesa.is_active:
         raise HTTPException(status_code=403, detail="Esta mesa se encuentra desactivada temporalmente. Por favor, contacta al personal.")
+    
+    # NUEVO: Verificar límite de usuarios conectados (máximo 10)
+    usuarios_activos = db.query(models.Usuario).filter(
+        models.Usuario.mesa_id == db_mesa.id,
+        models.Usuario.is_active == True
+    ).count()
+    
+    if usuarios_activos >= 10:
+        raise HTTPException(
+            status_code=429, 
+            detail="La mesa ha alcanzado el máximo de 10 usuarios conectados. Por favor, intenta más tarde."
+        )
     
     # 1. Validación de palabras inapropiadas
     if contains_profanity(usuario.nick):
@@ -81,6 +106,23 @@ def conectar_usuario_a_mesa(
         raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
 
     return crud.create_usuario_en_mesa(db=db, usuario=usuario, mesa_id=db_mesa.id)
+
+@router.get("/{mesa_id}/usuarios-conectados", response_model=List[schemas.UsuarioConectado], summary="Ver usuarios conectados a una mesa")
+def get_usuarios_conectados(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    Devuelve la lista de usuarios conectados actualmente a una mesa específica (máximo 10).
+    Incluye nick, puntos, nivel y si están activos.
+    """
+    mesa = crud.get_mesa_by_id(db, mesa_id=mesa_id)
+    if not mesa:
+        raise HTTPException(status_code=404, detail="Mesa no encontrada.")
+    
+    usuarios_activos = db.query(models.Usuario).filter(
+        models.Usuario.mesa_id == mesa_id,
+        models.Usuario.is_active == True
+    ).all()
+    
+    return usuarios_activos
 
 @router.get("/{mesa_id}/payment-status", response_model=schemas.MesaEstadoPago, summary="Obtener estado de cuenta de una mesa")
 def get_mesa_payment_status(mesa_id: int, db: Session = Depends(get_db)):

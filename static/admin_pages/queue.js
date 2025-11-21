@@ -61,17 +61,20 @@ function renderApprovedSongs(songs, listElement) {
 
 async function loadQueuePage() {
     try {
-        const queueData = await apiFetch('/canciones/cola');
-        const approvedSongsList = document.getElementById('approved-songs-list');
+        // Si ya tenemos datos en caché (por WebSocket), usarlos primero
+        let queueData = currentQueueData || { now_playing: null, upcoming: [] };
         
-        let allSongs = [];
-        if (queueData.now_playing) {
-            allSongs.push(queueData.now_playing);
+        // Si el caché está vacío, cargar desde servidor
+        if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
+            queueData = await apiFetch('/canciones/cola');
         }
-        if (queueData.upcoming) {
-            allSongs = allSongs.concat(queueData.upcoming);
-        }
-        renderApprovedSongs(allSongs, approvedSongsList);
+        
+        // Actualizar el caché con los datos más recientes
+        currentQueueData = queueData;
+        
+        const approvedSongsList = document.getElementById('approved-songs-list');
+        // Renderizar directamente desde el objeto (que puede tener now_playing/upcoming)
+        renderApprovedSongs(queueData, approvedSongsList);
     } catch (error) {
         showNotification(`Error al cargar cola: ${error.message}`, 'error');
     }

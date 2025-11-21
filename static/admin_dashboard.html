@@ -469,6 +469,8 @@
         const API_BASE_URL = '/api/v1';
         const notification = document.getElementById('notification');
         let apiKey = '';
+        // Variable global para almacenar el estado actual de la cola
+        let currentQueueData = { now_playing: null, upcoming: [] };
 
         // --- UTILS ---
         function showNotification(message, type = 'success', duration = 4000) {
@@ -755,9 +757,16 @@
                                 }
                                 break;
                             case 'queue_update':
-                                // CORRECCIÓN: La cola se actualiza siempre, no solo si la pestaña está activa.
-                                // Esto asegura que si el admin cambia de pestaña, verá la cola más reciente.
-                                loadQueuePage();
+                                // Almacenar el estado de la cola en la variable global
+                                // Esto permite actualizar la vista aunque no esté activa
+                                currentQueueData = data.payload || { now_playing: null, upcoming: [] };
+                                // Actualizar la lista si la pestaña de cola está visible
+                                if (document.getElementById('queue').classList.contains('active')) {
+                                    const approvedListEl = document.getElementById('approved-songs-list');
+                                    if (approvedListEl && typeof renderApprovedSongs === 'function') {
+                                        renderApprovedSongs(currentQueueData, approvedListEl);
+                                    }
+                                }
                                 break;
                             case 'reaction':
                                 const reactionPayload = data.payload;

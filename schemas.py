@@ -37,6 +37,17 @@ class Usuario(UsuarioBase): # Schema completo de Usuario
 
     model_config = ConfigDict(from_attributes=True)
 
+class UsuarioConectado(BaseModel):
+    """Schema para usuarios conectados a una mesa (máximo 10)"""
+    id: int
+    nick: str
+    puntos: int
+    nivel: str
+    is_active: bool
+    last_active: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Schemas para Mesa ---
 class MesaBase(BaseModel):
     nombre: str

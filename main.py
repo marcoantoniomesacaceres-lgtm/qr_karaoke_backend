@@ -1,4 +1,5 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
@@ -46,6 +47,14 @@ def setup_initial_data():
 
 setup_initial_data()
 app = FastAPI(title="Karaoke 'LA CANTA QUE RANA'")
+
+# --- Middleware para agregar cabecera Referrer-Policy: origin ---
+# Esto asegura que YouTube reciba el origin como referrer, resolviendo Error 153
+@app.middleware("http")
+async def add_referrer_policy_header(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["Referrer-Policy"] = "origin"
+    return response
 
 @app.on_event("startup")
 def startup_event():

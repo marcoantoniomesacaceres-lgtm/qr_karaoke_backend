@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
+    <meta name="referrer" content="origin">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-src 'self' https://www.youtube.com; style-src 'self' 'unsafe-inline';">
     <title>LA CANTA QUE RANA - Reproductor</title>
     <style>
@@ -205,7 +205,9 @@
         };
     </script>
     <script>
-        const WEBSOCKET_URL = `ws://${window.location.host}/ws/cola`;
+        // Usar WebSocket URL relativa para funcionar tanto en HTTP como HTTPS
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const WEBSOCKET_URL = `${wsProtocol}//${window.location.host}/ws/cola`;
         let standbyScreen = document.getElementById('standby-screen');
         let backgroundCarousel = document.getElementById('background-carousel');
         let infoOverlay = document.getElementById('info-overlay');
@@ -248,44 +250,42 @@
         // - Storage access blocking
         // Usaremos solo iframes que funcionan sin problemas
 
-        // 2. Función para crear reproductor con iframe
-        function playVideo(videoId) {
-            console.log('playVideo called with:', videoId);
-            stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
-            
+        // 2. Función para crear reproductor con iframe mejorada con referrerpolicy
+        function insertYouTubeIframe(videoId) {
             const container = document.getElementById('player-container');
             if (!container) {
                 console.error('player-container not found in DOM');
                 return;
             }
             
-            // Limpiar el contenedor
-            container.innerHTML = '';
-            
-            // Usar iframe directo sin API de YouTube - más confiable
-            console.log('Insertando iframe para video:', videoId);
-            
-            // Construir URL del embed con parámetros optimizados para Firefox
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&fs=1&cc_load_policy=0&playsinline=1`;
+            // Construir URL del embed con parámetros optimizados
+            const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`;
             
             container.innerHTML = `
                 <iframe 
                     id="youtube-iframe"
                     title="YouTube video player"
-                    width="100%" 
-                    height="100%" 
                     src="${embedUrl}"
+                    width="100%"
+                    height="100%"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowfullscreen
                     loading="lazy"
+                    referrerpolicy="origin"
                     style="border:none; display:block;">
                 </iframe>
                 <div style="position:absolute;bottom:2%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#FFF;padding:15px 25px;border-radius:8px;z-index:1000;font-size:1.2vw;max-width:85vw;text-align:center;border:2px solid #4CAF50;">
                     <b>▶️ Si el video no inicia, haz clic en reproducir</b>
                 </div>
             `;
-            console.log('iframe del video insertado exitosamente');
+            console.log('iframe del video insertado exitosamente con referrerpolicy="origin"');
+        }
+        
+        function playVideo(videoId) {
+            console.log('playVideo called with:', videoId);
+            stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
+            insertYouTubeIframe(videoId);
         }
 
         // 3. Conexión WebSocket para recibir órdenes
