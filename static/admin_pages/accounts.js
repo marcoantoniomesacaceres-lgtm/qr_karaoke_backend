@@ -108,6 +108,7 @@ function handlePaymentModal(event) {
 }
 
 async function handlePaymentSubmit(event) {
+    event.preventDefault();
     const button = event.target;
     if (!button.matches('button[data-account-id]')) return;
 
