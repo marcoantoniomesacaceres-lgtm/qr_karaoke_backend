@@ -97,44 +97,56 @@ function handlePaymentModal(event) {
     const modal = document.getElementById('payment-modal');
     if (!modal) return;
 
-    const paymentInput = modal.querySelector('input[name="amount"]');
-    // Ensure we attach the mesa/account id to the modal's submit button
-    const realSubmitButton = modal.querySelector('button[type="submit"]');
+    const paymentInput = modal.querySelector('#payment-amount');
+    // Store the mesa_id in the hidden input
+    const mesaIdInput = modal.querySelector('#payment-mesa-id');
 
     if (paymentInput) paymentInput.value = '';
-    if (realSubmitButton) realSubmitButton.dataset.accountId = accountId;
+    if (mesaIdInput) mesaIdInput.value = accountId;
 
     modal.style.display = 'flex';
 }
 
 async function handlePaymentSubmit(event) {
     event.preventDefault();
-    const button = event.target;
-    if (!button.matches('button[data-account-id]')) return;
+    const form = event.target;
 
-    const accountId = button.dataset.accountId;
-    const modal = button.closest('#payment-modal');
-    const amountInput = modal?.querySelector('input[name="amount"]');
+    // Get values from form inputs
+    const mesaIdInput = form.querySelector('#payment-mesa-id');
+    const amountInput = form.querySelector('#payment-amount');
+    const methodSelect = form.querySelector('#payment-method');
+
+    const mesaId = parseInt(mesaIdInput?.value || 0, 10);
     const amount = parseFloat(amountInput?.value || 0);
+    const metodo = methodSelect?.value || 'Efectivo';
 
     if (!amount || amount <= 0) {
         showNotification('Por favor ingresa un monto válido.', 'error');
         return;
     }
 
+    if (!mesaId) {
+        showNotification('Error: Mesa no identificada.', 'error');
+        return;
+    }
+
     try {
         // Registrar el pago usando el endpoint admin POST /api/v1/admin/pagos
-        const metodo = modal?.querySelector('select[name="metodo_pago"]')?.value || 'Efectivo';
-        const payload = { mesa_id: parseInt(accountId, 10), monto: parseFloat(amount), metodo_pago: metodo };
+        const payload = { mesa_id: mesaId, monto: amount, metodo_pago: metodo };
         const result = await apiFetch('/admin/pagos', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
-        showNotification(`Pago de $${amount} registrado para la mesa ${result.id || accountId}.`);
+        showNotification(`Pago de $${amount} registrado exitosamente.`);
+
+        // Close modal
+        const modal = document.getElementById('payment-modal');
         if (modal) modal.style.display = 'none';
+
+        // Reload accounts page
         loadAccountsPage();
     } catch (error) {
-        showNotification(error.message, 'error');
+        showNotification(error.message || 'Error al registrar el pago', 'error');
     }
 }
 
@@ -151,15 +163,16 @@ function setupAccountsListeners() {
     const createForm = document.getElementById('create-account-form');
     const accountsGrid = document.getElementById('accounts-grid');
     const paymentModal = document.getElementById('payment-modal');
-    const paymentSubmitBtn = paymentModal?.querySelector('button[type="submit"]');
-    const closePaymentModalBtn = paymentModal?.querySelector('.close');
+    const paymentForm = document.getElementById('payment-form');
+    const closePaymentModalBtn = document.getElementById('payment-modal-close');
 
     if (createForm) createForm.addEventListener('submit', (e) => handleCreateAccount(e, e.target));
     if (accountsGrid) {
         accountsGrid.addEventListener('click', handlePaymentModal);
         accountsGrid.addEventListener('click', handleDeleteAccount);
     }
-    if (paymentSubmitBtn) paymentSubmitBtn.addEventListener('click', handlePaymentSubmit);
+    // Attach submit listener to the form, not the button
+    if (paymentForm) paymentForm.addEventListener('submit', handlePaymentSubmit);
     if (closePaymentModalBtn) {
         closePaymentModalBtn.addEventListener('click', () => {
             if (paymentModal) paymentModal.style.display = 'none';

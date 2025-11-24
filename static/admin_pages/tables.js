@@ -39,10 +39,10 @@ function renderTablesList(tables, tablesList) {
             </div>
             <div class="table-actions">
                 <button class="btn-qr" data-id="${table.id}" data-qr-code="${table.qr_code}">Generar QR</button>
-                ${table.is_active 
-                    ? `<button class="btn-deactivate" data-id="${table.id}">Desactivar</button>`
-                    : `<button class="btn-activate" data-id="${table.id}">Activar</button>`
-                }
+                ${table.is_active
+                ? `<button class="btn-deactivate" data-id="${table.id}">Desactivar</button>`
+                : `<button class="btn-activate" data-id="${table.id}">Activar</button>`
+            }
                 <button class="btn-delete" data-id="${table.id}">Eliminar</button>
             </div>
         `;
@@ -147,6 +147,7 @@ async function handleCreateTable(event, form) {
 function setupTablesListeners() {
     const tablesList = document.getElementById('tables-list');
     const createForm = document.getElementById('create-table-form');
+    const openPlayerBtn = document.getElementById('open-player-dashboard');
 
     if (tablesList) {
         tablesList.addEventListener('click', handleShowQR);
@@ -154,4 +155,9 @@ function setupTablesListeners() {
         tablesList.addEventListener('click', handleDeleteTable);
     }
     if (createForm) createForm.addEventListener('submit', (e) => handleCreateTable(e, e.target));
+    if (openPlayerBtn) {
+        openPlayerBtn.addEventListener('click', () => {
+            window.open('/player.html', '_blank');
+        });
+    }
 }
