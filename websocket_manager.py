@@ -40,34 +40,25 @@ class ConnectionManager:
             except ValueError:
                 # La conexión ya fue eliminada, lo ignoramos.
                 pass
-
     async def broadcast_queue_update(self):
         """Obtiene la cola actualizada y la envía a todos los clientes."""
         db = SessionLocal()
         try:
             # Buscamos la canción que se está reproduciendo y la cola de las próximas
-            now_playing = db.query(crud.models.Cancion).filter(crud.models.Cancion.estado == "reproduciendo").first()
-            upcoming = crud.get_cola_priorizada(db)
-
-            # Si la canción que se está reproduciendo sigue en la lista de 'upcoming', la quitamos.
-            if now_playing:
-                upcoming = [song for song in upcoming if song.id != now_playing.id]
-
-            # Creamos el objeto de respuesta
-            cola_view = schemas.ColaView(now_playing=now_playing, upcoming=upcoming)
-
-            # CORRECCIÓN: Usamos jsonable_encoder para convertir el objeto a un diccionario serializable
-            # y luego json.dumps para crear la cadena JSON. Esto maneja correctamente los objetos de la DB.
-            json_payload = json.dumps(jsonable_encoder(cola_view))
-
-            await self._broadcast(json_payload)
+            now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+            upcoming = db.query(models.Cancion).filter(models.Cancion.estado == "pendiente").order_by(models.Cancion.created_at).all()
+            
+            queue_data = {
+                "now_playing": jsonable_encoder(now_playing),
+                "upcoming": jsonable_encoder(upcoming)
+            }
+            
+            payload = {"type": "queue_update", "payload": queue_data}
+            await self._broadcast(json.dumps(payload, default=str))
+        except Exception as e:
+            print(f"Error broadcasting queue update: {e}")
         finally:
             db.close()
-
-    async def broadcast_notification(self, mensaje: str):
-        """Envía un mensaje de notificación general a todos los clientes."""
-        payload = {"type": "notification", "payload": {"mensaje": mensaje}}
-        await self._broadcast(json.dumps(payload))
 
     async def broadcast_product_update(self):
         """Envía una notificación para que los clientes recarguen el catálogo de productos."""
@@ -123,6 +114,13 @@ class ConnectionManager:
         Envía un evento para reproducir una canción en el reproductor.
         """
         payload = {"type": "play_song", "payload": {"youtube_id": youtube_id}}
+        await self._broadcast(json.dumps(payload))
+
+    async def broadcast_restart_song(self):
+        """
+        Envía un evento para reiniciar la canción actual en el reproductor.
+        """
+        payload = {"type": "restart_song"}
         await self._broadcast(json.dumps(payload))
 
 manager = ConnectionManager()

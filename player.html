@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             --primary-color: #4CAF50;
             --surface-color: rgba(18, 18, 18, 0.85);
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -22,6 +24,7 @@
             height: 100vh;
             width: 100vw;
         }
+
         #player-container {
             position: absolute;
             top: 0;
@@ -30,11 +33,13 @@
             height: 100%;
             z-index: 1;
         }
+
         iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
+
         .overlay {
             position: absolute;
             bottom: 0;
@@ -42,14 +47,16 @@
             width: 100%;
             z-index: 2;
             display: flex;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 50%, rgba(0, 0, 0, 0) 100%);
             padding: 20px;
             box-sizing: border-box;
         }
+
         .now-playing-section {
             flex: 2;
             padding-right: 20px;
         }
+
         .upcoming-section {
             flex: 1;
             background-color: var(--surface-color);
@@ -58,25 +65,31 @@
             max-height: 35vh;
             overflow-y: auto;
         }
-        h1, h2 {
+
+        h1,
+        h2 {
             margin-top: 0;
             color: var(--primary-color);
             text-shadow: 2px 2px 4px #000;
         }
+
         .now-playing-title {
             font-size: 3.5vw;
             font-weight: bold;
             margin-bottom: 10px;
         }
+
         .now-playing-artist {
             font-size: 2vw;
             color: #ccc;
         }
+
         .upcoming-list {
             list-style: none;
             padding: 0;
             margin: 0;
         }
+
         .upcoming-item {
             display: flex;
             align-items: center;
@@ -84,22 +97,27 @@
             padding: 10px 0;
             border-bottom: 1px solid #333;
         }
+
         .upcoming-item:last-child {
             border-bottom: none;
         }
+
         .upcoming-item img {
             width: 60px;
             height: 45px;
             border-radius: 4px;
             object-fit: cover;
         }
+
         .upcoming-title {
             font-size: 1.2em;
         }
+
         .upcoming-artist {
             font-size: 0.9em;
             color: #aaa;
         }
+
         .reaction-container {
             position: fixed;
             bottom: 0;
@@ -110,20 +128,28 @@
             overflow: hidden;
             z-index: 9999;
         }
+
         .reaction-emoji {
             position: absolute;
             bottom: -50px;
             font-size: 4rem;
             animation: float-up 6s ease-out forwards;
         }
+
         @keyframes float-up {
-            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.8); opacity: 0; }
+            to {
+                bottom: 100%;
+                transform: translateX(var(--tx, 0)) scale(1.8);
+                opacity: 0;
+            }
         }
     </style>
 </head>
+
 <body>
     <div id="player-container">
-        <iframe id="youtube-player">
+        <iframe id="youtube-player"></iframe>
+    </div>
 
     <div class="overlay">
         <div class="now-playing-section">
@@ -202,34 +228,42 @@
                     // Crear y animar el emoji de reacción
                     const emoji = document.createElement('div');
                     emoji.className = 'reaction-emoji';
-                    emoji.textContent = data.payload.reaction;
-                    emoji.style.left = `${Math.random() * 90 + 5}%`;
-                    emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 200}px`);
+                    emoji.innerText = data.payload.emoji;
+                    emoji.style.left = Math.random() * 100 + 'vw';
                     document.getElementById('reaction-container').appendChild(emoji);
                     setTimeout(() => emoji.remove(), 6000);
-                } else { // Asumimos que es una actualización de la cola
-                    updateQueueUI(data);
+                } else if (data.type === 'queue_update') {
+                    updateQueueUI(data.payload);
+                } else if (data.type === 'restart_song') {
+                    if (player && typeof player.seekTo === 'function') {
+                        player.seekTo(0);
+                        player.playVideo();
+                    }
                 }
             };
-
         }
 
-        // Esta función se llama cuando el estado del reproductor cambia.
         function onPlayerStateChange(event) {
             // Cuando el video termina (estado 0), enviamos una notificación al backend.
             if (event.data == YT.PlayerState.ENDED) {
-                fetch('/api/v1/canciones/siguiente', { 
+                fetch('/api/v1/canciones/siguiente', {
                     method: 'POST',
                     // No se necesita API Key para este endpoint público
                 })
-                .then(response => {
-                    if (!response.ok && response.status !== 204) { // 204 significa que no hay más canciones
-                        console.error('Error al pasar a la siguiente canción.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error de red al intentar pasar a la siguiente canción:', error);
-                });
+                    .then(response => {
+                        if (!response.ok && response.status !== 204) { // 204 significa que no hay más canciones
+                            console.error('Error al pasar a la siguiente canción.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error de red al intentar pasar a la siguiente canción:', error);
+                    });
+            }
+
+            // FIX: Auto-reproducir si el video se queda en estado "Cued" (cargado pero no reproduciendo)
+            if (event.data === YT.PlayerState.CUED) {
+                console.log("Video en espera (Cued), forzando reproducción...");
+                player.playVideo();
             }
         }
 

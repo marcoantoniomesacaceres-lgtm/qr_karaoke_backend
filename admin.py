@@ -526,6 +526,15 @@ async def move_song_to_top_endpoint(cancion_id: int, db: Session = Depends(get_d
     await websocket_manager.manager.broadcast_queue_update()
     return {"mensaje": f"La canción '{cancion_movida.titulo}' ha sido movida al principio de la cola."}
 
+@router.post("/canciones/restart", status_code=200, summary="Reiniciar la canción actual")
+async def restart_current_song(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Reinicia la canción que se está reproduciendo actualmente.
+    """
+    await websocket_manager.manager.broadcast_restart_song()
+    crud.create_admin_log_entry(db, action="RESTART_SONG", details="Canción actual reiniciada.")
+    return {"mensaje": "Canción reiniciada."}
+
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
 def get_total_income_report(db: Session = Depends(get_db)):
     """
