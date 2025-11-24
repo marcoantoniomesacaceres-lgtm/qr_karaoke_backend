@@ -117,12 +117,24 @@ async function handleCreateTable(event, form) {
     event.preventDefault();
     const formData = new FormData(form);
     const tableData = Object.fromEntries(formData.entries());
-    // Normalize inputs
-    const numero = tableData.numero ? parseInt(tableData.numero, 10) : null;
-    const nombre = tableData.nombre && tableData.nombre.trim() !== '' ? tableData.nombre.trim() : (numero ? `Mesa ${numero}` : 'Mesa');
 
-    // Generate a qr_code consistent with existing naming convention (karaoke-mesa-XX)
-    const qr_code = numero ? `karaoke-mesa-${String(numero).padStart(2, '0')}` : `karaoke-mesa-${Date.now()}`;
+    // Normalize inputs
+    const numero = tableData.numero && tableData.numero.trim() !== '' ? parseInt(tableData.numero, 10) : null;
+    const nombre = tableData.nombre && tableData.nombre.trim() !== '' ? tableData.nombre.trim() : (numero ? `Mesa ${numero}` : `Mesa ${Date.now()}`);
+
+    // Handle QR code generation
+    let qr_code;
+    if (tableData.qr_code && tableData.qr_code.trim() !== '') {
+        // User specified a custom QR code
+        qr_code = tableData.qr_code.trim();
+    } else if (numero) {
+        // Generate based on number, but add timestamp suffix to avoid collisions
+        // Format: karaoke-mesa-XX-timestamp
+        qr_code = `karaoke-mesa-${String(numero).padStart(2, '0')}-${Date.now()}`;
+    } else {
+        // No number provided, use timestamp-based unique code
+        qr_code = `karaoke-mesa-${Date.now()}`;
+    }
 
     const payload = {
         nombre: nombre,
@@ -131,15 +143,21 @@ async function handleCreateTable(event, form) {
 
     try {
         const result = await apiFetch('/mesas/', { method: 'POST', body: JSON.stringify(payload) });
-        showNotification(`Mesa '${result.nombre}' creada con éxito. Código QR: ${result.qr_code}`);
+        showNotification(`¡Mesa creada! "${result.nombre}" con código QR: ${result.qr_code}`, 'success');
         form.reset();
         loadTablesPage();
     } catch (error) {
-        // If validation error from backend (422), show helpful message
-        if (error.message && error.message.includes('422')) {
-            showNotification('Datos inválidos al crear la mesa. Revisa el número y el nombre.', 'error');
+        // Enhanced error handling
+        if (error.message && error.message.includes('El código QR ya está registrado')) {
+            showNotification(
+                `El código QR "${qr_code}" ya existe. Intenta con un nombre diferente o deja el campo de código QR vacío para generar uno automáticamente.`,
+                'error',
+                6000
+            );
+        } else if (error.message && error.message.includes('422')) {
+            showNotification('Datos inválidos. Revisa que el nombre esté completo y el código QR solo contenga letras, números, guiones y guiones bajos.', 'error', 6000);
         } else {
-            showNotification(error.message, 'error');
+            showNotification(`Error al crear mesa: ${error.message}`, 'error', 6000);
         }
     }
 }
@@ -157,7 +175,7 @@ function setupTablesListeners() {
     if (createForm) createForm.addEventListener('submit', (e) => handleCreateTable(e, e.target));
     if (openPlayerBtn) {
         openPlayerBtn.addEventListener('click', () => {
-            window.open('/player.html', '_blank');
+            window.open('/player', '_blank');
         });
     }
 }

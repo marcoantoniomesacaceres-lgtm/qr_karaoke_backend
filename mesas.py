@@ -45,10 +45,14 @@ def create_mesa_endpoint(
 ):
     """
     Crea una nueva mesa en el sistema con un nombre y un código QR único.
+    El código QR debe ser único en todo el sistema.
     """
     db_mesa = crud.get_mesa_by_qr(db, qr_code=mesa.qr_code)
     if db_mesa:
-        raise HTTPException(status_code=400, detail="El código QR ya está registrado")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"El código QR '{mesa.qr_code}' ya está registrado para la mesa '{db_mesa.nombre}'. Por favor, usa un código QR diferente."
+        )
     try:
         return crud.create_mesa(db=db, mesa=mesa)
     except Exception as e:
@@ -56,7 +60,10 @@ def create_mesa_endpoint(
         try:
             from sqlalchemy.exc import IntegrityError
             if isinstance(e, IntegrityError):
-                raise HTTPException(status_code=400, detail="El código QR ya está registrado (conflicto).")
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"El código QR '{mesa.qr_code}' ya está registrado (conflicto de concurrencia). Intenta nuevamente."
+                )
         except Exception:
             # si sqlalchemy no está disponible por alguna razón, continuar con manejo genérico
             pass

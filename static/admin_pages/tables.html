@@ -20,12 +20,20 @@
         <h3>Crear Nueva Mesa</h3>
         <form id="create-table-form">
             <div class="form-group">
-                <label for="table-numero">Número de Mesa</label>
-                <input type="number" id="table-numero" name="numero" min="1" required>
+                <label for="table-numero">Número de Mesa (opcional)</label>
+                <input type="number" id="table-numero" name="numero" min="1"
+                    placeholder="Dejar vacío para auto-generar">
             </div>
             <div class="form-group">
                 <label for="table-nombre">Nombre</label>
-                <input type="text" id="table-nombre" name="nombre" placeholder="Ej: Mesa VIP">
+                <input type="text" id="table-nombre" name="nombre" placeholder="Ej: Mesa VIP" required>
+            </div>
+            <div class="form-group">
+                <label for="table-qr-code">Código QR (opcional)</label>
+                <input type="text" id="table-qr-code" name="qr_code" placeholder="Dejar vacío para auto-generar"
+                    pattern="[a-zA-Z0-9\-_]+">
+                <small style="color: var(--text-secondary); font-size: 0.85em;">Solo letras, números, guiones y guiones
+                    bajos. Si está vacío, se generará automáticamente.</small>
             </div>
             <button type="submit" class="form-btn">Crear Mesa</button>
         </form>
