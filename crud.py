@@ -479,6 +479,38 @@ def get_total_ingresos(db: Session):
     total = db.query(func.sum(models.Pago.monto)).scalar()
     return total or 0
 
+def get_ganancias_totales(db: Session):
+    """
+    Calcula las ganancias reales: (precio_venta - costo) * cantidad
+    Solo de productos que ya fueron pagados (mesas con pagos registrados).
+    """
+    from decimal import Decimal
+    
+    # Obtener todas las mesas que tienen al menos un pago
+    mesas_con_pagos = db.query(models.Pago.mesa_id).distinct().all()
+    mesas_ids = [mesa_id for (mesa_id,) in mesas_con_pagos]
+    
+    if not mesas_ids:
+        return Decimal("0")
+    
+    # Obtener todos los consumos de esas mesas
+    consumos = (
+        db.query(models.Consumo)
+        .join(models.Usuario)
+        .filter(models.Usuario.mesa_id.in_(mesas_ids))
+        .all()
+    )
+    
+    ganancias_total = Decimal("0")
+    for consumo in consumos:
+        producto = consumo.producto
+        # Ganancia = (precio_venta - costo) * cantidad
+        ganancia_item = (producto.valor - producto.costo) * consumo.cantidad
+        ganancias_total += ganancia_item
+    
+    return ganancias_total
+
+
 def get_ingresos_por_mesa(db: Session):
     """
     Calcula los ingresos totales (pagos recibidos) agrupados por cada mesa.

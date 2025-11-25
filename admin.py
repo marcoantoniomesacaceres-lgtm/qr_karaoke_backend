@@ -776,12 +776,19 @@ def get_night_summary(db: Session = Depends(get_db)):
     ingresos totales, total de canciones cantadas y número de usuarios activos.
     """
     summary_data = crud.get_resumen_noche(db)
+    ganancias = crud.get_ganancias_totales(db)
+    
     # Aseguramos que los tipos sean primitivos JSON-serializables (float/int)
     ingresos = summary_data.get('ingresos_totales', 0)
     try:
         ingresos_val = float(ingresos)
     except Exception:
         ingresos_val = 0.0
+
+    try:
+        ganancias_val = float(ganancias)
+    except Exception:
+        ganancias_val = 0.0
 
     canciones = summary_data.get('canciones_cantadas', 0)
     try:
@@ -797,6 +804,7 @@ def get_night_summary(db: Session = Depends(get_db)):
 
     return {
         'ingresos_totales': ingresos_val,
+        'ganancias_totales': ganancias_val,
         'canciones_cantadas': canciones_val,
         'usuarios_activos': usuarios_val,
     }

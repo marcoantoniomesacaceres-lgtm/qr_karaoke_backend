@@ -86,7 +86,6 @@ class ProductoBase(BaseModel):
     nombre: str
     categoria: str
     valor: Decimal
-    costo: Decimal = Decimal("0")
     stock: int
     imagen_url: Optional[str] = None
     is_active: bool = True
@@ -300,7 +299,6 @@ class Notificacion(BaseModel):
 
 class ResumenNoche(BaseModel):
     ingresos_totales: Decimal
-    ganancias_totales: Decimal
     canciones_cantadas: int
     usuarios_activos: int
 

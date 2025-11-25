@@ -5,8 +5,7 @@ async function loadDashboardPage() {
     try {
         const summary = await apiFetch('/admin/summary');
         const ingresos = Number(summary.ingresos_totales) || 0;
-        const costos = Number(summary.costos_totales) || 0;
-        const ganancias = ingresos - costos;
+        const ganancias = Number(summary.ganancias_totales) || 0;
 
         document.getElementById('summary-income').textContent = `$${ingresos.toFixed(2)}`;
         document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;

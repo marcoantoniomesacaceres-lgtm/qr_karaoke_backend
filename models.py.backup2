@@ -57,8 +57,7 @@ class Producto(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, unique=True, index=True)
     categoria = Column(String, index=True, default="General")
-    valor = Column(Numeric(10, 2))  # Precio de venta
-    costo = Column(Numeric(10, 2), default=0)  # Precio de compra
+    valor = Column(Numeric(10, 2))
     stock = Column(Integer, default=0)
     imagen_url = Column(String, nullable=True) # Columna para la URL de la imagen
     is_active = Column(Boolean, default=True)
