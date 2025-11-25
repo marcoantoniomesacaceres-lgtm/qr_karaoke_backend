@@ -3,7 +3,7 @@
 
 function renderApprovedSongs(songs, listElement) {
     if (!listElement) return;
-    
+
     // Handle both array input and object with now_playing/upcoming structure
     let songArray = [];
     if (Array.isArray(songs)) {
@@ -16,7 +16,7 @@ function renderApprovedSongs(songs, listElement) {
             songArray = songArray.concat(songs.upcoming);
         }
     }
-    
+
     listElement.innerHTML = '';
     if (!songArray || songArray.length === 0) {
         listElement.innerHTML = '<p>La cola de canciones está vacía.</p>';
@@ -63,22 +63,22 @@ async function loadQueuePage() {
     try {
         // Si ya tenemos datos en caché (por WebSocket), usarlos primero
         let queueData = currentQueueData || { now_playing: null, upcoming: [] };
-        
+
         // Si el caché está vacío, cargar desde servidor
         if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
             queueData = await apiFetch('/canciones/cola');
         }
-        
+
         // Actualizar el caché con los datos más recientes
         currentQueueData = queueData;
-        
+
         const approvedSongsList = document.getElementById('approved-songs-list');
         // Renderizar directamente desde el objeto (que puede tener now_playing/upcoming)
         renderApprovedSongs(queueData, approvedSongsList);
     } catch (error) {
         showNotification(`Error al cargar cola: ${error.message}`, 'error');
     }
-    
+
     try {
         const tables = await apiFetch('/mesas/');
         const targetTableSelect = document.getElementById('admin-target-table');
@@ -103,7 +103,7 @@ async function handleAdminSearch(event, karaokeMode = false) {
     const karaokeButton = document.getElementById('admin-search-karaoke-btn');
     songsButton.disabled = true;
     karaokeButton.disabled = true;
-    
+
     const clickedButton = karaokeMode ? karaokeButton : songsButton;
     const originalText = clickedButton.textContent;
     clickedButton.textContent = 'Buscando...';
@@ -171,13 +171,40 @@ async function handleAdminAddSong(event) {
             body: body
         });
         const targetName = targetTableId ? `la mesa seleccionada` : 'la cola general';
-        showNotification(`'${songData.titulo}' añadida a ${targetName}.`);
+        showNotification(`'${songData.titulo}' añadida a ${targetName}.`, 'success');
+
+        // Limpiar resultados de búsqueda
         document.getElementById('admin-search-results').innerHTML = '';
+
+        // IMPORTANTE: Recargar la cola aprobada para mostrar la canción recién agregada
+        await reloadApprovedQueue();
+
     } catch (error) {
         showNotification(error.message, 'error');
     } finally {
         button.disabled = false;
         button.textContent = 'Añadir';
+    }
+}
+
+// Nueva función para recargar solo la cola aprobada sin recargar toda la página
+async function reloadApprovedQueue() {
+    try {
+        // Obtener los datos más recientes de la cola desde el servidor
+        const queueData = await apiFetch('/canciones/cola');
+
+        // Actualizar el caché global
+        currentQueueData = queueData;
+
+        // Actualizar la vista de la cola aprobada
+        const approvedSongsList = document.getElementById('approved-songs-list');
+        if (approvedSongsList) {
+            renderApprovedSongs(queueData, approvedSongsList);
+        }
+    } catch (error) {
+        console.error('Error al recargar la cola aprobada:', error);
+        // No mostrar notificación de error aquí para no molestar al usuario
+        // La canción ya fue agregada exitosamente
     }
 }
 
@@ -191,6 +218,7 @@ async function handleQueueActions(event) {
     if (!songId || !action) return;
 
     button.disabled = true;
+    let shouldReloadQueue = false; // Flag para saber si debemos recargar la cola
 
     try {
         if (action === 'play') {
@@ -206,6 +234,7 @@ async function handleQueueActions(event) {
             } else if (response.ok) {
                 const data = await response.json();
                 showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
+                shouldReloadQueue = true;
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.detail || 'Error al intentar reproducir la canción.');
@@ -215,6 +244,10 @@ async function handleQueueActions(event) {
             if (confirm('¿Seguro que quieres eliminar esta canción de la cola?')) {
                 await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
                 showNotification('Canción eliminada de la cola.', 'info');
+                shouldReloadQueue = true;
+            } else {
+                button.disabled = false;
+                return;
             }
         } else if (action === 'move-up' || action === 'move-down') {
             const listElement = document.getElementById('approved-songs-list');
@@ -233,6 +266,7 @@ async function handleQueueActions(event) {
 
             await apiFetch('/admin/reorder-queue', { method: 'POST', body: JSON.stringify({ canciones_ids: songIds }) });
             showNotification('Cola reordenada.', 'info');
+            shouldReloadQueue = true;
         } else if (action === 'restart') {
             await apiFetch(`/admin/canciones/restart`, { method: 'POST' }).catch(async () => {
                 // Fallback: /admin/canciones/restart doesn't exist, try alternative or skip
@@ -240,9 +274,18 @@ async function handleQueueActions(event) {
                 showNotification('Función de reinicio no disponible en el backend.', 'warning');
             });
             showNotification('Reiniciando la canción actual.', 'info');
+            // No recargar la cola para restart, ya que no cambia el orden
         }
+
+        // Recargar la cola si hubo cambios
+        if (shouldReloadQueue) {
+            await reloadApprovedQueue();
+        }
+
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
+    } finally {
+        button.disabled = false;
     }
 }
 

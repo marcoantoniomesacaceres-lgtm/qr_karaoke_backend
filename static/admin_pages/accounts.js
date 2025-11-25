@@ -1,12 +1,18 @@
 // Accounts Page Module
 // Manejo: cuentas de pago, comisiones, transacciones
 
+// Variable global para almacenar las cuentas actuales
+let currentAccounts = [];
+
 function renderAccounts(accounts, accountsGrid) {
     accountsGrid.innerHTML = '';
     if (accounts.length === 0) {
         accountsGrid.innerHTML = '<p>No hay mesas ni estados de cuenta disponibles.</p>';
         return;
     }
+
+    // Guardar las cuentas en la variable global para acceder a ellas después
+    currentAccounts = accounts;
 
     accounts.forEach(acc => {
         const card = document.createElement('div');
@@ -40,7 +46,7 @@ function renderAccounts(accounts, accountsGrid) {
                 </div>
             </div>
             <div class="account-actions">
-                <button class="btn-payment" data-id="${acc.mesa_id}">Registrar Pago</button>
+                <button class="btn-payment" data-id="${acc.mesa_id}" data-saldo="${deuda}">Registrar Pago</button>
             </div>
         `;
 
@@ -105,6 +111,59 @@ async function handlePaymentSubmit(event) {
         return;
     }
 
+    // Buscar la cuenta actual para obtener el saldo pendiente
+    const currentAccount = currentAccounts.find(acc => acc.mesa_id === mesaId);
+    const saldoPendiente = currentAccount ? (currentAccount.saldo_pendiente || 0) : 0;
+
+    // VALIDACIÓN DE SOBREPAGO
+    if (amount > saldoPendiente && saldoPendiente >= 0) {
+        // Mostrar modal de confirmación de sobrepago
+        showOverpaymentConfirmation(mesaId, amount, metodo, saldoPendiente);
+        return;
+    }
+
+    // Si no hay sobrepago, proceder normalmente
+    await processPayment(mesaId, amount, metodo);
+}
+
+function showOverpaymentConfirmation(mesaId, amount, metodo, saldoPendiente) {
+    const overpaymentModal = document.getElementById('confirm-overpayment-modal');
+    const overpaymentMessage = document.getElementById('overpayment-message');
+
+    if (!overpaymentModal) return;
+
+    const exceso = (amount - saldoPendiente).toFixed(2);
+    overpaymentMessage.innerHTML = `
+        El monto ingresado <strong>($${amount})</strong> es mayor que la deuda actual <strong>($${saldoPendiente})</strong>.<br>
+        Exceso: <strong style="color: var(--warning-color);">$${exceso}</strong><br><br>
+        ¿Deseas registrarlo como un pago adelantado?
+    `;
+
+    overpaymentModal.style.display = 'flex';
+
+    // Configurar los botones de confirmación
+    const confirmBtn = document.getElementById('confirm-overpayment-btn');
+    const cancelBtn = document.getElementById('cancel-overpayment-btn');
+
+    // Remover listeners anteriores (si existen)
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+    // Agregar nuevos listeners
+    newConfirmBtn.addEventListener('click', async () => {
+        overpaymentModal.style.display = 'none';
+        await processPayment(mesaId, amount, metodo);
+    });
+
+    newCancelBtn.addEventListener('click', () => {
+        overpaymentModal.style.display = 'none';
+        showNotification('Pago cancelado. Por favor ingresa un monto correcto.', 'info');
+    });
+}
+
+async function processPayment(mesaId, amount, metodo) {
     try {
         // Registrar el pago usando el endpoint admin POST /api/v1/admin/pagos
         const payload = { mesa_id: mesaId, monto: amount, metodo_pago: metodo };
@@ -112,14 +171,14 @@ async function handlePaymentSubmit(event) {
             method: 'POST',
             body: JSON.stringify(payload)
         });
-        showNotification(`Pago de $${amount} registrado exitosamente.`);
+        showNotification(`Pago de $${amount} registrado exitosamente.`, 'success');
 
-        // Close modal
+        // Close payment modal
         const modal = document.getElementById('payment-modal');
         if (modal) modal.style.display = 'none';
 
         // Reload accounts page
-        loadAccountsPage();
+        await loadAccountsPage();
     } catch (error) {
         showNotification(error.message || 'Error al registrar el pago', 'error');
     }
@@ -139,6 +198,7 @@ function setupAccountsListeners() {
     const paymentModal = document.getElementById('payment-modal');
     const paymentForm = document.getElementById('payment-form');
     const closePaymentModalBtn = document.getElementById('payment-modal-close');
+    const overpaymentModal = document.getElementById('confirm-overpayment-modal');
 
     if (accountsGrid) {
         accountsGrid.addEventListener('click', handlePaymentModal);
@@ -154,6 +214,16 @@ function setupAccountsListeners() {
     if (paymentModal) {
         paymentModal.addEventListener('click', (e) => {
             if (e.target === paymentModal) paymentModal.style.display = 'none';
+        });
+    }
+
+    // Listener para cerrar el modal de sobrepago al hacer clic fuera
+    if (overpaymentModal) {
+        overpaymentModal.addEventListener('click', (e) => {
+            if (e.target === overpaymentModal) {
+                overpaymentModal.style.display = 'none';
+                showNotification('Pago cancelado.', 'info');
+            }
         });
     }
 }

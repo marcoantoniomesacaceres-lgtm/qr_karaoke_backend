@@ -610,8 +610,48 @@
 
         /* Estilo para el modal de confirmación de sobrepago */
         #overpayment-card {
-            border: 2px solid var(--success-color);
+            border: 2px solid var(--secondary-color);
+            /* Violeta */
+            box-shadow: 0 0 25px rgba(187, 134, 252, 0.6);
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a1e3e 100%);
+            /* Fondo con toque violeta */
+        }
+
+        #overpayment-card h3 {
+            color: var(--secondary-color);
+            /* Título violeta */
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        #overpayment-message {
+            color: var(--text-color);
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        #confirm-overpayment-btn {
+            background-color: var(--success-color) !important;
+            /* Verde para confirmar */
+            transition: all 0.3s ease;
+        }
+
+        #confirm-overpayment-btn:hover {
+            background-color: #4caf50 !important;
             box-shadow: 0 0 15px rgba(102, 187, 106, 0.5);
+            transform: translateY(-2px);
+        }
+
+        #cancel-overpayment-btn {
+            background-color: var(--text-secondary) !important;
+            transition: all 0.3s ease;
+        }
+
+        #cancel-overpayment-btn:hover {
+            background-color: #999 !important;
+            transform: translateY(-2px);
         }
     </style>
 </head>
