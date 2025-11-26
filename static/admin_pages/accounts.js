@@ -59,6 +59,16 @@ async function loadAccountsPage() {
     try {
         // Usar el endpoint de administracion que devuelve el estado de cuenta por mesa
         const accounts = await apiFetch('/admin/reports/table-payment-status');
+
+        // Ordenar las cuentas numéricamente por nombre de mesa (1, 2, 3... 10)
+        if (Array.isArray(accounts)) {
+            accounts.sort((a, b) => {
+                const nameA = (a.mesa_nombre || `Mesa ${a.mesa_id}`).toString();
+                const nameB = (b.mesa_nombre || `Mesa ${b.mesa_id}`).toString();
+                return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+        }
+
         renderAccounts(accounts, accountsGrid);
     } catch (error) {
         // Mostrar mensaje graceful si el endpoint no existe o el método no está permitido
