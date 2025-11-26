@@ -250,10 +250,14 @@
         // Usar WebSocket URL relativa para funcionar tanto en HTTP como HTTPS
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const WEBSOCKET_URL = `${wsProtocol}//${window.location.host}/ws/cola`;
+        const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api/v1`;
         let standbyScreen = document.getElementById('standby-screen');
         let backgroundCarousel = document.getElementById('background-carousel');
         let infoOverlay = document.getElementById('info-overlay');
         let notificationBanner = document.getElementById('notification-banner');
+
+        // Variables para el autoplay automático
+        let autoplayTimer = null;
 
         // --- Lógica del Carrusel de Fondos ---
         const backgroundImages = [
@@ -323,10 +327,55 @@
             console.log('iframe del video insertado exitosamente con referrerpolicy="origin"');
         }
 
-        function playVideo(videoId) {
-            console.log('playVideo called with:', videoId);
+        // Función para avanzar automáticamente a la siguiente canción
+        async function advanceToNextSong() {
+            console.log('⏭️ Avanzando automáticamente a la siguiente canción...');
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/siguiente`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.status === 204) {
+                    console.log('✅ No hay más canciones en la cola');
+                    const container = document.getElementById('player-container');
+                    if (container) container.innerHTML = '';
+                    startCarousel();
+                } else if (response.ok) {
+                    console.log('✅ Siguiente canción iniciada automáticamente');
+                } else {
+                    console.error('❌ Error al avanzar:', response.status);
+                }
+            } catch (error) {
+                console.error('❌ Error en advanceToNextSong:', error);
+            }
+        }
+
+        function playVideo(videoId, duration = 0) {
+            console.log('🎵 playVideo called with:', videoId, 'duration:', duration);
+
+            // Limpiar temporizador anterior si existe
+            if (autoplayTimer) {
+                clearTimeout(autoplayTimer);
+                autoplayTimer = null;
+                console.log('🔄 Temporizador anterior limpiado');
+            }
+
             stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
             insertYouTubeIframe(videoId);
+
+            // Si tenemos la duración, configurar temporizador
+            if (duration && duration > 0) {
+                const timerDuration = (duration + 3) * 1000; // +3 segundos de buffer
+                console.log(`⏱️ Configurando temporizador de autoplay para ${timerDuration}ms (${duration + 3}s)`);
+
+                autoplayTimer = setTimeout(() => {
+                    console.log('⏰ Temporizador de autoplay activado');
+                    advanceToNextSong();
+                }, timerDuration);
+            } else {
+                console.warn('⚠️ No se proporcionó duración, autoplay automático deshabilitado');
+            }
         }
 
         // 3. Conexión WebSocket para recibir órdenes
@@ -354,7 +403,8 @@
 
                     if (videoId) {
                         console.log('Recibida orden de reproducir:', videoId);
-                        playVideo(videoId);
+                        const duration = data.payload.duracion_seconds || data.payload.duration || 0;
+                        playVideo(videoId, duration);
                     } else {
                         console.error('No se pudo extraer el ID de YouTube:', data.payload);
                     }

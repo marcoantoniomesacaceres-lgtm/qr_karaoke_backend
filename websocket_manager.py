@@ -109,11 +109,18 @@ class ConnectionManager:
         }
         await self._broadcast(json.dumps(payload))
 
-    async def broadcast_play_song(self, youtube_id: str):
+    async def broadcast_play_song(self, youtube_id: str, duration_seconds: int = 0):
         """
         Envía un evento para reproducir una canción en el reproductor.
+        Incluye la duración para permitir el autoplay automático.
         """
-        payload = {"type": "play_song", "payload": {"youtube_id": youtube_id}}
+        payload = {
+            "type": "play_song", 
+            "payload": {
+                "youtube_id": youtube_id,
+                "duracion_seconds": duration_seconds
+            }
+        }
         await self._broadcast(json.dumps(payload))
 
     async def broadcast_restart_song(self):
