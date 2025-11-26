@@ -49,7 +49,7 @@ async function loadRecentOrders() {
             const grupo = pedidosPorMesa[mesaNombre];
             const li = document.createElement('li');
             li.className = 'item';
-            
+
             const itemsHtml = grupo.items.map(item => `<li>${item.cantidad}x ${item.producto_nombre}</li>`).join('');
             const allConsumoIds = grupo.items.map(item => item.id).join(',');
 
@@ -113,7 +113,7 @@ async function handleSendReaction(event) {
         sender: "Admin"
     };
     try {
-        await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     } catch (error) {
         console.error("Error enviando reacción:", error);
     }
@@ -161,7 +161,7 @@ function setupDashboardListeners() {
 
             if (!consumoIds || consumoIds.length === 0 || consumoIds[0] === '') return;
             if (!confirm(confirmMessage)) return;
-            
+
             const li = btnDespachado ? btnDespachado.closest('li') : btnNoDespachado.closest('li');
             const bellIcon = li ? li.querySelector('.order-alert-icon') : null;
             if (bellIcon) bellIcon.classList.remove('shaking');
@@ -171,8 +171,24 @@ function setupDashboardListeners() {
                     const finalEndpoint = endpoint.replace('{consumo_id}', id);
                     await apiFetch(finalEndpoint, { method: isDeleteAction ? 'DELETE' : 'POST' });
                 }
+
+                // Eliminar visualmente el elemento de la lista inmediatamente
+                if (li) {
+                    li.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                    li.style.opacity = '0';
+                    li.style.transform = 'translateX(-20px)';
+                    setTimeout(() => {
+                        li.remove();
+                        // Si no quedan más pedidos, mostrar mensaje
+                        if (recentOrdersList.children.length === 0) {
+                            recentOrdersList.innerHTML = '<li><p>No hay pedidos recientes.</p></li>';
+                        }
+                    }, 300);
+                }
+
                 showNotification(successMessage, 'success');
-                loadDashboardPage();
+                // Recargar después de un breve delay para actualizar el resumen
+                setTimeout(() => loadDashboardPage(), 500);
             } catch (error) {
                 console.error("Error procesando consumos:", error);
                 showNotification("Error procesando consumos", "error");
