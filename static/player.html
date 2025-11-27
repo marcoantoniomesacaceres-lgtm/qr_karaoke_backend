@@ -149,8 +149,6 @@
             color: #ccc;
         }
 
-        /* Reducido */
-
         /* --- Reacciones --- */
         .reaction-container {
             position: fixed;
@@ -259,17 +257,17 @@
         // Variables para el autoplay automático
         let autoplayTimer = null;
 
+        // Variables para rastrear el video actual (necesarias para reiniciar)
+        let currentVideoId = null;
+        let currentVideoDuration = 0;
+
         // --- Lógica del Carrusel de Fondos ---
-        const backgroundImages = [
-            // URLs de imágenes deshabilitadas para evitar OpaqueResponseBlocking
-            // Usar imagen local en su lugar
-        ];
+        const backgroundImages = [];
         let currentImageIndex = 0;
         let carouselInterval;
 
         function changeBackgroundImage() {
             // El fondo se manejará con imagen local en su lugar
-            // Esto evita los bloques CORS de Unsplash
         }
 
         function startCarousel() {
@@ -277,8 +275,6 @@
             standbyScreen.style.opacity = '1';
             infoOverlay.style.opacity = '0';
             backgroundCarousel.classList.add('active');
-            // Sin cambiar imagen - usar solo imagen local
-            // carouselInterval = setInterval(changeBackgroundImage, 7000);
         }
 
         function stopCarousel() {
@@ -288,13 +284,6 @@
             carouselInterval = null;
             backgroundCarousel.classList.remove('active');
         }
-
-        // 1. Carga de la API de YouTube - NO USAREMOS ESTO
-        // Evitamos completamente la API de YouTube JS para evitar:
-        // - Conflictos CORS (HTTP local vs HTTPS YouTube)
-        // - Problemas de Tracking Prevention
-        // - Storage access blocking
-        // Usaremos solo iframes que funcionan sin problemas
 
         // 2. Función para crear reproductor con iframe mejorada con referrerpolicy
         function insertYouTubeIframe(videoId) {
@@ -354,6 +343,10 @@
         function playVideo(videoId, duration = 0) {
             console.log('🎵 playVideo called with:', videoId, 'duration:', duration);
 
+            // Guardar el video actual para poder reiniciarlo
+            currentVideoId = videoId;
+            currentVideoDuration = duration;
+
             // Limpiar temporizador anterior si existe
             if (autoplayTimer) {
                 clearTimeout(autoplayTimer);
@@ -391,6 +384,19 @@
                 const data = JSON.parse(event.data);
                 console.log('Mensaje WebSocket recibido:', data);
 
+                // 1. Reiniciar canción (Prioridad alta - Detiene el flujo si se ejecuta)
+                if (data.type === 'restart_song') {
+                    console.log('🔄 Recibida orden de reiniciar canción');
+                    if (currentVideoId) {
+                        console.log(`🔄 Reiniciando video: ${currentVideoId}`);
+                        playVideo(currentVideoId, currentVideoDuration);
+                    } else {
+                        console.warn('⚠️ No hay video actual para reiniciar');
+                    }
+                    return; // Importante: Evita que se evalúen otros bloques
+                }
+
+                // 2. Reproducir canción
                 if (data.type === 'play_song' && data.payload) {
                     // Soportar tanto youtube_id como youtube_url
                     let videoId = data.payload.youtube_id;
@@ -410,7 +416,7 @@
                     }
                 }
 
-                // --- NUEVO: Escuchar el evento de canción finalizada ---
+                // 3. Canción finalizada
                 if (data.type === 'song_finished' && data.payload) {
                     const scoreInfo = data.payload;
                     const standbyParagraph = standbyScreen.querySelector('p');
@@ -424,7 +430,7 @@
                     standbyParagraph.innerHTML = `${message}<br>Esperando la siguiente canción...`;
                 }
 
-                // --- NUEVO: Escuchar y mostrar notificaciones globales ---
+                // 4. Notificaciones globales
                 if (data.type === 'notification' && data.payload && data.payload.mensaje) {
                     notificationBanner.textContent = data.payload.mensaje;
                     notificationBanner.classList.add('show');
@@ -435,7 +441,7 @@
                     }, 10000);
                 }
 
-                // Escuchar y mostrar reacciones de emojis
+                // 5. Reacciones
                 if (data.type === 'reaction' && data.payload && data.payload.reaction) {
                     const emoji = document.createElement('div');
                     emoji.className = 'reaction-emoji';
@@ -447,8 +453,11 @@
 
                     document.getElementById('reaction-container').appendChild(emoji);
                     setTimeout(() => emoji.remove(), 6000); // Limpiar el emoji del DOM después de la animación
-                } else {
-                    // Si no es un tipo específico, asumimos que es la actualización de la cola
+                }
+
+                // 6. Actualización de la cola (Fallback)
+                // Si no es un tipo específico de los anteriores, asumimos que es data de la cola
+                if (!['play_song', 'song_finished', 'notification', 'reaction', 'restart_song'].includes(data.type)) {
                     updateQueueUI(data);
                 }
             };
