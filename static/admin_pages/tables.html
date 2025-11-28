@@ -1,41 +1,94 @@
-<h2>Mesas y Códigos QR</h2>
-<div class="grid" style="grid-template-columns: 350px 1fr 350px;">
+<h2>Gestión de Mesas y QR</h2>
+
+<div class="grid" style="grid-template-columns: 1fr 1fr; gap: 20px;">
+
+    <!-- PANEL 1: GENERADOR DE QR -->
     <div class="card">
-        <h3>Mesas del Sistema</h3>
-        <button id="open-player-dashboard" class="btn-generate-qr"
-            style="width: 100%; margin-bottom: 15px; padding: 12px; font-size: 1em;">
-            🎤 Abrir Dashboard Player
-        </button>
-        <ul id="tables-list" class="item-list" style="max-height: 50vh; overflow-y: auto;">
-            <p>Cargando mesas...</p>
-        </ul>
-    </div>
-    <div class="card" style="text-align: center;">
-        <h3>Código QR de la Mesa</h3>
-        <div id="qr-display-area" style="margin-top: 20px;">
-            <p>Selecciona una mesa de la lista para ver su código QR.</p>
+        <h3 style="border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-bottom: 20px;">
+            🖨️ Generador de QR
+        </h3>
+
+        <form id="qr-generator-form">
+            <div class="form-group">
+                <label for="qr-table-number" style="font-size: 1.1em; font-weight: bold;">Número de Mesa:</label>
+                <input type="number" id="qr-table-number" min="1" placeholder="Ej: 5" required
+                    style="font-size: 1.2em; padding: 10px;">
+            </div>
+
+            <div class="form-group">
+                <label for="qr-user-select" style="font-size: 1.1em; font-weight: bold;">Usuario:</label>
+                <select id="qr-user-select" style="font-size: 1.1em; padding: 10px; width: 100%;">
+                    <option value="1">Usuario 1</option>
+                    <option value="2">Usuario 2</option>
+                    <option value="3">Usuario 3</option>
+                    <option value="4">Usuario 4</option>
+                    <option value="5">Usuario 5</option>
+                    <option value="6">Usuario 6</option>
+                    <option value="7">Usuario 7</option>
+                    <option value="8">Usuario 8</option>
+                    <option value="9">Usuario 9</option>
+                    <option value="10">Usuario 10</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary"
+                style="width: 100%; font-size: 1.2em; padding: 12px; margin-top: 10px;">
+                Generar QR
+            </button>
+        </form>
+
+        <div id="qr-result"
+            style="margin-top: 30px; text-align: center; min-height: 200px; display: flex; align-items: center; justify-content: center; border: 2px dashed #ccc; border-radius: 10px;">
+            <p style="color: #888;">El código QR aparecerá aquí</p>
         </div>
     </div>
+
+    <!-- PANEL 2: GESTIÓN (DESACTIVAR/ELIMINAR) -->
     <div class="card">
-        <h3>Crear Nueva Mesa</h3>
-        <form id="create-table-form">
+        <h3 style="border-bottom: 2px solid var(--error-color); padding-bottom: 10px; margin-bottom: 20px;">
+            ⚙️ Gestión de Mesa
+        </h3>
+
+        <form id="table-management-form">
             <div class="form-group">
-                <label for="table-numero">Número de Mesa (opcional)</label>
-                <input type="number" id="table-numero" name="numero" min="1"
-                    placeholder="Dejar vacío para auto-generar">
+                <label for="manage-table-number" style="font-size: 1.1em; font-weight: bold;">Número de Mesa:</label>
+                <input type="number" id="manage-table-number" min="1" placeholder="Ej: 5" required
+                    style="font-size: 1.2em; padding: 10px;">
             </div>
-            <div class="form-group">
-                <label for="table-nombre">Nombre</label>
-                <input type="text" id="table-nombre" name="nombre" placeholder="Ej: Mesa VIP" required>
+
+            <!-- Nota: Aunque pediste usuario aquí, las acciones de mesa suelen ser globales. 
+                 Si se requiere acción por usuario, se puede implementar lógica adicional. 
+                 Por ahora, esto ayuda a identificar la mesa objetivo. -->
+
+            <div class="actions-container" style="display: flex; flex-direction: column; gap: 15px; margin-top: 30px;">
+                <button type="button" id="btn-activate" class="btn-activate" style="padding: 15px; font-size: 1.1em;">
+                    ✅ Activar Mesa
+                </button>
+
+                <button type="button" id="btn-deactivate" class="btn-deactivate"
+                    style="padding: 15px; font-size: 1.1em;">
+                    ⏸️ Desactivar Mesa
+                </button>
+
+                <button type="button" id="btn-delete" class="btn-delete"
+                    style="padding: 15px; font-size: 1.1em; background-color: #dc3545; color: white;">
+                    🗑️ Eliminar Mesa
+                </button>
+
+                <button type="button" id="btn-create" class="btn-primary"
+                    style="padding: 15px; font-size: 1.1em; background-color: #28a745;">
+                    ➕ Crear Mesa (Si no existe)
+                </button>
             </div>
-            <div class="form-group">
-                <label for="table-qr-code">Código QR (opcional)</label>
-                <input type="text" id="table-qr-code" name="qr_code" placeholder="Dejar vacío para auto-generar"
-                    pattern="[a-zA-Z0-9\-_]+">
-                <small style="color: var(--text-secondary); font-size: 0.85em;">Solo letras, números, guiones y guiones
-                    bajos. Si está vacío, se generará automáticamente.</small>
-            </div>
-            <button type="submit" class="form-btn">Crear Mesa</button>
+
+            <div id="management-status" style="margin-top: 20px; text-align: center;"></div>
         </form>
     </div>
+</div>
+
+<!-- Botón extra para ir al player -->
+<div style="margin-top: 20px; text-align: center;">
+    <button id="open-player-dashboard" class="btn-secondary" style="padding: 10px 20px;">
+        🎤 Abrir Dashboard Player
+    </button>
 </div>

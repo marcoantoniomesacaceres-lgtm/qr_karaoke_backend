@@ -1,186 +1,179 @@
-// Tables/QR Page Module
-// Manejo: mesas, generación de códigos QR, activación/desactivación de mesas
+// Tables/QR Page Module - Simplified Version
+// Manejo directo por número de mesa y usuario
 
 async function loadTablesPage() {
-    const tablesList = document.getElementById('tables-list');
-    const qrDisplayArea = document.getElementById('qr-display-area');
-
-    if (tablesList) {
-        try {
-            const tables = await apiFetch('/mesas/');
-            renderTablesList(tables, tablesList);
-        } catch (error) {
-            tablesList.innerHTML = `<p style="color: var(--error-color);">${error.message}</p>`;
-        }
-    }
-
-    if (qrDisplayArea) {
-        qrDisplayArea.innerHTML = '<p>Selecciona una mesa para ver su código QR.</p>';
-    }
-}
-
-function renderTablesList(tables, tablesList) {
-    tablesList.innerHTML = '';
-    if (tables.length === 0) {
-        tablesList.innerHTML = '<p>No hay mesas creadas.</p>';
-        return;
-    }
-
-    tables.forEach(table => {
-        const li = document.createElement('li');
-        li.className = `table-item ${table.is_active ? 'active' : 'inactive'}`;
-        li.innerHTML = `
-            <div class="table-info">
-                <h4>${table.nombre}</h4>
-                <p>QR Code: ${table.qr_code || 'No generado'}</p>
-                <span class="status-badge ${table.is_active ? 'status-active' : 'status-inactive'}">
-                    ${table.is_active ? 'Activa' : 'Inactiva'}
-                </span>
-            </div>
-            <div class="table-actions">
-                <button class="btn-qr" data-id="${table.id}" data-qr-code="${table.qr_code}">Generar QR</button>
-                ${table.is_active
-                ? `<button class="btn-deactivate" data-id="${table.id}">Desactivar</button>`
-                : `<button class="btn-activate" data-id="${table.id}">Activar</button>`
-            }
-                <button class="btn-delete" data-id="${table.id}">Eliminar</button>
-            </div>
-        `;
-        tablesList.appendChild(li);
-    });
-}
-
-function handleShowQR(event) {
-    const button = event.target;
-    if (!button.matches('.btn-qr')) return;
-
-    const tableId = button.dataset.id;
-    const qrCode = button.dataset.qrCode;
-    const displayArea = document.getElementById('qr-display-area');
-
-    if (!displayArea) return;
-
-    if (!qrCode) {
-        displayArea.innerHTML = `<p style="color: var(--warning-color);">No hay código QR disponible para esta mesa.</p>`;
-        return;
-    }
-
-    // Construir la URL completa de la aplicación con el parámetro table
-    const appBaseUrl = window.location.origin; // Obtiene http://localhost:8000 o el dominio actual
-    const appUrl = `${appBaseUrl}/?table=${encodeURIComponent(qrCode)}`;
-
-    // Generar URL del QR dinámicamente usando qrserver.com con la URL completa de la app
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(appUrl)}`;
-    const tableNameEl = button.closest('.table-item')?.querySelector('h4');
-    const tableName = tableNameEl ? tableNameEl.textContent : `Mesa ${tableId}`;
-
-    displayArea.innerHTML = `
-        <div class="qr-container">
-            <img src="${qrImageUrl}" alt="QR Code" class="qr-image" style="border: 2px solid #ddd; padding: 10px;">
-            <p><strong>${tableName}</strong></p>
-            <p style="font-size: 0.9em; color: #666;">Código: ${qrCode}</p>
-            <p style="font-size: 0.85em; color: #888; margin-top: 10px;">Escanea para acceder a:<br>${appUrl}</p>
-            <a href="${qrImageUrl}" download="qr-${qrCode}.png" class="btn-primary">Descargar QR</a>
-        </div>
-    `;
-}
-
-async function handleToggleTableActive(event) {
-    const button = event.target;
-    if (!button.matches('.btn-activate, .btn-deactivate')) return;
-
-    const tableId = button.dataset.id;
-    const activate = button.classList.contains('btn-activate');
-    const endpoint = `/mesas/${tableId}/${activate ? 'activate' : 'deactivate'}`;
-
-    try {
-        const result = await apiFetch(endpoint, { method: 'POST' });
-        showNotification(`Mesa ${result.numero} ${activate ? 'activada' : 'desactivada'}.`);
-        loadTablesPage();
-    } catch (error) {
-        showNotification(error.message, 'error');
-    }
-}
-
-async function handleDeleteTable(event) {
-    const button = event.target;
-    if (!button.matches('.btn-delete')) return;
-
-    const tableId = button.dataset.id;
-    if (!confirm('¿Estás seguro de que quieres ELIMINAR esta mesa permanentemente? Esta acción no se puede deshacer.')) return;
-
-    try {
-        await apiFetch(`/mesas/${tableId}`, { method: 'DELETE' });
-        showNotification('Mesa eliminada con éxito.', 'info');
-        loadTablesPage();
-    } catch (error) {
-        showNotification(error.message, 'error');
-    }
-}
-
-async function handleCreateTable(event, form) {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const tableData = Object.fromEntries(formData.entries());
-
-    // Normalize inputs
-    const numero = tableData.numero && tableData.numero.trim() !== '' ? parseInt(tableData.numero, 10) : null;
-    const nombre = tableData.nombre && tableData.nombre.trim() !== '' ? tableData.nombre.trim() : (numero ? `Mesa ${numero}` : `Mesa ${Date.now()}`);
-
-    // Handle QR code generation
-    let qr_code;
-    if (tableData.qr_code && tableData.qr_code.trim() !== '') {
-        // User specified a custom QR code
-        qr_code = tableData.qr_code.trim();
-    } else if (numero) {
-        // Generate based on number, but add timestamp suffix to avoid collisions
-        // Format: karaoke-mesa-XX-timestamp
-        qr_code = `karaoke-mesa-${String(numero).padStart(2, '0')}-${Date.now()}`;
-    } else {
-        // No number provided, use timestamp-based unique code
-        qr_code = `karaoke-mesa-${Date.now()}`;
-    }
-
-    const payload = {
-        nombre: nombre,
-        qr_code: qr_code
-    };
-
-    try {
-        const result = await apiFetch('/mesas/', { method: 'POST', body: JSON.stringify(payload) });
-        showNotification(`¡Mesa creada! "${result.nombre}" con código QR: ${result.qr_code}`, 'success');
-        form.reset();
-        loadTablesPage();
-    } catch (error) {
-        // Enhanced error handling
-        if (error.message && error.message.includes('El código QR ya está registrado')) {
-            showNotification(
-                `El código QR "${qr_code}" ya existe. Intenta con un nombre diferente o deja el campo de código QR vacío para generar uno automáticamente.`,
-                'error',
-                6000
-            );
-        } else if (error.message && error.message.includes('422')) {
-            showNotification('Datos inválidos. Revisa que el nombre esté completo y el código QR solo contenga letras, números, guiones y guiones bajos.', 'error', 6000);
-        } else {
-            showNotification(`Error al crear mesa: ${error.message}`, 'error', 6000);
-        }
-    }
+    // Setup listeners
+    setupTablesListeners();
 }
 
 function setupTablesListeners() {
-    const tablesList = document.getElementById('tables-list');
-    const createForm = document.getElementById('create-table-form');
+    // QR Generator Form
+    const qrForm = document.getElementById('qr-generator-form');
+    if (qrForm) {
+        qrForm.addEventListener('submit', handleGenerateQR);
+    }
+
+    // Management Buttons
+    const btnActivate = document.getElementById('btn-activate');
+    const btnDeactivate = document.getElementById('btn-deactivate');
+    const btnDelete = document.getElementById('btn-delete');
+    const btnCreate = document.getElementById('btn-create');
     const openPlayerBtn = document.getElementById('open-player-dashboard');
 
-    if (tablesList) {
-        tablesList.addEventListener('click', handleShowQR);
-        tablesList.addEventListener('click', handleToggleTableActive);
-        tablesList.addEventListener('click', handleDeleteTable);
-    }
-    if (createForm) createForm.addEventListener('submit', (e) => handleCreateTable(e, e.target));
+    if (btnActivate) btnActivate.addEventListener('click', () => handleTableAction('activate'));
+    if (btnDeactivate) btnDeactivate.addEventListener('click', () => handleTableAction('deactivate'));
+    if (btnDelete) btnDelete.addEventListener('click', () => handleTableAction('delete'));
+    if (btnCreate) btnCreate.addEventListener('click', handleCreateTableDirect);
+
     if (openPlayerBtn) {
         openPlayerBtn.addEventListener('click', () => {
             window.open('/player', '_blank');
         });
+    }
+}
+
+function handleGenerateQR(event) {
+    event.preventDefault();
+
+    const tableNumInput = document.getElementById('qr-table-number');
+    const userSelect = document.getElementById('qr-user-select');
+    const resultArea = document.getElementById('qr-result');
+
+    if (!tableNumInput.value) {
+        showNotification('Por favor ingresa un número de mesa', 'error');
+        return;
+    }
+
+    const tableNum = tableNumInput.value.toString().padStart(2, '0'); // Ensure 05 format
+    const userNum = userSelect.value;
+
+    // Construct QR Code string: karaoke-mesa-XX-usuarioN
+    const qrCode = `karaoke-mesa-${tableNum}-usuario${userNum}`;
+    const tableName = `Mesa ${parseInt(tableNum)}`;
+    const userNick = `${tableName}-Usuario${userNum}`;
+
+    // Generate URL
+    const appBaseUrl = window.location.origin;
+    const appUrl = `${appBaseUrl}/?table=${encodeURIComponent(qrCode)}`;
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(appUrl)}`;
+
+    resultArea.innerHTML = `
+        <div class="qr-container" style="animation: fadeIn 0.5s;">
+            <img src="${qrImageUrl}" alt="QR Code" class="qr-image" style="border: 2px solid #333; padding: 10px; border-radius: 10px;">
+            <h3 style="margin: 10px 0 5px 0;">${userNick}</h3>
+            <p style="font-family: monospace; background: #f0f0f0; padding: 5px; border-radius: 4px;">${qrCode}</p>
+            <a href="${qrImageUrl}" download="qr-${qrCode}.png" class="btn-primary" style="display: inline-block; margin-top: 10px; text-decoration: none;">
+                ⬇️ Descargar QR
+            </a>
+        </div>
+    `;
+}
+
+async function findTableByNumber(number) {
+    try {
+        const tables = await apiFetch('/mesas/');
+        // Search for table with QR containing "karaoke-mesa-XX" or name "Mesa X"
+        // We prioritize the QR code format standard
+        const targetQR = `karaoke-mesa-${number.toString().padStart(2, '0')}`;
+
+        // Find exact match or base match
+        const found = tables.find(t => {
+            if (t.qr_code === targetQR) return true;
+            // Check if it's a base match (ignoring timestamp suffix if any)
+            if (t.qr_code.startsWith(targetQR) && !t.qr_code.includes('usuario')) return true;
+            return false;
+        });
+
+        return found;
+    } catch (error) {
+        console.error("Error fetching tables:", error);
+        return null;
+    }
+}
+
+async function handleTableAction(action) {
+    const tableNumInput = document.getElementById('manage-table-number');
+    const statusDiv = document.getElementById('management-status');
+
+    if (!tableNumInput.value) {
+        showNotification('Por favor ingresa un número de mesa para gestionar', 'error');
+        return;
+    }
+
+    const tableNum = tableNumInput.value.toString().padStart(2, '0');
+    statusDiv.innerHTML = '<p>Buscando mesa...</p>';
+
+    try {
+        const table = await findTableByNumber(tableNum);
+
+        if (!table) {
+            statusDiv.innerHTML = `<p style="color: var(--error-color);">❌ No se encontró la Mesa ${parseInt(tableNum)}.</p>`;
+            if (action !== 'create') {
+                showNotification(`La Mesa ${parseInt(tableNum)} no existe. Créala primero.`, 'warning');
+            }
+            return;
+        }
+
+        let endpoint;
+        let method = 'POST';
+        let successMsg;
+
+        if (action === 'activate') {
+            endpoint = `/mesas/${table.id}/activate`;
+            successMsg = `✅ Mesa ${parseInt(tableNum)} activada correctamente.`;
+        } else if (action === 'deactivate') {
+            endpoint = `/mesas/${table.id}/deactivate`;
+            successMsg = `⏸️ Mesa ${parseInt(tableNum)} desactivada.`;
+        } else if (action === 'delete') {
+            if (!confirm(`¿Estás seguro de ELIMINAR la Mesa ${parseInt(tableNum)}? Esta acción es irreversible.`)) {
+                statusDiv.innerHTML = '';
+                return;
+            }
+            endpoint = `/mesas/${table.id}`;
+            method = 'DELETE';
+            successMsg = `🗑️ Mesa ${parseInt(tableNum)} eliminada del sistema.`;
+        }
+
+        await apiFetch(endpoint, { method: method });
+        statusDiv.innerHTML = `<p style="color: var(--success-color); font-weight: bold;">${successMsg}</p>`;
+        showNotification(successMsg, 'success');
+
+    } catch (error) {
+        statusDiv.innerHTML = `<p style="color: var(--error-color);">Error: ${error.message}</p>`;
+    }
+}
+
+async function handleCreateTableDirect() {
+    const tableNumInput = document.getElementById('manage-table-number');
+    const statusDiv = document.getElementById('management-status');
+
+    if (!tableNumInput.value) {
+        showNotification('Ingresa un número para crear la mesa', 'error');
+        return;
+    }
+
+    const tableNum = parseInt(tableNumInput.value);
+    const qrCode = `karaoke-mesa-${tableNum.toString().padStart(2, '0')}`;
+    const nombre = `Mesa ${tableNum}`;
+
+    try {
+        // Check if exists first
+        const existing = await findTableByNumber(tableNum);
+        if (existing) {
+            statusDiv.innerHTML = `<p style="color: var(--warning-color);">⚠️ La Mesa ${tableNum} ya existe.</p>`;
+            return;
+        }
+
+        const payload = {
+            nombre: nombre,
+            qr_code: qrCode
+        };
+
+        await apiFetch('/mesas/', { method: 'POST', body: JSON.stringify(payload) });
+        statusDiv.innerHTML = `<p style="color: var(--success-color);">✅ Mesa ${tableNum} creada exitosamente.</p>`;
+        showNotification(`Mesa ${tableNum} creada.`, 'success');
+
+    } catch (error) {
+        statusDiv.innerHTML = `<p style="color: var(--error-color);">Error al crear: ${error.message}</p>`;
     }
 }
