@@ -65,8 +65,12 @@ function handleShowQR(event) {
         return;
     }
 
-    // Generar URL del QR dinámicamente usando qrserver.com
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCode)}`;
+    // Construir la URL completa de la aplicación con el parámetro table
+    const appBaseUrl = window.location.origin; // Obtiene http://localhost:8000 o el dominio actual
+    const appUrl = `${appBaseUrl}/?table=${encodeURIComponent(qrCode)}`;
+
+    // Generar URL del QR dinámicamente usando qrserver.com con la URL completa de la app
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(appUrl)}`;
     const tableNameEl = button.closest('.table-item')?.querySelector('h4');
     const tableName = tableNameEl ? tableNameEl.textContent : `Mesa ${tableId}`;
 
@@ -75,6 +79,7 @@ function handleShowQR(event) {
             <img src="${qrImageUrl}" alt="QR Code" class="qr-image" style="border: 2px solid #ddd; padding: 10px;">
             <p><strong>${tableName}</strong></p>
             <p style="font-size: 0.9em; color: #666;">Código: ${qrCode}</p>
+            <p style="font-size: 0.85em; color: #888; margin-top: 10px;">Escanea para acceder a:<br>${appUrl}</p>
             <a href="${qrImageUrl}" download="qr-${qrCode}.png" class="btn-primary">Descargar QR</a>
         </div>
     `;
