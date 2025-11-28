@@ -57,14 +57,22 @@ def create_cancion_para_usuario(db: Session, cancion: schemas.CancionCreate, usu
 
 def check_if_song_in_user_list(db: Session, usuario_id: int, youtube_id: str):
     """
-    Verifica si un usuario ya tiene una canción en su lista que no esté cantada o rechazada.
+    Verifica si ALGÚN USUARIO DE LA MISMA MESA ya tiene esta canción en la cola.
+    CAMBIO: Ahora verifica a nivel de mesa para evitar duplicados entre usuarios de la misma mesa.
     """
-    return db.query(models.Cancion).filter(
-        models.Cancion.usuario_id == usuario_id,
+    # Obtener el usuario y su mesa
+    usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not usuario or not usuario.mesa_id:
+        return None
+    
+    # Buscar si algún usuario de la misma mesa ya tiene esta canción en cola
+    return db.query(models.Cancion).join(
+        models.Usuario, models.Cancion.usuario_id == models.Usuario.id
+    ).filter(
+        models.Usuario.mesa_id == usuario.mesa_id,
         models.Cancion.youtube_id == youtube_id,
         models.Cancion.estado.in_(['pendiente', 'aprobado', 'reproduciendo'])
     ).first()
-
 def get_cancion_by_id(db: Session, cancion_id: int):
     """Busca una canción por su ID."""
     return db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
@@ -1631,7 +1639,7 @@ async def start_next_song_if_autoplay_and_idle(db: Session):
         # Si se encontró una siguiente canción, notificamos a todos los clientes
         # para que la cola se actualice y el reproductor comience a reproducir.
         await websocket_manager.manager.broadcast_queue_update()
-        await websocket_manager.manager.broadcast_play_song(next_song.youtube_id, next_song.duracion_seconds or 0)
+        await websocket_manager.manager.broadcast_play_song(next_song.youtube_id)
         create_admin_log_entry(db, action="AUTOPLAY_START", details=f"Autoplay inició la canción '{next_song.titulo}'.")
 
 async def avanzar_cola_automaticamente(db: Session):
@@ -1656,7 +1664,7 @@ async def avanzar_cola_automaticamente(db: Session):
 
     # 4. Si hay una nueva canción, enviar la orden de reproducción al player
     if siguiente_cancion:
-        await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id, siguiente_cancion.duracion_seconds or 0)
+        await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
 
     return siguiente_cancion
 

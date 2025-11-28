@@ -5,6 +5,8 @@ import os
 # --- CONFIGURACIÓN ---
 # Asegúrate de que este número coincida con el de tu script `crear_mesas.py`
 NUMERO_DE_MESAS = 30
+# Número de usuarios por mesa (QR codes por mesa)
+USUARIOS_POR_MESA = 10
 # Directorio donde se guardarán los códigos QR
 OUTPUT_DIR = "qrcodes_mesas"
 # ---------------------
@@ -25,7 +27,9 @@ def get_local_ip():
 
 def generate_table_qrs():
     """
-    Genera un código QR para cada mesa y lo guarda en un directorio.
+    Genera códigos QR para cada mesa con múltiples usuarios.
+    Para cada mesa se generan 10 QR codes (uno por cada usuario posible).
+    Formato: karaoke-mesa-XX-usuarioN donde XX es el número de mesa y N es 1-10.
     """
     local_ip = get_local_ip()
     
@@ -33,17 +37,37 @@ def generate_table_qrs():
         os.makedirs(OUTPUT_DIR)
         print(f"Directorio '{OUTPUT_DIR}' creado.")
 
-    print(f"Generando {NUMERO_DE_MESAS} códigos QR para la IP: {local_ip}...")
+    total_qrs = NUMERO_DE_MESAS * USUARIOS_POR_MESA
+    print(f"Generando {total_qrs} códigos QR ({NUMERO_DE_MESAS} mesas x {USUARIOS_POR_MESA} usuarios) para la IP: {local_ip}...")
+    print()
 
-    for i in range(1, NUMERO_DE_MESAS + 1):
-        qr_code_mesa = f"karaoke-mesa-{i:02d}"
-        url = f"http://{local_ip}:8000/?table={qr_code_mesa}"
-        qr_img = qrcode.make(url)
-        file_path = os.path.join(OUTPUT_DIR, f"mesa_{i:02d}.png")
-        qr_img.save(file_path)
-        print(f"✅ QR para '{qr_code_mesa}' guardado en '{file_path}'")
+    for mesa_num in range(1, NUMERO_DE_MESAS + 1):
+        # Crear subdirectorio para cada mesa
+        mesa_dir = os.path.join(OUTPUT_DIR, f"mesa_{mesa_num:02d}")
+        if not os.path.exists(mesa_dir):
+            os.makedirs(mesa_dir)
+        
+        print(f"📋 Mesa {mesa_num:02d}:")
+        
+        for usuario_num in range(1, USUARIOS_POR_MESA + 1):
+            qr_code_completo = f"karaoke-mesa-{mesa_num:02d}-usuario{usuario_num}"
+            url = f"http://{local_ip}:8000/?table={qr_code_completo}"
+            
+            qr_img = qrcode.make(url)
+            file_path = os.path.join(mesa_dir, f"usuario_{usuario_num}.png")
+            qr_img.save(file_path)
+            
+            print(f"  ✅ Usuario {usuario_num}: {qr_code_completo}")
+        
+        print()
 
-    print(f"\nProceso completado. Todos los QR están en la carpeta '{OUTPUT_DIR}'.")
+    print(f"\n🎉 Proceso completado!")
+    print(f"📁 Todos los QR están organizados en la carpeta '{OUTPUT_DIR}'")
+    print(f"📊 Total: {NUMERO_DE_MESAS} mesas con {USUARIOS_POR_MESA} usuarios cada una")
+    print(f"\n💡 Instrucciones:")
+    print(f"   - Cada mesa tiene su propia carpeta con 10 QR codes")
+    print(f"   - Imprime todos los QR de cada mesa y colócalos en la mesa correspondiente")
+    print(f"   - Cada usuario escaneará un QR diferente para evitar conflictos")
 
 if __name__ == "__main__":
     generate_table_qrs()

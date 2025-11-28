@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 import crud, schemas, models
 import re # Importar para el filtro de groserías
+import datetime
 from database import SessionLocal
 from security import api_key_auth
 
@@ -76,43 +77,106 @@ def conectar_usuario_a_mesa(
 ):
     """
     Busca una mesa por su QR y crea un nuevo usuario asociado a ella.
-    LIMITACIÓN: Máximo 10 usuarios pueden estar conectados a la misma mesa.
-    Este es el endpoint que el cliente usa al escanear el QR.
+    COMPATIBILIDAD: Acepta dos formatos de QR:
+    - Nuevo: 'karaoke-mesa-XX-usuarioN' (N = 1-10) - Asigna usuario específico
+    - Antiguo: 'karaoke-mesa-XX' - Asigna automáticamente al siguiente usuario disponible
     """
-    db_mesa = crud.get_mesa_by_qr(db, qr_code=qr_code)
+    # Intentar extraer el número de mesa y usuario del QR code (formato nuevo)
+    match_nuevo = re.match(r'karaoke-mesa-(\d+)-usuario(\d+)', qr_code)
+    
+    if match_nuevo:
+        # Formato nuevo: karaoke-mesa-05-usuario1
+        mesa_numero = match_nuevo.group(1)
+        usuario_numero = match_nuevo.group(2)
+        
+        # Validar que el número de usuario esté entre 1 y 10
+        if not (1 <= int(usuario_numero) <= 10):
+            raise HTTPException(
+                status_code=400,
+                detail=f"El número de usuario debe estar entre 1 y 10. Recibido: {usuario_numero}"
+            )
+    else:
+        # Intentar formato antiguo: karaoke-mesa-05
+        match_antiguo = re.match(r'karaoke-mesa-(\d+)$', qr_code)
+        
+        if not match_antiguo:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"El código QR '{qr_code}' no tiene un formato válido. Debe ser 'karaoke-mesa-XX' o 'karaoke-mesa-XX-usuarioN'."
+            )
+        
+        mesa_numero = match_antiguo.group(1)
+        
+        # Buscar la mesa para asignar el siguiente usuario disponible
+        qr_code_mesa_base = f"karaoke-mesa-{mesa_numero}"
+        db_mesa_temp = crud.get_mesa_by_qr(db, qr_code=qr_code_mesa_base)
+        
+        if not db_mesa_temp:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"La mesa '{qr_code_mesa_base}' no existe. Por favor, contacta al personal."
+            )
+        
+        # Encontrar el siguiente número de usuario disponible (1-10)
+        usuario_numero = None
+        for num in range(1, 11):
+            nick_test = f"{db_mesa_temp.nombre}-Usuario{num}"
+            usuario_existente = db.query(models.Usuario).filter(
+                models.Usuario.mesa_id == db_mesa_temp.id,
+                models.Usuario.nick == nick_test,
+                models.Usuario.is_active == True
+            ).first()
+            
+            if not usuario_existente:
+                usuario_numero = str(num)
+                break
+        
+        if not usuario_numero:
+            raise HTTPException(
+                status_code=429,
+                detail="La mesa ha alcanzado el máximo de 10 usuarios activos. Por favor, usa un QR específico de usuario o intenta más tarde."
+            )
+    
+    # Buscar la mesa base (sin el sufijo de usuario)
+    qr_code_mesa_base = f"karaoke-mesa-{mesa_numero}"
+    db_mesa = crud.get_mesa_by_qr(db, qr_code=qr_code_mesa_base)
+    
     if not db_mesa:
-        raise HTTPException(status_code=404, detail=f"El código QR '{qr_code}' no corresponde a ninguna mesa válida.")
+        raise HTTPException(
+            status_code=404, 
+            detail=f"La mesa '{qr_code_mesa_base}' no existe. Por favor, contacta al personal."
+        )
 
     if not db_mesa.is_active:
-        raise HTTPException(status_code=403, detail="Esta mesa se encuentra desactivada temporalmente. Por favor, contacta al personal.")
-    
-    # NUEVO: Verificar límite de usuarios conectados (máximo 10)
-    usuarios_activos = db.query(models.Usuario).filter(
-        models.Usuario.mesa_id == db_mesa.id,
-        models.Usuario.is_active == True
-    ).count()
-    
-    if usuarios_activos >= 10:
         raise HTTPException(
-            status_code=429, 
-            detail="La mesa ha alcanzado el máximo de 10 usuarios conectados. Por favor, intenta más tarde."
+            status_code=403, 
+            detail="Esta mesa se encuentra desactivada temporalmente. Por favor, contacta al personal."
         )
     
-    # 1. Validación de palabras inapropiadas
-    if contains_profanity(usuario.nick):
-        raise HTTPException(status_code=400, detail="El apodo contiene palabras inapropiadas. Por favor, elige otro.")
-
-    # Verificamos si el nick ya está en uso o baneado en una sola consulta
-    db_usuario_existente = crud.get_usuario_by_nick(db, nick=usuario.nick)
+    # Generar automáticamente el nick basado en la mesa y el número de usuario
+    nick_automatico = f"{db_mesa.nombre}-Usuario{usuario_numero}"
+    
+    # Verificar si ya existe un usuario con este número en esta mesa
+    db_usuario_existente = db.query(models.Usuario).filter(
+        models.Usuario.mesa_id == db_mesa.id,
+        models.Usuario.nick == nick_automatico
+    ).first()
+    
     if db_usuario_existente:
-        # 2. Mensaje más sugerente para apodos repetidos
-        raise HTTPException(status_code=409, detail=f"El apodo '{usuario.nick}' ya está en uso. Intenta con '{usuario.nick}1', '{usuario.nick}_karaoke' o similar.")
-
-    # Si el nick no está en uso, verificamos si está en la lista de baneados
-    if crud.is_nick_banned(db, nick=usuario.nick):
-        raise HTTPException(status_code=403, detail="Este nick de usuario ha sido bloqueado y no puede registrarse.")
-
-    return crud.create_usuario_en_mesa(db=db, usuario=usuario, mesa_id=db_mesa.id)
+        # Si el usuario ya existe y está activo, retornarlo
+        if db_usuario_existente.is_active:
+            return db_usuario_existente
+        else:
+            # Si existe pero está inactivo, reactivarlo
+            db_usuario_existente.is_active = True
+            db_usuario_existente.last_active = datetime.datetime.utcnow()
+            db.commit()
+            db.refresh(db_usuario_existente)
+            return db_usuario_existente
+    
+    # Crear el nuevo usuario con el nick automático
+    usuario_data = schemas.UsuarioCreate(nick=nick_automatico)
+    return crud.create_usuario_en_mesa(db=db, usuario=usuario_data, mesa_id=db_mesa.id)
 
 @router.get("/{mesa_id}/usuarios-conectados", response_model=List[schemas.UsuarioConectado], summary="Ver usuarios conectados a una mesa")
 def get_usuarios_conectados(mesa_id: int, db: Session = Depends(get_db)):
