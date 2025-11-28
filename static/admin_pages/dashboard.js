@@ -132,6 +132,13 @@ function setupDashboardListeners() {
     if (reactionBtns) reactionBtns.addEventListener('click', handleSendReaction);
     if (autoplayToggle) autoplayToggle.addEventListener('change', handleToggleAutoplay);
 
+    const openPlayerBtnMain = document.getElementById('open-player-dashboard-main');
+    if (openPlayerBtnMain) {
+        openPlayerBtnMain.addEventListener('click', () => {
+            window.open('/player', '_blank');
+        });
+    }
+
     if (recentOrdersList) {
         recentOrdersList.addEventListener('click', async (e) => {
             const btnDespachado = e.target.closest('.btn-despachado');
