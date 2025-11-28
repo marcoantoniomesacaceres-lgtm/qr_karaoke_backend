@@ -130,4 +130,16 @@ class ConnectionManager:
         payload = {"type": "restart_song"}
         await self._broadcast(json.dumps(payload))
 
+    async def broadcast_notification(self, mensaje: str):
+        """
+        Envía un mensaje de notificación global a todas las pantallas conectadas.
+        """
+        payload = {
+            "type": "notification",
+            "payload": {
+                "mensaje": mensaje
+            }
+        }
+        await self._broadcast(json.dumps(payload))
+
 manager = ConnectionManager()
