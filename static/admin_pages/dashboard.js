@@ -11,7 +11,7 @@ async function loadDashboardPage() {
         document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
         document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
         document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
-        updateAutoplayStatus((await apiFetch('/admin/autoplay/status')).autoplay_status);
+        updateAutoplayStatus(false); // Siempre iniciar con autoplay desactivado
         loadRecentOrders();
     } catch (error) {
         showNotification(`Error al cargar resumen: ${error.message}`, 'error');

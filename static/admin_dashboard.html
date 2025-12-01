@@ -817,7 +817,7 @@
                 const status = result && typeof result.autoplay_status !== 'undefined' ? result.autoplay_status : null;
                 if (status !== null) {
                     updateAutoplayStatus(status);
-                    showNotification(`Autoplay ${status ? 'activado' : 'desactivado'}.`, 'info');
+                    showNotification(`${status ? 'Activado' : 'Desactivado'}.`, 'info');
                 }
             } catch (err) {
                 showNotification(err.message || 'Error cambiando autoplay', 'error');
