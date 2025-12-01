@@ -80,6 +80,7 @@ class Consumo(Base):
     producto = relationship("Producto", back_populates="consumos")
     mesa = relationship("Mesa", back_populates="consumos")  # Relación con mesa
     usuario = relationship("Usuario")  # Relación sin backref (solo para consultas)
+    is_dispatched = Column(Boolean, default=False) # Nuevo campo para marcar si ya fue entregado
 
 class BannedNick(Base):
     __tablename__ = "banned_nicks"

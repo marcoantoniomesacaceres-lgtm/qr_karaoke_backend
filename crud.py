@@ -1687,3 +1687,68 @@ def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
     db.commit()
     db.refresh(db_producto)
     return db_producto, "Compra registrada y stock actualizado correctamente."
+
+def get_consumos_por_usuario(db: Session, usuario_id: int):
+    """
+    Obtiene el historial de consumo de un usuario específico.
+    """
+    return db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).order_by(models.Consumo.created_at.desc()).all()
+
+
+def get_recent_consumos(db: Session, limit: int = 10):
+    """
+    Devuelve los consumos más recientes junto con el nombre del producto,
+    nick del usuario y nombre de la mesa (si existe).
+    Filtra los consumos que ya han sido despachados.
+    """
+    # Hacemos las uniones necesarias para obtener la info deseada
+    rows = (
+        db.query(
+            models.Consumo.id,
+            models.Consumo.cantidad,
+            models.Consumo.valor_total,
+            models.Producto.nombre.label('producto_nombre'),
+            models.Usuario.nick.label('usuario_nick'),
+            models.Mesa.nombre.label('mesa_nombre'),
+            models.Consumo.created_at
+        )
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .join(models.Usuario, models.Consumo.usuario_id == models.Usuario.id)
+        .outerjoin(models.Mesa, models.Usuario.mesa_id == models.Mesa.id)
+        .filter(models.Consumo.is_dispatched == False)
+        .order_by(models.Consumo.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    # Mapear a diccionarios/objetos que Pydantic pueda serializar fácilmente
+    result = []
+    for r in rows:
+        result.append({
+            'id': r.id,
+            'cantidad': r.cantidad,
+            'valor_total': r.valor_total,
+            'producto_nombre': r.producto_nombre,
+            'usuario_nick': r.usuario_nick,
+            'mesa_nombre': r.mesa_nombre,
+            'created_at': r.created_at,
+        })
+    return result
+
+def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: int = 10):
+    """
+    Obtiene un reporte de los usuarios que más han gastado en una categoría de producto específica.
+    """
+    return (
+        db.query(
+            models.Usuario.nick,
+            func.sum(models.Consumo.valor_total).label("total_gastado")
+        )
+        .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+        .join(models.Producto, models.Consumo.producto_id == models.Producto.id)
+        .filter(models.Producto.categoria.ilike(categoria))
+        .group_by(models.Usuario.nick)
+        .order_by(func.sum(models.Consumo.valor_total).desc())
+        .limit(limit)
+        .all()
+    )

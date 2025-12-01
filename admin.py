@@ -733,11 +733,15 @@ async def admin_delete_consumo(consumo_id: int, db: Session = Depends(get_db)):
 async def admin_mark_consumo_despachado(consumo_id: int, db: Session = Depends(get_db)):
     """
     **[Admin]** Marca un consumo como despachado.
-    No elimina el consumo de la base de datos, solo lo elimina de la lista de "pedidos recientes" en el dashboard.
+    No elimina el consumo de la base de datos, solo lo marca como despachado para que no aparezca en "pedidos recientes".
     """
     db_consumo = db.query(models.Consumo).filter(models.Consumo.id == consumo_id).first()
     if not db_consumo:
         raise HTTPException(status_code=404, detail='Consumo no encontrado')
+
+    # Mark as dispatched in DB
+    db_consumo.is_dispatched = True
+    db.commit()
 
     # Log the action
     crud.create_admin_log_entry(db, action="MARK_CONSUMO_DESPACHADO", details=f"Consumo ID {consumo_id} marcado como despachado.")
@@ -749,16 +753,6 @@ async def admin_mark_consumo_despachado(consumo_id: int, db: Session = Depends(g
         pass # Don't break the response if notification fails
 
     return {"message": f"Consumo {consumo_id} marcado como despachado."}
-
-@router.post("/broadcast-message", status_code=200, summary="Enviar un mensaje a todas las pantallas")
-async def broadcast_message(notificacion: schemas.Notificacion, db: Session = Depends(get_db)):
-    """
-    **[Admin]** Envía un mensaje de texto que se mostrará en todas
-    las pantallas conectadas en tiempo real.
-    """
-    await websocket_manager.manager.broadcast_notification(mensaje=notificacion.mensaje)
-    crud.create_admin_log_entry(db, action="BROADCAST_MESSAGE", details=f"Mensaje enviado: '{notificacion.mensaje}'")
-    return {"mensaje": "La notificación ha sido enviada a todas las pantallas."}
 
 @router.get("/reports/gold-users", response_model=List[schemas.UsuarioPublico], summary="Obtener usuarios de nivel Oro")
 def get_gold_users_report(db: Session = Depends(get_db)):
