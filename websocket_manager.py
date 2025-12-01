@@ -40,18 +40,16 @@ class ConnectionManager:
             except ValueError:
                 # La conexión ya fue eliminada, lo ignoramos.
                 pass
+
     async def broadcast_queue_update(self):
         """Obtiene la cola actualizada y la envía a todos los clientes."""
         db = SessionLocal()
         try:
-            # Buscamos la canción que se está reproduciendo y la cola de las próximas
-            now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
-            upcoming = db.query(models.Cancion).filter(models.Cancion.estado == "pendiente").order_by(models.Cancion.created_at).all()
+            # Usamos crud.get_cola_completa para obtener la cola real (aprobada y priorizada)
+            # Esto corrige el error donde se mostraban solo canciones pendientes o se borraba la cola
+            cola_data = crud.get_cola_completa(db)
             
-            queue_data = {
-                "now_playing": jsonable_encoder(now_playing),
-                "upcoming": jsonable_encoder(upcoming)
-            }
+            queue_data = jsonable_encoder(cola_data)
             
             payload = {"type": "queue_update", "payload": queue_data}
             await self._broadcast(json.dumps(payload, default=str))
