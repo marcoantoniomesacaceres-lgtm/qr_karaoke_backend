@@ -125,12 +125,12 @@ async def anadir_cancion(
             detail="No hay tiempo suficiente para añadir esta canción antes del cierre."
         )
 
-    # Verificar duplicados
+    # Verificar duplicados a nivel de mesa (evita que usuarios de la misma mesa agreguen la misma canción)
     cancion_existente = crud.check_if_song_in_user_list(db, usuario_id=usuario_id, youtube_id=cancion.youtube_id)
     if cancion_existente:
         raise HTTPException(
             status_code=409,
-            detail=f"Ya tienes '{cancion.titulo}' en tu lista."
+            detail=f"Esta canción ya está en la cola de tu mesa. '{cancion.titulo}' fue agregada por otro usuario de tu mesa."
         )
 
     # Crear y aprobar canción
