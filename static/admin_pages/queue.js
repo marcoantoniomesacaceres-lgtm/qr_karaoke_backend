@@ -92,6 +92,11 @@ async function loadQueuePage() {
     } catch (error) {
         showNotification(`Error al cargar mesas: ${error.message}`, 'error');
     }
+
+    // Cargar el estado del autoplay
+    if (typeof loadAutoplayStatus === 'function') {
+        loadAutoplayStatus();
+    }
 }
 
 async function handleAdminSearch(event, karaokeMode = false) {

@@ -3,10 +3,10 @@
 
 // Configuración del Karaoke (puedes modificar estos valores)
 const KARAOKE_CONFIG = {
-    nombre: "Karaoke La Voz Dorada",
-    direccion: "Calle Principal #123, Ciudad",
-    telefono: "(555) 123-4567",
-    email: "info@lavozDorada.com"
+    nombre: "Karaoke La Canta que Rana",
+    direccion: "Pasaje Baudilio Acero, Calle 11a #11-45, Plaza la Villa Sogamoso, local 201",
+    telefono: "3106999043",
+    email: "lacantaquerana@gmail.com"
 };
 
 async function loadReportsPage() {
