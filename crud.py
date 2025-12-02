@@ -1752,3 +1752,39 @@ def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: i
         .limit(limit)
         .all()
     )
+
+# --- Admin API Key Management ---
+def create_admin_api_key(db: Session, description: str):
+    """
+    Creates a new admin API key with a secure random key.
+    Returns the full key object including the key itself (shown only once).
+    """
+    # Generate a secure random API key (32 bytes = 64 hex characters)
+    new_key = secrets.token_hex(32)
+    
+    db_api_key = models.AdminApiKey(
+        key=new_key,
+        description=description,
+        is_active=True
+    )
+    db.add(db_api_key)
+    db.commit()
+    db.refresh(db_api_key)
+    return db_api_key
+
+def get_all_admin_api_keys(db: Session):
+    """
+    Returns all admin API keys without revealing the actual key values.
+    """
+    return db.query(models.AdminApiKey).all()
+
+def delete_admin_api_key(db: Session, key_id: int):
+    """
+    Deletes an admin API key by ID.
+    Returns the deleted key object or None if not found.
+    """
+    db_key = db.query(models.AdminApiKey).filter(models.AdminApiKey.id == key_id).first()
+    if db_key:
+        db.delete(db_key)
+        db.commit()
+    return db_key

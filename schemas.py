@@ -394,3 +394,26 @@ class MesaEstadoPago(BaseModel):
     consumos: List[ConsumoItemDetalle] = []
     pagos: List[PagoView] = []
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+# --- Schemas for Admin API Keys ---
+class AdminApiKeyCreate(BaseModel):
+    """Schema for creating a new admin API key."""
+    description: str
+
+class AdminApiKeyView(BaseModel):
+    """Schema for viewing a newly created API key (shows the key only once)."""
+    id: int
+    key: str
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class AdminApiKeyInfo(BaseModel):
+    """Schema for listing API keys (without revealing the actual key)."""
+    id: int
+    description: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    last_used: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)

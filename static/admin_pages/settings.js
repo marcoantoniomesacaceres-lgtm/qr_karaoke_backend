@@ -47,37 +47,31 @@ function renderSettings(settings, container) {
     const apiKeysDiv = document.createElement('div');
     apiKeysDiv.className = 'settings-section';
     apiKeysDiv.innerHTML = `
-        <h3>Claves de API</h3>
-        <div class="api-keys-list">
-            <div class="api-key-item">
-                <label>Clave API Admin:</label>
-                <div class="key-display">
-                    <input type="password" id="admin-api-key" value="${settings.admin_api_key || 'No configurada'}" readonly>
-                    <button class="btn-secondary toggle-visibility" data-target="admin-api-key">Mostrar</button>
-                    <button class="btn-secondary copy-to-clipboard" data-target="admin-api-key">Copiar</button>
-                </div>
+        <h3>Claves de API para Administradores</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+            Gestiona las claves de API que permiten acceder al panel de administración.
+        </p>
+        <div id="api-keys-list" style="margin-bottom: 20px;">
+            <p style="color: var(--text-secondary);">Cargando claves...</p>
+        </div>
+        <h4 style="margin-top: 20px;">Crear Nueva Clave</h4>
+        <form id="create-api-key-form">
+            <div class="form-group">
+                <label for="key-description">Descripción:</label>
+                <input type="text" id="key-description" name="description" placeholder="Ej: Mi laptop personal" required>
             </div>
-            <div class="api-key-item">
-                <label>Clave API YouTube:</label>
-                <div class="key-display">
-                    <input type="password" id="youtube-api-key" value="${settings.youtube_api_key || 'No configurada'}" readonly>
-                    <button class="btn-secondary toggle-visibility" data-target="youtube-api-key">Mostrar</button>
-                    <button class="btn-secondary copy-to-clipboard" data-target="youtube-api-key">Copiar</button>
-                </div>
+            <button type="submit" class="btn-primary">Generar Clave</button>
+        </form>
+        <div id="new-key-display" style="display: none; margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 8px; border: 2px solid var(--success-color);">
+            <h4 style="color: var(--success-color);">¡Clave Generada!</h4>
+            <p style="color: var(--warning-color); margin: 10px 0;">
+                <strong>⚠️ Guarda esta clave ahora. No podrás verla de nuevo.</strong>
+            </p>
+            <div class="key-display">
+                <input type="text" id="generated-key" readonly style="font-family: monospace; font-size: 14px;">
+                <button class="btn-secondary" id="copy-generated-key">Copiar</button>
             </div>
         </div>
-        <h4 style="margin-top: 20px;">Actualizar Claves</h4>
-        <form id="api-keys-form">
-            <div class="form-group">
-                <label for="new-admin-api-key">Nueva Clave Admin:</label>
-                <input type="text" id="new-admin-api-key" name="admin_api_key" placeholder="Dejar en blanco para no cambiar">
-            </div>
-            <div class="form-group">
-                <label for="new-youtube-api-key">Nueva Clave YouTube:</label>
-                <input type="text" id="new-youtube-api-key" name="youtube_api_key" placeholder="Dejar en blanco para no cambiar">
-            </div>
-            <button type="submit" class="btn-primary">Actualizar Claves</button>
-        </form>
     `;
     container.appendChild(apiKeysDiv);
 
@@ -138,25 +132,102 @@ async function handleClosingTimeUpdate(event, form) {
     }
 }
 
-async function handleApiKeysUpdate(event, form) {
+async function loadApiKeys() {
+    const apiKeysList = document.getElementById('api-keys-list');
+    if (!apiKeysList) return;
+
+    try {
+        const keys = await apiFetch('/api/v1/admin/api-keys');
+
+        if (!keys || keys.length === 0) {
+            apiKeysList.innerHTML = '<p style="color: var(--text-secondary);">No hay claves creadas todavía.</p>';
+            return;
+        }
+
+        apiKeysList.innerHTML = '<h4>Claves Existentes</h4>';
+        const keysTable = document.createElement('div');
+        keysTable.style.cssText = 'display: grid; gap: 10px;';
+
+        keys.forEach(key => {
+            const keyItem = document.createElement('div');
+            keyItem.style.cssText = 'padding: 10px; background: var(--card-bg); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
+
+            const keyInfo = document.createElement('div');
+            keyInfo.innerHTML = `
+                <strong>${key.description || 'Sin descripción'}</strong><br>
+                <small style="color: var(--text-secondary);">
+                    Creada: ${new Date(key.created_at).toLocaleString('es-ES')}
+                    ${key.last_used ? `| Último uso: ${new Date(key.last_used).toLocaleString('es-ES')}` : ''}
+                </small>
+            `;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-danger';
+            deleteBtn.textContent = 'Eliminar';
+            deleteBtn.onclick = () => handleDeleteApiKey(key.id);
+
+            keyItem.appendChild(keyInfo);
+            keyItem.appendChild(deleteBtn);
+            keysTable.appendChild(keyItem);
+        });
+
+        apiKeysList.appendChild(keysTable);
+    } catch (error) {
+        apiKeysList.innerHTML = `<p style="color: var(--error-color);">Error al cargar claves: ${error.message}</p>`;
+    }
+}
+
+async function handleCreateApiKey(event, form) {
     event.preventDefault();
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    // Remove empty fields
-    if (!data.admin_api_key) delete data.admin_api_key;
-    if (!data.youtube_api_key) delete data.youtube_api_key;
+    try {
+        const newKey = await apiFetch('/api/v1/admin/api-keys', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
 
-    if (Object.keys(data).length === 0) {
-        showNotification('Por favor ingresa al menos una clave nueva.', 'warning');
+        // Show the generated key
+        const newKeyDisplay = document.getElementById('new-key-display');
+        const generatedKeyInput = document.getElementById('generated-key');
+        generatedKeyInput.value = newKey.key;
+        newKeyDisplay.style.display = 'block';
+
+        // Setup copy button
+        const copyBtn = document.getElementById('copy-generated-key');
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(newKey.key).then(() => {
+                showNotification('Clave copiada al portapapeles.', 'success');
+            }).catch(err => {
+                showNotification('Error al copiar clave.', 'error');
+            });
+        };
+
+        showNotification('Clave generada con éxito. ¡Guárdala ahora!', 'success');
+        form.reset();
+
+        // Reload the keys list
+        await loadApiKeys();
+
+        // Hide the new key display after 60 seconds
+        setTimeout(() => {
+            newKeyDisplay.style.display = 'none';
+        }, 60000);
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+async function handleDeleteApiKey(keyId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta clave? Esta acción no se puede deshacer.')) {
         return;
     }
 
     try {
-        await apiFetch('/admin/settings/api-keys', { method: 'POST', body: JSON.stringify(data) });
-        showNotification('Claves API actualizadas con éxito.');
-        form.reset();
-        loadSettingsPage();
+        await apiFetch(`/api/v1/admin/api-keys/${keyId}`, { method: 'DELETE' });
+        showNotification('Clave eliminada con éxito.', 'success');
+        await loadApiKeys();
     } catch (error) {
         showNotification(error.message, 'error');
     }
@@ -179,58 +250,23 @@ async function handleGeneralSettingsUpdate(event, form) {
     }
 }
 
-function handleToggleVisibility(event) {
-    const button = event.target;
-    if (!button.matches('.toggle-visibility')) return;
 
-    const targetId = button.dataset.target;
-    const input = document.getElementById(targetId);
-    if (!input) return;
-
-    const isPassword = input.type === 'password';
-    input.type = isPassword ? 'text' : 'password';
-    button.textContent = isPassword ? 'Ocultar' : 'Mostrar';
-}
-
-function handleCopyToClipboard(event) {
-    const button = event.target;
-    if (!button.matches('.copy-to-clipboard')) return;
-
-    const targetId = button.dataset.target;
-    const input = document.getElementById(targetId);
-    if (!input) return;
-
-    const text = input.value;
-    if (text === 'No configurada') {
-        showNotification('Esta clave no está configurada.', 'warning');
-        return;
-    }
-
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('Clave copiada al portapapeles.', 'success');
-    }).catch(err => {
-        showNotification('Error al copiar clave.', 'error');
-        console.error('Clipboard error:', err);
-    });
-}
 
 function setupSettingsListeners() {
     const closingTimeForm = document.getElementById('closing-time-form');
-    const apiKeysForm = document.getElementById('api-keys-form');
+    const createApiKeyForm = document.getElementById('create-api-key-form');
     const generalSettingsForm = document.getElementById('general-settings-form');
-    const settingsContainer = document.getElementById('settings-container');
 
     if (closingTimeForm) {
         closingTimeForm.addEventListener('submit', (e) => handleClosingTimeUpdate(e, e.target));
     }
-    if (apiKeysForm) {
-        apiKeysForm.addEventListener('submit', (e) => handleApiKeysUpdate(e, e.target));
+    if (createApiKeyForm) {
+        createApiKeyForm.addEventListener('submit', (e) => handleCreateApiKey(e, e.target));
     }
     if (generalSettingsForm) {
         generalSettingsForm.addEventListener('submit', (e) => handleGeneralSettingsUpdate(e, e.target));
     }
-    if (settingsContainer) {
-        settingsContainer.addEventListener('click', handleToggleVisibility);
-        settingsContainer.addEventListener('click', handleCopyToClipboard);
-    }
+
+    // Load existing API keys
+    loadApiKeys();
 }
