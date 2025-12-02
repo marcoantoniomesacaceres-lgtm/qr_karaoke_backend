@@ -4,62 +4,101 @@
 async function loadReportsPage() {
     const reportOutput = document.getElementById('report-output');
     if (reportOutput) {
-        reportOutput.innerHTML = '<p>Selecciona un tipo de reporte para ver los resultados.</p>';
+        reportOutput.innerHTML = '<p>Selecciona un tipo de reporte y haz clic en "Generar Reporte" para ver los resultados.</p>';
+    }
+    setupReportsListeners();
+}
+
+function setupReportsListeners() {
+    const generateBtn = document.getElementById('generate-report-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', handleReportGeneration);
     }
 }
 
-async function handleReportGeneration(event) {
-    const button = event.target;
-    if (!button.matches('.generate-report-btn')) return;
-
-    const reportType = button.dataset.reportType;
+async function handleReportGeneration() {
+    const selector = document.getElementById('report-selector');
     const reportOutput = document.getElementById('report-output');
-    if (!reportOutput) return;
+
+    if (!selector || !reportOutput) return;
+
+    const reportType = selector.value;
+    if (!reportType) {
+        reportOutput.innerHTML = '<p style="color: var(--warning-color);">Por favor selecciona un tipo de reporte.</p>';
+        return;
+    }
 
     reportOutput.innerHTML = '<p>Generando reporte...</p>';
 
     try {
         let endpoint = '';
         let dataProcessor = null;
-        let endpointPath = '';
 
         switch (reportType) {
-            case 'daily':
-                endpointPath = '/consumos/report/daily';
-                dataProcessor = processDailyReport;
-                break;
-            case 'weekly':
-                endpointPath = '/consumos/report/weekly';
-                dataProcessor = processWeeklyReport;
-                break;
-            case 'monthly':
-                endpointPath = '/consumos/report/monthly';
-                dataProcessor = processMonthlyReport;
-                break;
-            case 'accounts-summary':
-                endpointPath = '/consumos/report/accounts-summary';
-                dataProcessor = processAccountsSummary;
+            case 'top-songs':
+                endpoint = '/admin/reports/top-songs';
+                dataProcessor = processTopSongs;
                 break;
             case 'top-products':
-                endpointPath = '/consumos/report/top-products';
+                endpoint = '/admin/reports/top-products';
                 dataProcessor = processTopProducts;
                 break;
+            case 'total-income':
+                endpoint = '/admin/reports/total-income';
+                dataProcessor = processTotalIncome;
+                break;
+            case 'income-by-table':
+                endpoint = '/admin/reports/income-by-table';
+                dataProcessor = processIncomeByTable;
+                break;
+            case 'songs-by-table':
+                endpoint = '/admin/reports/songs-by-table';
+                dataProcessor = processSongsByTable;
+                break;
+            case 'songs-by-user':
+                endpoint = '/admin/reports/songs-by-user';
+                dataProcessor = processSongsByUser;
+                break;
+            case 'hourly-activity':
+                endpoint = '/admin/reports/hourly-activity';
+                dataProcessor = processHourlyActivity;
+                break;
+            case 'top-rejected-songs':
+                endpoint = '/admin/reports/top-rejected-songs';
+                dataProcessor = processTopRejectedSongs;
+                break;
+            case 'inactive-users':
+                endpoint = '/admin/reports/inactive-users';
+                dataProcessor = processInactiveUsers;
+                break;
             default:
-                reportOutput.innerHTML = '<p style="color: var(--error-color);">Tipo de reporte desconocido.</p>';
+                reportOutput.innerHTML = '<p style="color: var(--error-color);">Tipo de reporte no implementado aún.</p>';
                 return;
         }
 
         try {
-            const report = await apiFetch(endpointPath);
+            const report = await apiFetch(endpoint);
             const html = dataProcessor(report);
             reportOutput.innerHTML = html;
+
+            // Add PDF Button
+            const pdfBtn = document.createElement('button');
+            pdfBtn.textContent = 'Descargar PDF Oficial';
+            pdfBtn.className = 'form-btn';
+            pdfBtn.style.marginTop = '20px';
+            pdfBtn.style.maxWidth = '300px';
+            pdfBtn.style.backgroundColor = 'var(--secondary-color)';
+            pdfBtn.onclick = () => downloadPDF(reportType);
+
+            const btnContainer = document.createElement('div');
+            btnContainer.style.textAlign = 'center';
+            btnContainer.appendChild(pdfBtn);
+
+            reportOutput.appendChild(btnContainer);
+
         } catch (e) {
-            // Report endpoints may not exist in backend; show graceful message
-            if (e.message.includes('404')) {
-                reportOutput.innerHTML = `<p style="color: var(--warning-color);">El reporte "${reportType}" no está disponible en el servidor backend.</p>`;
-            } else {
-                throw e;
-            }
+            console.error("Error fetching report:", e);
+            reportOutput.innerHTML = `<p style="color: var(--error-color);">Error al obtener el reporte: ${e.message}</p>`;
         }
 
     } catch (error) {
@@ -67,33 +106,93 @@ async function handleReportGeneration(event) {
     }
 }
 
-function processDailyReport(report) {
-    if (!report || !report.data) return '<p>Sin datos.</p>';
+// --- Processors ---
 
-    const { data, date } = report;
-    const totalRevenue = data.reduce((sum, item) => sum + (item.total || 0), 0);
-    const totalTransactions = data.length;
+function processTopSongs(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de canciones cantadas.</p>';
 
     let html = `
         <div class="report-container">
-            <h3>Reporte Diario - ${date || 'Hoy'}</h3>
+            <h3>Top Canciones Más Cantadas</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Veces Cantada</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    data.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.titulo}</td>
+                <td>${item.veces_cantada}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function processTopProducts(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de productos vendidos.</p>';
+
+    let html = `
+        <div class="report-container">
+            <h3>Top Productos Más Consumidos</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    data.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.nombre}</td>
+                <td>${item.cantidad_total}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+function processTotalIncome(data) {
+    if (!data) return '<p>No hay datos de ingresos.</p>';
+
+    return `
+        <div class="report-container">
+            <h3>Ingresos Totales de la Noche</h3>
             <div class="report-summary">
                 <div class="summary-card">
-                    <span class="label">Ingresos Totales:</span>
-                    <span class="value">$${totalRevenue.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Transacciones:</span>
-                    <span class="value">${totalTransactions}</span>
+                    <span class="label">Total:</span>
+                    <span class="value">$${(data.ingresos_totales || 0).toFixed(2)}</span>
                 </div>
             </div>
+        </div>
+    `;
+}
+
+function processIncomeByTable(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de ingresos por mesa.</p>';
+
+    let html = `
+        <div class="report-container">
+            <h3>Ingresos por Mesa</h3>
             <table class="report-table">
                 <thead>
                     <tr>
                         <th>Mesa</th>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
+                        <th>Ingresos Totales</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,10 +201,8 @@ function processDailyReport(report) {
     data.forEach(item => {
         html += `
             <tr>
-                <td>Mesa ${item.mesa_numero || 'N/A'}</td>
-                <td>${item.producto_nombre || 'N/A'}</td>
-                <td>${item.cantidad || 0}</td>
-                <td>$${(item.total || 0).toFixed(2)}</td>
+                <td>${item.mesa_nombre}</td>
+                <td>$${(item.ingresos_totales || 0).toFixed(2)}</td>
             </tr>
         `;
     });
@@ -114,37 +211,17 @@ function processDailyReport(report) {
     return html;
 }
 
-function processWeeklyReport(report) {
-    if (!report || !report.data) return '<p>Sin datos.</p>';
-
-    const { data, week_start, week_end } = report;
-    const totalRevenue = data.reduce((sum, item) => sum + (item.total || 0), 0);
-    const avgDaily = totalRevenue / 7;
+function processSongsByTable(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de canciones por mesa.</p>';
 
     let html = `
         <div class="report-container">
-            <h3>Reporte Semanal - ${week_start} a ${week_end}</h3>
-            <div class="report-summary">
-                <div class="summary-card">
-                    <span class="label">Ingresos Totales:</span>
-                    <span class="value">$${totalRevenue.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Promedio Diario:</span>
-                    <span class="value">$${avgDaily.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Transacciones:</span>
-                    <span class="value">${data.length}</span>
-                </div>
-            </div>
+            <h3>Canciones por Mesa</h3>
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>Día</th>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
+                        <th>Mesa</th>
+                        <th>Canciones Cantadas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -153,10 +230,8 @@ function processWeeklyReport(report) {
     data.forEach(item => {
         html += `
             <tr>
-                <td>${item.fecha || 'N/A'}</td>
-                <td>${item.producto_nombre || 'N/A'}</td>
-                <td>${item.cantidad || 0}</td>
-                <td>$${(item.total || 0).toFixed(2)}</td>
+                <td>${item.mesa_nombre}</td>
+                <td>${item.canciones_cantadas}</td>
             </tr>
         `;
     });
@@ -165,37 +240,17 @@ function processWeeklyReport(report) {
     return html;
 }
 
-function processMonthlyReport(report) {
-    if (!report || !report.data) return '<p>Sin datos.</p>';
-
-    const { data, month, year } = report;
-    const totalRevenue = data.reduce((sum, item) => sum + (item.total || 0), 0);
-    const avgDaily = totalRevenue / 30;
+function processSongsByUser(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de canciones por usuario.</p>';
 
     let html = `
         <div class="report-container">
-            <h3>Reporte Mensual - ${month}/${year}</h3>
-            <div class="report-summary">
-                <div class="summary-card">
-                    <span class="label">Ingresos Totales:</span>
-                    <span class="value">$${totalRevenue.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Promedio Diario:</span>
-                    <span class="value">$${avgDaily.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Transacciones:</span>
-                    <span class="value">${data.length}</span>
-                </div>
-            </div>
+            <h3>Canciones por Usuario</h3>
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
+                        <th>Nick</th>
+                        <th>Canciones Cantadas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -204,10 +259,8 @@ function processMonthlyReport(report) {
     data.forEach(item => {
         html += `
             <tr>
-                <td>${item.fecha || 'N/A'}</td>
-                <td>${item.producto_nombre || 'N/A'}</td>
-                <td>${item.cantidad || 0}</td>
-                <td>$${(item.total || 0).toFixed(2)}</td>
+                <td>${item.nick}</td>
+                <td>${item.canciones_cantadas}</td>
             </tr>
         `;
     });
@@ -216,45 +269,27 @@ function processMonthlyReport(report) {
     return html;
 }
 
-function processAccountsSummary(report) {
-    if (!report || !report.accounts) return '<p>Sin datos.</p>';
-
-    const { accounts, total_balance } = report;
+function processHourlyActivity(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de actividad por hora.</p>';
 
     let html = `
         <div class="report-container">
-            <h3>Resumen de Cuentas</h3>
-            <div class="report-summary">
-                <div class="summary-card">
-                    <span class="label">Saldo Total:</span>
-                    <span class="value">$${total_balance.toFixed(2)}</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Cuentas:</span>
-                    <span class="value">${accounts.length}</span>
-                </div>
-            </div>
+            <h3>Actividad por Hora</h3>
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>Usuario</th>
-                        <th>Comisión</th>
-                        <th>Saldo Actual</th>
-                        <th>Pendiente</th>
-                        <th>Pagado</th>
+                        <th>Hora</th>
+                        <th>Canciones Cantadas</th>
                     </tr>
                 </thead>
                 <tbody>
     `;
 
-    accounts.forEach(account => {
+    data.forEach(item => {
         html += `
             <tr>
-                <td>${account.usuario || 'N/A'}</td>
-                <td>${account.comision_percentage || 0}%</td>
-                <td>$${(account.saldo_actual || 0).toFixed(2)}</td>
-                <td>$${(account.saldo_pendiente || 0).toFixed(2)}</td>
-                <td>$${(account.saldo_pagado || 0).toFixed(2)}</td>
+                <td>${item.hora}:00</td>
+                <td>${item.canciones_cantadas}</td>
             </tr>
         `;
     });
@@ -263,48 +298,27 @@ function processAccountsSummary(report) {
     return html;
 }
 
-function processTopProducts(report) {
-    if (!report || !report.products) return '<p>Sin datos.</p>';
-
-    const { products } = report;
-    const totalSold = products.reduce((sum, p) => sum + (p.cantidad || 0), 0);
-    const totalRevenue = products.reduce((sum, p) => sum + (p.total || 0), 0);
+function processTopRejectedSongs(data) {
+    if (!data || data.length === 0) return '<p>No hay datos de canciones rechazadas.</p>';
 
     let html = `
         <div class="report-container">
-            <h3>Productos Más Vendidos</h3>
-            <div class="report-summary">
-                <div class="summary-card">
-                    <span class="label">Total Vendido:</span>
-                    <span class="value">${totalSold} unidades</span>
-                </div>
-                <div class="summary-card">
-                    <span class="label">Ingresos:</span>
-                    <span class="value">$${totalRevenue.toFixed(2)}</span>
-                </div>
-            </div>
+            <h3>Canciones Más Rechazadas</h3>
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Total</th>
-                        <th>% del Total</th>
+                        <th>Título</th>
+                        <th>Veces Rechazada</th>
                     </tr>
                 </thead>
                 <tbody>
     `;
 
-    products.forEach(product => {
-        const percentage = totalRevenue > 0 ? ((product.total / totalRevenue) * 100).toFixed(1) : 0;
+    data.forEach(item => {
         html += `
             <tr>
-                <td>${product.nombre || 'N/A'}</td>
-                <td>${product.cantidad || 0}</td>
-                <td>$${(product.valor || 0).toFixed(2)}</td>
-                <td>$${(product.total || 0).toFixed(2)}</td>
-                <td>${percentage}%</td>
+                <td>${item.titulo}</td>
+                <td>${item.veces_rechazada}</td>
             </tr>
         `;
     });
@@ -313,9 +327,59 @@ function processTopProducts(report) {
     return html;
 }
 
-function setupReportsListeners() {
-    const reportButtons = document.querySelectorAll('.generate-report-btn');
-    reportButtons.forEach(btn => {
-        btn.addEventListener('click', handleReportGeneration);
+function processInactiveUsers(data) {
+    if (!data || data.length === 0) return '<p>No hay usuarios inactivos.</p>';
+
+    let html = `
+        <div class="report-container">
+            <h3>Usuarios Inactivos (Sin Consumo)</h3>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Nick</th>
+                        <th>Mesa</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    data.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.nick}</td>
+                <td>${item.mesa ? item.mesa.nombre : 'Sin mesa'}</td>
+            </tr>
+        `;
     });
+
+    html += '</tbody></table></div>';
+    return html;
+}
+
+
+async function downloadPDF(reportType) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/reports/export-pdf?report_type=${reportType}`, {
+            headers: {
+                'X-API-Key': apiKey
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al generar el PDF');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reporte_${reportType}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+    } catch (error) {
+        console.error('Error downloading PDF:', error);
+        alert('Error al descargar el PDF: ' + error.message);
+    }
 }

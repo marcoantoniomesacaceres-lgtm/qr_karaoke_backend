@@ -796,12 +796,12 @@ def get_night_summary(db: Session = Depends(get_db)):
     except Exception:
         usuarios_val = 0
 
-    return {
-        'ingresos_totales': ingresos_val,
-        'ganancias_totales': ganancias_val,
-        'canciones_cantadas': canciones_val,
-        'usuarios_activos': usuarios_val,
-    }
+    return schemas.ResumenNoche(
+        ingresos_totales=ingresos_val,
+        ganancias_totales=ganancias_val,
+        canciones_cantadas=canciones_val,
+        usuarios_activos=usuarios_val
+    )
 
 @router.get("/reports/table-consumption-summaries", response_model=List[schemas.MesaConsumoResumen], summary="Obtener resumen de consumo por mesa")
 def get_table_consumption_summaries_endpoint(db: Session = Depends(get_db)):
