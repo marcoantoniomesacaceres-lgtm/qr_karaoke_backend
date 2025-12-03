@@ -1,0 +1,216 @@
+2025-12-02 16:40:13,879 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-02 16:40:13,881 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-02 16:40:15,999 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-02 16:40:16,000 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-02 16:40:16,001 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-02 16:40:16,710 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-02 16:40:16,724 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-02 16:40:16,727 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'U9GFert9tkU', '5yLGjXTF6MY', 'Fs_BnnaEUts', 'b5WU3czhh3I', 'bY61n7lwzrY', 'xnO-49PvGCY', 'aJ5wyBE9M_0', '6mysi-heljE']
+2025-12-02 16:40:16,733 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-02 16:40:16,925 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2Cb5WU3czhh3I%2CbY61n7lwzrY%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2C6mysi-heljE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-02 16:40:16,933 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-02 16:40:16,935 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:06:50,490 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Candie' (Karaoke Mode: False)
+2025-12-03 16:06:50,499 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Candie' (Karaoke Mode: False)
+2025-12-03 16:06:52,562 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:06:52,563 - youtube - INFO - Búsqueda por texto: 'Candie'
+2025-12-03 16:06:52,564 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:06:53,299 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Candie&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:06:53,318 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:06:53,321 - youtube - INFO - IDs de video encontrados: ['k8nxe6UE1gY', 'U_38JJ_i59o', '6bLOjmY--TA', '63FiMcdTQYE', 'wVcXDbRJ79w', 'gtOV7bp-gys', 'LE7RBl2YfOg', '8gqcTRP6uu0', 'g1owkXXZWjI', 'y-do1EFPZ-8']
+2025-12-03 16:06:53,331 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:06:53,548 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=k8nxe6UE1gY%2CU_38JJ_i59o%2C6bLOjmY--TA%2C63FiMcdTQYE%2CwVcXDbRJ79w%2CgtOV7bp-gys%2CLE7RBl2YfOg%2C8gqcTRP6uu0%2Cg1owkXXZWjI%2Cy-do1EFPZ-8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:06:53,554 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:06:53,556 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:07:15,954 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Candie cane' (Karaoke Mode: False)
+2025-12-03 16:07:15,956 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Candie cane' (Karaoke Mode: False)
+2025-12-03 16:07:17,565 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:07:17,566 - youtube - INFO - Búsqueda por texto: 'Candie cane'
+2025-12-03 16:07:17,568 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:07:18,484 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Candie+cane&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:07:18,490 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:07:18,491 - youtube - INFO - IDs de video encontrados: ['Fw_boFTjN7g', 'ElmsIGT85tI', 'vSh8E4_SYds', '-LK3sav17zc', '1YNzP7kr_Ow', 'cRe53PufeEU', '6VUkBk7Ga1o', 'kkWz5mLuLR8', 'rb2Et9qYo44', '-SBSa4N1VGE']
+2025-12-03 16:07:18,494 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:07:18,708 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=Fw_boFTjN7g%2CElmsIGT85tI%2CvSh8E4_SYds%2C-LK3sav17zc%2C1YNzP7kr_Ow%2CcRe53PufeEU%2C6VUkBk7Ga1o%2CkkWz5mLuLR8%2Crb2Et9qYo44%2C-SBSa4N1VGE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:07:18,718 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:07:18,721 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:09:02,942 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Candie cane' (Karaoke Mode: True)
+2025-12-03 16:09:02,946 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Candie cane' (Karaoke Mode: True)
+2025-12-03 16:09:04,522 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:09:04,523 - youtube - INFO - Búsqueda por texto: 'Candie cane karaoke'
+2025-12-03 16:09:04,524 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:09:05,204 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Candie+cane+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:09:05,220 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:09:05,224 - youtube - INFO - IDs de video encontrados: ['Avdlg6fTMxM', 'vSh8E4_SYds', 'egttO8_1TkM', 'd9S6WXjijkI', '_R9Ybr9GQzw', 'Fa7RD0tZam8', 'ZUwmvH7IREU', 'EcW0YU9E19Q', 'Hkxy6Dq2tG8', '0thYZ53gUa0']
+2025-12-03 16:09:05,228 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:09:05,426 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=Avdlg6fTMxM%2CvSh8E4_SYds%2CegttO8_1TkM%2Cd9S6WXjijkI%2C_R9Ybr9GQzw%2CFa7RD0tZam8%2CZUwmvH7IREU%2CEcW0YU9E19Q%2CHkxy6Dq2tG8%2C0thYZ53gUa0&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:09:05,434 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:09:05,436 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:09:14,525 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Candie cane' (Karaoke Mode: False)
+2025-12-03 16:09:14,528 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Candie cane' (Karaoke Mode: False)
+2025-12-03 16:09:16,182 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:09:16,183 - youtube - INFO - Búsqueda por texto: 'Candie cane'
+2025-12-03 16:09:16,183 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:09:16,993 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Candie+cane&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:09:17,003 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:09:17,004 - youtube - INFO - IDs de video encontrados: ['Fw_boFTjN7g', '-LK3sav17zc', 'vSh8E4_SYds', 'ElmsIGT85tI', 'cRe53PufeEU', '1YNzP7kr_Ow', '6VUkBk7Ga1o', 'kkWz5mLuLR8', 'rb2Et9qYo44', 'y7ZgQxBkfxc']
+2025-12-03 16:09:17,005 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:09:17,261 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=Fw_boFTjN7g%2C-LK3sav17zc%2CvSh8E4_SYds%2CElmsIGT85tI%2CcRe53PufeEU%2C1YNzP7kr_Ow%2C6VUkBk7Ga1o%2CkkWz5mLuLR8%2Crb2Et9qYo44%2Cy7ZgQxBkfxc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:09:17,300 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:09:17,305 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:10:07,069 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Candie cane' (Karaoke Mode: True)
+2025-12-03 16:10:07,072 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Candie cane' (Karaoke Mode: True)
+2025-12-03 16:10:08,527 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:10:08,528 - youtube - INFO - Búsqueda por texto: 'Candie cane karaoke'
+2025-12-03 16:10:08,529 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:10:09,151 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Candie+cane+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:10:09,157 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:10:09,180 - youtube - INFO - IDs de video encontrados: ['Avdlg6fTMxM', 'vSh8E4_SYds', 'egttO8_1TkM', 'd9S6WXjijkI', '_R9Ybr9GQzw', 'Fa7RD0tZam8', 'ZUwmvH7IREU', 'EcW0YU9E19Q', 'Hkxy6Dq2tG8', '0thYZ53gUa0']
+2025-12-03 16:10:09,187 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:10:09,432 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=Avdlg6fTMxM%2CvSh8E4_SYds%2CegttO8_1TkM%2Cd9S6WXjijkI%2C_R9Ybr9GQzw%2CFa7RD0tZam8%2CZUwmvH7IREU%2CEcW0YU9E19Q%2CHkxy6Dq2tG8%2C0thYZ53gUa0&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:10:09,441 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:10:09,442 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:10:20,417 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Amor' (Karaoke Mode: False)
+2025-12-03 16:10:20,420 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Amor' (Karaoke Mode: False)
+2025-12-03 16:10:21,881 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:10:21,882 - youtube - INFO - Búsqueda por texto: 'Amor'
+2025-12-03 16:10:21,883 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:10:22,461 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Amor&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:10:22,468 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:10:22,469 - youtube - INFO - IDs de video encontrados: ['2C29r956v40', 'IqqehZgVA48', 'UIzJqELJM_w', 'yExp857bijc', 'b-XkexlmElM', 'Tz7NYnAWGwc', 'qWJMm0MaF8A', 'Ix_5l2QuNCU', 'v1cyMWcoh6M', '_8lEg28u9XM']
+2025-12-03 16:10:22,471 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:10:22,675 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=2C29r956v40%2CIqqehZgVA48%2CUIzJqELJM_w%2CyExp857bijc%2Cb-XkexlmElM%2CTz7NYnAWGwc%2CqWJMm0MaF8A%2CIx_5l2QuNCU%2Cv1cyMWcoh6M%2C_8lEg28u9XM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:10:22,699 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:10:22,704 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:11:29,827 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Mexicana' (Karaoke Mode: False)
+2025-12-03 16:11:29,831 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Mexicana' (Karaoke Mode: False)
+2025-12-03 16:11:31,287 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:11:31,288 - youtube - INFO - Búsqueda por texto: 'Mexicana'
+2025-12-03 16:11:31,288 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:11:31,957 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Mexicana&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:11:31,975 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:11:31,981 - youtube - INFO - IDs de video encontrados: ['XWd7MR-fpUc', '1WPWhghNipM', 'GcebTHGT8zU', 'HEi7DYfYIXg', 'AHxrzSLigr4', 'nNUiVCKu_9Y', '-umBG1o3kus', '39kMo2cddgQ', 'HWpTURiR9bw', '1a3REFH83WA']
+2025-12-03 16:11:31,984 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:11:32,182 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=XWd7MR-fpUc%2C1WPWhghNipM%2CGcebTHGT8zU%2CHEi7DYfYIXg%2CAHxrzSLigr4%2CnNUiVCKu_9Y%2C-umBG1o3kus%2C39kMo2cddgQ%2CHWpTURiR9bw%2C1a3REFH83WA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:11:32,192 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:11:32,193 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:11:34,402 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Mexicana' (Karaoke Mode: True)
+2025-12-03 16:11:34,405 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Mexicana' (Karaoke Mode: True)
+2025-12-03 16:11:35,886 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:11:35,887 - youtube - INFO - Búsqueda por texto: 'Mexicana karaoke'
+2025-12-03 16:11:35,888 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:11:36,493 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Mexicana+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:11:36,502 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:11:36,505 - youtube - INFO - IDs de video encontrados: ['GgAJOEkji1A', 'vLby5OtNuAY', 'i6CBH_jDkD8', 'K4HvVN1lVAQ', 'LJ1CZDSyVUQ', '53vh9RhaSc8', 'E7Aw_VHRpTc', 'ul1f-I6gg2E', '-HZ-tLcPjeQ', 'ghu42vOeYHc']
+2025-12-03 16:11:36,508 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:11:36,703 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=GgAJOEkji1A%2CvLby5OtNuAY%2Ci6CBH_jDkD8%2CK4HvVN1lVAQ%2CLJ1CZDSyVUQ%2C53vh9RhaSc8%2CE7Aw_VHRpTc%2Cul1f-I6gg2E%2C-HZ-tLcPjeQ%2Cghu42vOeYHc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:11:36,727 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:11:36,757 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:13:37,249 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Toca' (Karaoke Mode: False)
+2025-12-03 16:13:37,253 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Toca' (Karaoke Mode: False)
+2025-12-03 16:13:38,711 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:13:38,712 - youtube - INFO - Búsqueda por texto: 'Toca'
+2025-12-03 16:13:38,713 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:13:39,281 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Toca&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:13:39,302 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:13:39,303 - youtube - INFO - IDs de video encontrados: ['L5GwTfI_PD8', 'kLmI5kKwjeA', 'BB3OGwplrLo', '6unPv_L7oA4', '-w2g-SJwnPs', 'm3SQWseU498', 'eJ79zh-T8zw', '3SCixOtp_Mg', 'u-jrWqdH344', '6V_TrP9Zqcs', 'f3jmCN76ZeE', 'uujJP41x-6Y', '2DFKIllyMOY', 'rKMbkuIMQwk', 'Xvk-07AEOLk', 'zFs3sRzltSs', 'wvEm-KHAwho', 'SLO4xIEB0fU', 'T-fVXh2KHxM', '7b6Jxuf03dQ', 'tyyMDMzBdak', 'lR-bK2ztOjU', '-vOgEO13FYA', 'P_mKcLyOdMc', 'lptl5T6reA4']
+2025-12-03 16:13:39,308 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:13:39,573 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=L5GwTfI_PD8%2CkLmI5kKwjeA%2CBB3OGwplrLo%2C6unPv_L7oA4%2C-w2g-SJwnPs%2Cm3SQWseU498%2CeJ79zh-T8zw%2C3SCixOtp_Mg%2Cu-jrWqdH344%2C6V_TrP9Zqcs%2Cf3jmCN76ZeE%2CuujJP41x-6Y%2C2DFKIllyMOY%2CrKMbkuIMQwk%2CXvk-07AEOLk%2CzFs3sRzltSs%2CwvEm-KHAwho%2CSLO4xIEB0fU%2CT-fVXh2KHxM%2C7b6Jxuf03dQ%2CtyyMDMzBdak%2ClR-bK2ztOjU%2C-vOgEO13FYA%2CP_mKcLyOdMc%2Clptl5T6reA4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:13:39,611 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:13:39,614 - youtube - INFO - Procesamiento finalizado. Se encontraron 25 resultados formateados.
+2025-12-03 16:13:49,660 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Toca' (Karaoke Mode: True)
+2025-12-03 16:13:49,664 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Toca' (Karaoke Mode: True)
+2025-12-03 16:13:51,234 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:13:51,236 - youtube - INFO - Búsqueda por texto: 'Toca karaoke'
+2025-12-03 16:13:51,236 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:13:51,863 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Toca+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:13:51,868 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:13:51,870 - youtube - INFO - IDs de video encontrados: ['6mLsBHUSyQA', 'b-cum4jpd-8', 'Gc_pV6K_w08', '3SCixOtp_Mg', 'm3SQWseU498', '-w2g-SJwnPs', 'Dlx2XEMEzNs', 'DyPKE-p87RI', 'VCvxbjNDYbE', '44l-b5QYb3A']
+2025-12-03 16:13:51,872 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:13:52,068 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6mLsBHUSyQA%2Cb-cum4jpd-8%2CGc_pV6K_w08%2C3SCixOtp_Mg%2Cm3SQWseU498%2C-w2g-SJwnPs%2CDlx2XEMEzNs%2CDyPKE-p87RI%2CVCvxbjNDYbE%2C44l-b5QYb3A&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:13:52,101 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:13:52,105 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:14:10,631 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Toca ser feliz' (Karaoke Mode: True)
+2025-12-03 16:14:10,633 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Toca ser feliz' (Karaoke Mode: True)
+2025-12-03 16:14:12,083 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:14:12,084 - youtube - INFO - Búsqueda por texto: 'Toca ser feliz karaoke'
+2025-12-03 16:14:12,085 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:14:12,620 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Toca+ser+feliz+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:14:12,634 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:14:12,638 - youtube - INFO - IDs de video encontrados: ['a1k7DR1-pIw', 'Yx3oYynun_c', '7N8JkWZaxKo', 'abLwErDrwJc', 'nh2_ddwSJ88', 'qDbG50f35N0', 'LJkgOFSEWIE', 'bSWZyj_UaZw', 'ypUriIvn-Dk', '6joQo7bFZy0']
+2025-12-03 16:14:12,641 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:14:12,872 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=a1k7DR1-pIw%2CYx3oYynun_c%2C7N8JkWZaxKo%2CabLwErDrwJc%2Cnh2_ddwSJ88%2CqDbG50f35N0%2CLJkgOFSEWIE%2CbSWZyj_UaZw%2CypUriIvn-Dk%2C6joQo7bFZy0&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:14:12,886 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:14:12,889 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:33:44,360 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:33:44,362 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:33:45,915 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:33:45,916 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:33:45,917 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:33:46,550 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:33:46,558 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:33:46,560 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:33:46,564 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:33:46,740 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:33:46,773 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:33:46,775 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:33:46,790 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:33:46,792 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:33:48,326 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:33:48,327 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:33:48,328 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:33:48,935 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:33:48,939 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:33:48,940 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:33:48,943 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:33:49,123 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:33:49,134 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:33:49,139 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:33:49,154 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:33:49,156 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:33:50,614 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:33:50,615 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:33:50,616 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:33:51,348 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:33:51,381 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:33:51,384 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:33:51,386 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:33:51,591 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:33:51,632 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:33:51,635 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:33:51,695 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:33:51,698 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:33:53,322 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:33:53,324 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:33:53,325 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:33:53,951 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:33:53,959 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:33:53,961 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:33:53,966 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:33:54,186 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:33:54,195 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:33:54,197 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:57:31,483 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:57:31,484 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:57:33,284 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:57:33,285 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:57:33,286 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:57:33,841 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:57:33,856 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:57:33,860 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:57:33,865 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:57:34,047 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:57:34,076 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:57:34,080 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-03 16:58:12,735 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-03 16:58:12,736 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-03 16:58:14,204 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-03 16:58:14,205 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-03 16:58:14,206 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-03 16:58:14,739 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-03 16:58:14,750 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-03 16:58:14,754 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '1wC6r7L1RvA', 'rERCTLp4CK8', 'Aq-sYtNzyfE']
+2025-12-03 16:58:14,758 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-03 16:58:14,967 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-03 16:58:14,996 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-03 16:58:15,002 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

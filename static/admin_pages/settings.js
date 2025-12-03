@@ -137,7 +137,7 @@ async function loadApiKeys() {
     if (!apiKeysList) return;
 
     try {
-        const keys = await apiFetch('/api/v1/admin/api-keys');
+        const keys = await apiFetch('/admin/api-keys');
 
         if (!keys || keys.length === 0) {
             apiKeysList.innerHTML = '<p style="color: var(--text-secondary);">No hay claves creadas todavía.</p>';
@@ -183,7 +183,7 @@ async function handleCreateApiKey(event, form) {
     const data = Object.fromEntries(formData.entries());
 
     try {
-        const newKey = await apiFetch('/api/v1/admin/api-keys', {
+        const newKey = await apiFetch('/admin/api-keys', {
             method: 'POST',
             body: JSON.stringify(data)
         });
@@ -225,7 +225,7 @@ async function handleDeleteApiKey(keyId) {
     }
 
     try {
-        await apiFetch(`/api/v1/admin/api-keys/${keyId}`, { method: 'DELETE' });
+        await apiFetch(`/admin/api-keys/${keyId}`, { method: 'DELETE' });
         showNotification('Clave eliminada con éxito.', 'success');
         await loadApiKeys();
     } catch (error) {

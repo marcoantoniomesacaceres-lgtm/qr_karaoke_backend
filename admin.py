@@ -118,6 +118,20 @@ def get_autoplay_status(db: Session = Depends(get_db)):
     current_value = config.settings.AUTOPLAY_ENABLED
     return {"autoplay_status": current_value}
 
+@router.post("/broadcast-message", status_code=202, summary="Enviar mensaje global a todos los usuarios")
+async def broadcast_message(notificacion: schemas.Notificacion, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Envía un mensaje de notificación global a todas las pantallas conectadas
+    (usuarios y reproductor) mediante WebSocket.
+    """
+    import asyncio
+    # Enviamos la notificación en segundo plano
+    asyncio.create_task(
+        websocket_manager.manager.broadcast_notification(notificacion.mensaje)
+    )
+    crud.create_admin_log_entry(db, action="BROADCAST_MESSAGE", details=f"Mensaje enviado: '{notificacion.mensaje}'")
+    return {"message": "Mensaje enviado a todos los usuarios."}
+
 
 @router.get("/reports/top-songs", response_model=List[schemas.CancionMasCantada], summary="Obtener las canciones más cantadas")
 def get_top_songs_report(db: Session = Depends(get_db), limit: int = 10):

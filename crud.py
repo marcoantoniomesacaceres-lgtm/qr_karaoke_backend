@@ -1788,3 +1788,21 @@ def delete_admin_api_key(db: Session, key_id: int):
         db.delete(db_key)
         db.commit()
     return db_key
+
+def get_admin_api_key(db: Session, key: str):
+    """
+    Retrieves an admin API key by its key value.
+    Updates the last_used timestamp when found.
+    Returns the key object if found and active, None otherwise.
+    """
+    db_key = db.query(models.AdminApiKey).filter(
+        models.AdminApiKey.key == key,
+        models.AdminApiKey.is_active == True
+    ).first()
+    
+    if db_key:
+        # Update last_used timestamp
+        db_key.last_used = datetime.datetime.utcnow()
+        db.commit()
+    
+    return db_key
