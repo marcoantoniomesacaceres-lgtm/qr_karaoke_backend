@@ -72,9 +72,9 @@ def startup_event():
         mesa_existente = crud.get_mesa_by_qr(db, mesa_data["qr_code"])
         if not mesa_existente:
             crud.create_mesa(db=db, mesa=schemas.MesaCreate(**mesa_data))
-            print(f"✅ Mesa creada: {mesa_data['nombre']} ({mesa_data['qr_code']})")
+            print(f"[OK] Mesa creada: {mesa_data['nombre']} ({mesa_data['qr_code']})")
         else:
-            print(f"ℹ️ Mesa ya existente: {mesa_data['nombre']} ({mesa_data['qr_code']})")
+            print(f"[INFO] Mesa ya existente: {mesa_data['nombre']} ({mesa_data['qr_code']})")
     db.close()
 
 @app.get("/", response_class=FileResponse, include_in_schema=False)

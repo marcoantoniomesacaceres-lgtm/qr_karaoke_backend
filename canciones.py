@@ -1,4 +1,4 @@
-import os
+﻿import os
 import datetime
 import asyncio
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -198,15 +198,16 @@ def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):
 async def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depends(get_db)):
     """
     [Usuario] Elimina una canción de su propia lista.
-    Solo se puede eliminar si la canción pertenece al usuario y está en estado 'pendiente'.
+    Solo se puede eliminar si la canción pertenece al usuario y está en estado 'pendiente' o 'aprobado'.
+    No se puede eliminar si ya está 'reproduciendo' o 'cantada'.
     """
     db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id, models.Cancion.usuario_id == usuario_id).first()
 
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada o no te pertenece.")
-    if db_cancion.estado != 'pendiente':
-        raise HTTPException(status_code=400, detail="No se puede eliminar una canción que ya ha sido procesada.")
+    if db_cancion.estado not in ['pendiente', 'aprobado']:
+        raise HTTPException(status_code=400, detail="No se puede eliminar una canción que ya está reproduciendo o ha sido cantada.")
 
     crud.delete_cancion(db, cancion_id=cancion_id)
-    await websocket_manager.manager.broadcast_queue_update() # Notificar por si estaba en la cola de pendientes
+    await websocket_manager.manager.broadcast_queue_update() # Notificar actualización de la cola
     return Response(status_code=204) 
