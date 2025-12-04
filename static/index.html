@@ -1518,6 +1518,12 @@
                 });
             }
 
+            // Event listener para eliminar canciones de "Mi Lista"
+            const mySongList = document.getElementById('my-song-list');
+            if (mySongList) {
+                mySongList.addEventListener('click', handleDeleteSong);
+            }
+
         });
     </script>
 
