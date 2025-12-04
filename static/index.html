@@ -914,6 +914,9 @@
                         showNotification(data.payload.mensaje);
                     } else if (data.type === 'product_update') {
                         fetchProducts(); // Recargamos el catálogo de productos
+                    } else if (data.type === 'queue_update') {
+                        // Actualización de la cola de canciones
+                        renderQueue(data.payload);
                     } else if (data.type === 'song_finished') {
                         fetchMyList(); // Recargamos la lista para ver el puntaje
                     } else if (data.type === 'consumo_deleted' || data.type === 'consumo_created') {

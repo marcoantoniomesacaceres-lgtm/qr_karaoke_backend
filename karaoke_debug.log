@@ -214,3 +214,27 @@
 2025-12-03 16:58:14,967 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C1wC6r7L1RvA%2CrERCTLp4CK8%2CAq-sYtNzyfE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-03 16:58:14,996 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-03 16:58:15,002 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-04 10:57:26,174 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-04 10:57:26,177 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-04 10:57:28,164 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-04 10:57:28,164 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-04 10:57:28,165 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-04 10:57:28,761 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-04 10:57:28,767 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-04 10:57:28,768 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '2JbrCXDNGcA', 'Aq-sYtNzyfE', '1wC6r7L1RvA']
+2025-12-04 10:57:28,770 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-04 10:57:28,974 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C2JbrCXDNGcA%2CAq-sYtNzyfE%2C1wC6r7L1RvA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-04 10:57:29,004 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-04 10:57:29,012 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-04 10:57:42,210 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: True)
+2025-12-04 10:57:42,219 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: True)
+2025-12-04 10:57:43,868 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-04 10:57:43,869 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas karaoke'
+2025-12-04 10:57:43,870 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-04 10:57:44,411 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas+karaoke&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-04 10:57:44,424 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-04 10:57:44,440 - youtube - INFO - IDs de video encontrados: ['k1ezpneMEA8', '1a3REFH83WA', '4Ez2wJnlwag', 'rbk6SCnHzLc', 'DjfaCC3ZKs8', 'ftfeDRZA5iE', '6kYEW6oQfpw', 'xQ53GU2-_o8', 'Q8OXzbVITd8', 'qgKkTvvTdbY']
+2025-12-04 10:57:44,447 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-04 10:57:44,673 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=k1ezpneMEA8%2C1a3REFH83WA%2C4Ez2wJnlwag%2Crbk6SCnHzLc%2CDjfaCC3ZKs8%2CftfeDRZA5iE%2C6kYEW6oQfpw%2CxQ53GU2-_o8%2CQ8OXzbVITd8%2CqgKkTvvTdbY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-04 10:57:44,682 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-04 10:57:44,684 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
