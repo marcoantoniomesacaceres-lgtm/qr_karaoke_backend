@@ -1,9 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Karaoke 'LA CANTA QUE RANA'</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karaoke 'LA CANTA QUE RANA'</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -11,8 +12,22 @@
             background-color: #121212;
             color: #e0e0e0;
         }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .login-view { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .login-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
         .login-box {
             background-color: #1e1e1e;
             padding: 2em;
@@ -21,8 +36,16 @@
             max-width: 400px;
             width: 100%;
         }
-        h1, h2 { color: #4CAF50; }
-        p { color: #b0b0b0; }
+
+        h1,
+        h2 {
+            color: #4CAF50;
+        }
+
+        p {
+            color: #b0b0b0;
+        }
+
         input {
             width: calc(100% - 24px);
             padding: 10px;
@@ -33,6 +56,7 @@
             color: #fff;
             font-size: 1em;
         }
+
         button {
             padding: 12px;
             background-color: #4CAF50;
@@ -44,39 +68,161 @@
             font-weight: bold;
             transition: background-color 0.3s;
         }
-        button:hover:not(:disabled) { background-color: #45a049; }
+
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
         button:disabled {
             background-color: #555;
             cursor: not-allowed;
         }
-        .error-msg { color: #ff4d4d; margin-top: 1em; min-height: 1.2em; }
+
+        .error-msg {
+            color: #ff4d4d;
+            margin-top: 1em;
+            min-height: 1.2em;
+        }
+
         .hidden {
             display: none;
         }
-        .tabs { display: flex; border-bottom: 1px solid #333; margin-bottom: 20px; }
-        .tab-button { background: none; border: none; color: #aaa; padding: 15px 20px; cursor: pointer; font-size: 1em; }
-        .tab-button.active { color: #4CAF50; border-bottom: 2px solid #4CAF50; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .song-list { list-style: none; padding: 0; }
-        .song-item { background-color: #1e1e1e; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .song-item-info { display: flex; align-items: center; gap: 15px; }
-        .song-item img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
-        .song-title { font-weight: bold; }
-        .song-status { font-size: 0.8em; padding: 4px 8px; border-radius: 12px; color: #121212; }
-        .status-pendiente { background-color: #ffc107; }
-        .status-aprobado { background-color: #28a745; }
-        .status-reproduciendo { background-color: #17a2b8; animation: pulse 1.5s infinite; }
-        .status-cantada { background-color: #6c757d; }
-        .status-rechazada { background-color: #dc3545; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(23, 162, 184, 0); } 100% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0); } }
-        .profile-card { background-color: #1e1e1e; padding: 20px; border-radius: 8px; text-align: center; }
-        .profile-card h3 { margin-top: 0; }
-        .profile-level { font-size: 1.2em; font-weight: bold; }
-        .level-bronce { color: #cd7f32; }
-        .level-plata { color: #c0c0c0; }
-        .level-oro { color: #ffd700; }
-        #search-results { max-height: 400px; overflow-y: auto; }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            color: #aaa;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .tab-button.active {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .song-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .song-item {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .song-item-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .song-item img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .song-title {
+            font-weight: bold;
+        }
+
+        .song-status {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            border-radius: 12px;
+            color: #121212;
+        }
+
+        .status-pendiente {
+            background-color: #ffc107;
+        }
+
+        .status-aprobado {
+            background-color: #28a745;
+        }
+
+        .status-reproduciendo {
+            background-color: #17a2b8;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-cantada {
+            background-color: #6c757d;
+        }
+
+        .status-rechazada {
+            background-color: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(23, 162, 184, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(23, 162, 184, 0);
+            }
+        }
+
+        .profile-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .profile-card h3 {
+            margin-top: 0;
+        }
+
+        .profile-level {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .level-bronce {
+            color: #cd7f32;
+        }
+
+        .level-plata {
+            color: #c0c0c0;
+        }
+
+        .level-oro {
+            color: #ffd700;
+        }
+
+        #search-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
         #notification-banner {
             position: fixed;
             top: -100px;
@@ -86,150 +232,325 @@
             color: white;
             padding: 15px 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             transition: top 0.5s ease-in-out;
             z-index: 1000;
         }
+
         /* Estilos para el Catálogo de Productos */
         .product-catalog-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
         }
+
         .product-card {
             background-color: #1e1e1e;
             border-radius: 8px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
-        .product-card img { width: 100%; height: 150px; object-fit: cover; background-color: #333; }
-        .product-card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .product-card-title { font-size: 1.1em; font-weight: bold; margin: 0 0 5px 0; }
-        .product-card-category { font-size: 0.8em; color: #aaa; margin-bottom: 10px; }
-        .product-card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
-        .product-price { font-size: 1.2em; font-weight: bold; color: #bb86fc; }
-        .product-card .order-btn { background-color: #bb86fc; font-size: 0.9em; padding: 8px 16px; }
+
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background-color: #333;
+        }
+
+        .product-card-body {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+
+        .product-card-category {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .product-card-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #bb86fc;
+        }
+
+        .product-card .order-btn {
+            background-color: #bb86fc;
+            font-size: 0.9em;
+            padding: 8px 16px;
+        }
 
         /* Estilos para el Modal de Confirmación */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: #1e1e1e; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
-        .modal-content h3 { margin-top: 0; color: #bb86fc; }
-        .modal-content label { display: block; margin: 15px 0 5px 0; }
-        .modal-content input[type="number"] { text-align: center; width: 80px; }
-        .modal-actions { margin-top: 20px; display: flex; justify-content: space-around; }
-        .modal-actions button { width: 120px; }
-        .btn-confirm { background-color: #4CAF50; }
-        .btn-cancel { background-color: #6c757d; }
-        #notification.error {
-        .order-item .cancel-btn {
-            background-color: #cf6679; /* Rojo suave */
-        }
-        .order-item .cancel-btn:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-            background-color: #cf6679;
-            color: #121212;
-        }
-        #notification.success {
-            background-color: #66bb6a;
-            color: #121212;
-        }
-        /* Estilos para el boton confirmar pedido */
-        #cart-fab {
+        .modal-overlay {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            background-color: #bb86fc;
-            color: #121212;
-            height: 60px;
-            border-radius: 8px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-size: 1em;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1500;
-            transition: transform 0.2s;
-        }
-        #cart-fab:hover { transform: scale(1.1); }
-        #cart-count { position: absolute; top: 0; right: 0; background: #f44336; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .modal-content .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #333; }
-        .modal-content .cart-item-name { flex-grow: 1; }
-
-        /* Estilos para las reacciones con emoticonos */
-        .reaction-container {
-            position: fixed;
-            bottom: 0;
-            right: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Para que no interfiera con los clics */
-            overflow: hidden;
-            z-index: 9999;
-        }
-        .reaction-emoji {
-            position: absolute;
-            bottom: -50px; /* Empieza fuera de la pantalla */
-            font-size: 3rem;
-            animation: float-up 5s ease-out forwards;
-        }
-        @keyframes float-up {
-            to { bottom: 100%; transform: translateX(var(--tx, 0)) scale(1.5); opacity: 0; }
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
         }
 
-        /* Estilos para la sección "Mis Cuentas" */
-        .account-view { background-color: #1e1e1e; padding: 20px; border-radius: 8px; }
-        .account-summary { font-size: 1.1em; line-height: 1.6; }
-        .account-summary strong { font-size: 1.2em; }
-        .saldo-pendiente { font-size: 1.3em !important; font-weight: bold; }
-        .saldo-ok { color: #66bb6a; }
-        .saldo-debe { color: #cf6679; }
-        .details-section {
-            margin-top: 15px;
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 250px;
-            overflow-y: auto;
+        .modal-content {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
-        /* Estilos para la sección "Mi Consumo" */
-        .account-view {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            display: flex; /* Added for consistent layout with admin dashboard */
-            flex-direction: column; /* Added for consistent layout with admin dashboard */
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #bb86fc;
         }
-        .account-summary {
-            margin-bottom: 15px;
-            font-size: 1.1em;
+
+        .modal-content label {
+            display: block;
+            margin: 15px 0 5px 0;
         }
-        .account-summary div { margin-bottom: 8px; }
-        .saldo-pendiente { font-size: 1.3em; font-weight: bold; }
-        .saldo-ok { color: #66bb6a; } /* Using existing success color */
-        .saldo-debe { color: #cf6679; } /* Using existing error color */
-        .details-section {
-            margin-top: 15px;
-            background-color: #2a2a2a;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 250px; /* Adjusted for user dashboard */
-            overflow-y: auto;
+
+        .modal-content input[type="number"] {
+            text-align: center;
+            width: 80px;
         }
-        .details-section h4 { margin-top: 0; color: #bb86fc; }
-        .details-section .item-list li {
-            padding: 8px 4px;
-            border-bottom: 1px dotted #444;
-            font-size: 0.95em;
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
         }
+
+        .modal-actions button {
+            width: 120px;
+        }
+
+        .btn-confirm {
+            background-color: #4CAF50;
+        }
+
+        .btn-cancel {
+            background-color: #6c757d;
+        }
+
+        #notification.error {
+            .order-item .cancel-btn {
+                background-color: #cf6679;
+                /* Rojo suave */
+            }
+
+            .order-item .cancel-btn:disabled {
+                background-color: #555;
+                cursor: not-allowed;
+                background-color: #cf6679;
+                color: #121212;
+            }
+
+            #notification.success {
+                background-color: #66bb6a;
+                color: #121212;
+            }
+
+            /* Estilos para el boton confirmar pedido */
+            #cart-fab {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                background-color: #bb86fc;
+                color: #121212;
+                height: 60px;
+                border-radius: 8px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                font-size: 1em;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                z-index: 1500;
+                transition: transform 0.2s;
+            }
+
+            #cart-fab:hover {
+                transform: scale(1.1);
+            }
+
+            #cart-count {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background: #f44336;
+                color: white;
+                border-radius: 50%;
+                width: 22px;
+                height: 22px;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+            }
+
+            .modal-content .cart-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #333;
+            }
+
+            .modal-content .cart-item-name {
+                flex-grow: 1;
+            }
+
+            /* Estilos para las reacciones con emoticonos */
+            .reaction-container {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                /* Para que no interfiera con los clics */
+                overflow: hidden;
+                z-index: 9999;
+            }
+
+            .reaction-emoji {
+                position: absolute;
+                bottom: -50px;
+                /* Empieza fuera de la pantalla */
+                font-size: 3rem;
+                animation: float-up 5s ease-out forwards;
+            }
+
+            @keyframes float-up {
+                to {
+                    bottom: 100%;
+                    transform: translateX(var(--tx, 0)) scale(1.5);
+                    opacity: 0;
+                }
+            }
+
+            /* Estilos para la sección "Mis Cuentas" */
+            .account-view {
+                background-color: #1e1e1e;
+                padding: 20px;
+                border-radius: 8px;
+            }
+
+            .account-summary {
+                font-size: 1.1em;
+                line-height: 1.6;
+            }
+
+            .account-summary strong {
+                font-size: 1.2em;
+            }
+
+            .saldo-pendiente {
+                font-size: 1.3em !important;
+                font-weight: bold;
+            }
+
+            .saldo-ok {
+                color: #66bb6a;
+            }
+
+            .saldo-debe {
+                color: #cf6679;
+            }
+
+            .details-section {
+                margin-top: 15px;
+                background-color: #2a2a2a;
+                padding: 10px;
+                border-radius: 5px;
+                max-height: 250px;
+                overflow-y: auto;
+            }
+
+            /* Estilos para la sección "Mi Consumo" */
+            .account-view {
+                background-color: #1e1e1e;
+                padding: 20px;
+                border-radius: 8px;
+                display: flex;
+                /* Added for consistent layout with admin dashboard */
+                flex-direction: column;
+                /* Added for consistent layout with admin dashboard */
+            }
+
+            .account-summary {
+                margin-bottom: 15px;
+                font-size: 1.1em;
+            }
+
+            .account-summary div {
+                margin-bottom: 8px;
+            }
+
+            .saldo-pendiente {
+                font-size: 1.3em;
+                font-weight: bold;
+            }
+
+            .saldo-ok {
+                color: #66bb6a;
+            }
+
+            /* Using existing success color */
+            .saldo-debe {
+                color: #cf6679;
+            }
+
+            /* Using existing error color */
+            .details-section {
+                margin-top: 15px;
+                background-color: #2a2a2a;
+                padding: 10px;
+                border-radius: 5px;
+                max-height: 250px;
+                /* Adjusted for user dashboard */
+                overflow-y: auto;
+            }
+
+            .details-section h4 {
+                margin-top: 0;
+                color: #bb86fc;
+            }
+
+            .details-section .item-list li {
+                padding: 8px 4px;
+                border-bottom: 1px dotted #444;
+                font-size: 0.95em;
+            }
     </style>
 </head>
+
 <body>
     <div id="notification-banner"></div>
 
@@ -254,7 +575,8 @@
             <!-- NUEVA SECCIÓN DE REACCIONES -->
             <div style="margin-top: 20px;">
                 <h4>Enviar Reacción</h4>
-                <div id="reaction-buttons" style="display: flex; justify-content: center; gap: 15px; font-size: 1.5em; cursor: pointer;">
+                <div id="reaction-buttons"
+                    style="display: flex; justify-content: center; gap: 15px; font-size: 1.5em; cursor: pointer;">
                     <span title="¡Genial!">😊</span>
                     <span title="¡Me gusta!">👍</span>
                     <span title="¡Fuego!">🔥</span>
@@ -290,8 +612,10 @@
             <form id="search-form">
                 <input type="text" id="search-input" placeholder="Artista, canción o URL de YouTube" required>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button type="button" id="search-songs-btn" class="form-btn" style="background-color: #4CAF50; flex: 1;">Canciones</button>
-                    <button type="button" id="search-karaoke-btn" class="form-btn" style="background-color: #bb86fc; flex: 1;">Karaoke</button>
+                    <button type="button" id="search-songs-btn" class="form-btn"
+                        style="background-color: #4CAF50; flex: 1;">Canciones</button>
+                    <button type="button" id="search-karaoke-btn" class="form-btn"
+                        style="background-color: #bb86fc; flex: 1;">Karaoke</button>
                 </div>
             </form>
             <div id="search-results" class="song-list">
@@ -315,18 +639,22 @@
             <h2>Estado de Cuenta de la Mesa</h2>
             <div id="my-account-content" class="account-view">
                 <div id="mi-consumo">
-                  <h3>Mi Cuenta</h3>
-                  <div class="account-summary">
-                      <p>Total Consumido: <strong id="total-consumido">$0.00</strong></p>
-                      <p>Total Pagado: <strong id="total-pagado" style="color: #66bb6a;">$0.00</strong></p>
-                      <p>Saldo: <strong id="saldo" class="saldo-pendiente saldo-ok">$0.00</strong></p>
-                  </div>
-                
-                  <h4 style="color: #bb86fc; margin-top: 20px;">Consumos</h4>
-                  <ul id="lista-consumos" class="details-section item-list"><li>No hay consumos.</li></ul>
-                
-                  <h4 style="color: #bb86fc; margin-top: 20px;">Pagos</h4>
-                  <ul id="lista-pagos" class="details-section item-list"><li>No hay pagos registrados.</li></ul>
+                    <h3>Mi Cuenta</h3>
+                    <div class="account-summary">
+                        <p>Total Consumido: <strong id="total-consumido">$0.00</strong></p>
+                        <p>Total Pagado: <strong id="total-pagado" style="color: #66bb6a;">$0.00</strong></p>
+                        <p>Saldo: <strong id="saldo" class="saldo-pendiente saldo-ok">$0.00</strong></p>
+                    </div>
+
+                    <h4 style="color: #bb86fc; margin-top: 20px;">Consumos</h4>
+                    <ul id="lista-consumos" class="details-section item-list">
+                        <li>No hay consumos.</li>
+                    </ul>
+
+                    <h4 style="color: #bb86fc; margin-top: 20px;">Pagos</h4>
+                    <ul id="lista-pagos" class="details-section item-list">
+                        <li>No hay pagos registrados.</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -362,7 +690,8 @@
                 <p>Tu carrito está vacío.</p>
             </div>
             <div class="modal-actions">
-                <button id="confirm-cart-order-btn" class="btn-confirm" style="background-color: #2196F3;">Hacer Pedido</button>
+                <button id="confirm-cart-order-btn" class="btn-confirm" style="background-color: #2196F3;">Hacer
+                    Pedido</button>
                 <button id="cancel-cart-btn" class="btn-cancel">Seguir Comprando</button>
             </div>
         </div>
@@ -423,9 +752,9 @@
                     upcomingList.innerHTML += createSongItemHTML(song, false);
                 });
             } else if (!queueData.now_playing) {
-                 upcomingList.innerHTML = '';
+                upcomingList.innerHTML = '';
             } else {
-                 upcomingList.innerHTML = '<li><p>No hay más canciones en la cola.</p></li>';
+                upcomingList.innerHTML = '<li><p>No hay más canciones en la cola.</p></li>';
             }
         }
 
@@ -572,41 +901,41 @@
 
             state.websocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
-                
+
                 // CORRECCIÓN: Verificamos si el mensaje tiene un campo 'type' para manejar
                 // notificaciones y otros eventos estructurados. 
                 if (data.type) {
-                  if (data.type === 'notification' || data.type === 'admin_notification') {
-                    showNotification(data.payload.mensaje);
-                  } else if (data.type === 'product_update') {
-                      fetchProducts(); // Recargamos el catálogo de productos
-                  } else if (data.type === 'song_finished') {
-                      fetchMyList(); // Recargamos la lista para ver el puntaje
-                  } else if (data.type === 'consumo_deleted' || data.type === 'consumo_created') {
-                      // Si se crea o elimina un consumo, actualizamos la lista de pedidos y el perfil
-                      fetchMyOrders();
-                      fetchTableAccountStatus(); // Actualizar también la cuenta de la mesa
-                  }
-                  else if (data.type === 'reaction') {
-                      const reactionPayload = data.payload;
-                      if (reactionPayload && reactionPayload.reaction) {
-                          const emoji = document.createElement('div');
-                          emoji.className = 'reaction-emoji';
-                          emoji.textContent = reactionPayload.reaction;
-                          
-                          // Posición horizontal aleatoria y animación
-                          emoji.style.left = `${Math.random() * 90 + 5}%`;
-                          emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 100}px`);
-                          
-                          document.getElementById('reaction-container').appendChild(emoji);
-                          setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
-                      }
-                  } else if (data.type === 'update_account') { // NEW: Handle account updates from admin
-                      // Check if the update is for the current user's table
-                      if (state.user && state.user.mesa && data.mesa_id === state.user.mesa.id) {
-                          fetchTableAccountStatus(); // Re-fetch the account status for the current user's table
-                      }
-                  }
+                    if (data.type === 'notification' || data.type === 'admin_notification') {
+                        showNotification(data.payload.mensaje);
+                    } else if (data.type === 'product_update') {
+                        fetchProducts(); // Recargamos el catálogo de productos
+                    } else if (data.type === 'song_finished') {
+                        fetchMyList(); // Recargamos la lista para ver el puntaje
+                    } else if (data.type === 'consumo_deleted' || data.type === 'consumo_created') {
+                        // Si se crea o elimina un consumo, actualizamos la lista de pedidos y el perfil
+                        fetchMyOrders();
+                        fetchTableAccountStatus(); // Actualizar también la cuenta de la mesa
+                    }
+                    else if (data.type === 'reaction') {
+                        const reactionPayload = data.payload;
+                        if (reactionPayload && reactionPayload.reaction) {
+                            const emoji = document.createElement('div');
+                            emoji.className = 'reaction-emoji';
+                            emoji.textContent = reactionPayload.reaction;
+
+                            // Posición horizontal aleatoria y animación
+                            emoji.style.left = `${Math.random() * 90 + 5}%`;
+                            emoji.style.setProperty('--tx', `${(Math.random() - 0.5) * 100}px`);
+
+                            document.getElementById('reaction-container').appendChild(emoji);
+                            setTimeout(() => emoji.remove(), 5000); // Limpiar después de la animación
+                        }
+                    } else if (data.type === 'update_account') { // NEW: Handle account updates from admin
+                        // Check if the update is for the current user's table
+                        if (state.user && state.user.mesa && data.mesa_id === state.user.mesa.id) {
+                            fetchTableAccountStatus(); // Re-fetch the account status for the current user's table
+                        }
+                    }
                 } else {
                     // Si no tiene 'type', asumimos que es la actualización de la cola.
                     renderQueue(data);
@@ -775,7 +1104,7 @@
             confirmBtn.textContent = 'Enviando...';
 
             const cartPayload = { items: state.cart };
- 
+
             try {
                 const response = await fetch(`${API_BASE_URL}/consumos/pedir/carrito/${state.user.id}`, {
                     method: 'POST',
@@ -854,9 +1183,9 @@
                     throw new Error(err.detail || 'No se pudo cargar la cuenta.');
                 }
                 const data = await response.json();
-                
+
                 // Convertir a número antes de comparar y formatear
-                const saldoPendienteNum = parseFloat(data.saldo_pendiente); 
+                const saldoPendienteNum = parseFloat(data.saldo_pendiente);
                 const totalConsumidoNum = parseFloat(data.total_consumido);
                 const totalPagadoNum = parseFloat(data.total_pagado);
                 const saldoClass = saldoPendienteNum > 0 ? 'saldo-debe' : 'saldo-ok';
@@ -919,19 +1248,19 @@
         // === 🧠 OBTENER Y RENDERIZAR "MI LISTA" ===
         async function fetchMyList() {
             if (!state.user) return;
-        
+
             const myListContainer = document.getElementById('my-song-list');
             if (!myListContainer) return;
-        
+
             myListContainer.innerHTML = '<p>Cargando tu lista...</p>';
-        
+
             try {
                 const response = await fetch(`${API_BASE_URL}/canciones/${state.user.id}/lista`);
                 if (!response.ok) {
                     const err = await response.json();
                     throw new Error(err.detail || 'No se pudo obtener la lista.');
                 }
-        
+
                 const songs = await response.json();
                 renderMyList(songs);
             } catch (error) {
@@ -939,17 +1268,17 @@
                 myListContainer.innerHTML = `<p class="error-msg">${error.message}</p>`;
             }
         }
-        
+
         // === 🧱 RENDERIZAR CANCIONES EN "MI LISTA" ===
         function renderMyList(songs) {
             const myListContainer = document.getElementById('my-song-list');
             if (!myListContainer) return;
-        
+
             if (!songs || songs.length === 0) {
                 myListContainer.innerHTML = '<p>No tienes canciones en tu lista todavía 🎤</p>';
                 return;
             }
-        
+
             myListContainer.innerHTML = songs.map(song => `
                 <li class="my-song-item">
                     <div class="song-info">
@@ -963,16 +1292,16 @@
                 </li>
             `).join('');
         }
-        
+
         // === 🗑️ ELIMINAR UNA CANCIÓN ===
         async function handleDeleteSong(event) {
             if (!event.target.classList.contains('delete-song-btn')) return;
             if (!confirm('¿Seguro que quieres eliminar esta canción de tu lista?')) return;
-        
+
             const button = event.target;
             const songId = button.dataset.songId;
             button.disabled = true;
-        
+
             try {
                 const response = await fetch(`${API_BASE_URL}/canciones/${songId}?usuario_id=${state.user.id}`, {
                     method: 'DELETE',
@@ -1001,7 +1330,7 @@
                 // --- FIN DE LA CORRECCIÓN ---
                 const profile = await response.json(); // Esperamos a que el perfil se resuelva
                 state.user = profile; // Actualizamos el estado local del usuario
-                
+
                 // Ensure mesa information is present - if not, fetch it separately
                 if (!state.user.mesa || !state.user.mesa.id) {
                     try {
@@ -1014,7 +1343,7 @@
                         console.warn('Could not fetch mesa details:', error);
                     }
                 }
-                
+
                 sessionStorage.setItem('karaokeUser', JSON.stringify(state.user));
                 updateProfileCard();
             } catch (error) {
@@ -1037,7 +1366,7 @@
             loginContainer.classList.add('hidden');
             dashboardView.classList.remove('hidden');
 
-            connectWebSocket();            renderCart(); // Renderiza el carrito (y oculta el botón si está vacío)
+            connectWebSocket(); renderCart(); // Renderiza el carrito (y oculta el botón si está vacío)
             fetchMyList();
         }
 
@@ -1088,7 +1417,7 @@
                 sender: state.user ? state.user.nick : "Anónimo" // Usar el nick del usuario si está logueado
             };
             try {
-                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                await fetch(`${API_BASE_URL}/broadcast/reaction`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             } catch (error) {
                 console.error("Error enviando reacción:", error);
             }
@@ -1173,9 +1502,10 @@
             if (cartItemsList) {
                 cartItemsList.addEventListener('click', (e) => {
                     if (e.target.classList.contains('cart-remove-item-btn')) {
-                        const productId = parseInt(e.target.dataset.productId, 10);
+                        const productId = e.target.dataset.productId; // Keep as string
                         state.cart = state.cart.filter(item => item.producto_id !== productId);
                         renderCart();
+                        showNotification('Producto eliminado del carrito.', 'success', 1500);
                     }
                 });
             }
@@ -1184,4 +1514,5 @@
     </script>
 
 </body>
+
 </html>
