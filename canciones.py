@@ -22,23 +22,6 @@ def get_db():
     finally:
         db.close()
 
-# --- AUTOPLAY: tarea en segundo plano ---
-async def check_and_trigger_autoplay(db: Session):
-    """
-    Tarea en segundo plano que se ejecuta después de un tiempo.
-    Verifica si el autoplay está activado y si es así, avanza la cola.
-    """
-    # Pequeña espera para que se completen transacciones anteriores
-    await asyncio.sleep(2)
-
-    if config.settings.AUTOPLAY_ENABLED:
-        await crud.avanzar_cola_automaticamente(db)
-        crud.create_admin_log_entry(
-            db,
-            action="AUTOPLAY_ADVANCE",
-            details="Autoplay avanzó la cola a la siguiente canción."
-        )
-
 # --- ENDPOINT: Avanzar la cola manualmente ---
 @router.post(
     "/siguiente",
@@ -48,23 +31,8 @@ async def check_and_trigger_autoplay(db: Session):
 )
 async def avanzar_cola(db: Session = Depends(get_db)):
     """
-    Si el autoplay está desactivado, este endpoint actúa como un botón manual
-    para avanzar la cola a la siguiente canción.
+    Avanza la cola a la siguiente canción.
     """
-    if config.settings.AUTOPLAY_ENABLED:
-        # Si autoplay está activo, no forzamos el avance, pero devolvemos
-        # la canción actual para que el frontend pueda mostrarla.
-        cancion_actual = crud.get_cancion_actual(db)
-        if not cancion_actual:
-            return Response(status_code=204)
-
-        youtube_url = f"https://www.youtube.com/embed/{cancion_actual.youtube_id}?autoplay=1&fs=1"
-        return JSONResponse(
-            status_code=status.HTTP_202_ACCEPTED,
-            content={"message": "Autoplay está activo. El avance ocurre automáticamente.",
-                     "play_url": youtube_url, "cancion": jsonable_encoder(schemas.Cancion.from_orm(cancion_actual))}
-        )
-
     # Avanzamos la cola manualmente
     nueva_cancion = await crud.avanzar_cola_automaticamente(db)
 
@@ -210,4 +178,4 @@ async def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depen
 
     crud.delete_cancion(db, cancion_id=cancion_id)
     await websocket_manager.manager.broadcast_queue_update() # Notificar actualización de la cola
-    return Response(status_code=204) 
+    return Response(status_code=204)

@@ -94,9 +94,7 @@ async function loadQueuePage() {
     }
 
     // Cargar el estado del autoplay
-    if (typeof loadAutoplayStatus === 'function') {
-        loadAutoplayStatus();
-    }
+
 }
 
 async function handleAdminSearch(event, karaokeMode = false) {
@@ -306,5 +304,5 @@ function setupQueueListeners() {
     if (karaokeBtn) karaokeBtn.addEventListener('click', (e) => handleAdminSearch(e, true));
     if (resultsContainer) resultsContainer.addEventListener('click', handleAdminAddSong);
     if (songsList) songsList.addEventListener('click', handleQueueActions);
-    if (autoplayToggle) autoplayToggle.addEventListener('change', handleToggleAutoplay);
+
 }

@@ -1618,14 +1618,10 @@ def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
 
 async def start_next_song_if_autoplay_and_idle(db: Session):
     """
-    Verifica si el autoplay está activado, si no hay nada sonando y si hay
-    canciones en la cola. Si se cumplen las condiciones, inicia la siguiente canción.
+    Verifica si no hay nada sonando y si hay canciones en la cola.
+    Si se cumplen las condiciones, inicia la siguiente canción automáticamente.
     """
-    import config
     import websocket_manager
-
-    if not config.settings.AUTOPLAY_ENABLED:
-        return
 
     # Verificamos si ya hay una canción en estado 'reproduciendo'
     is_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
@@ -1640,7 +1636,7 @@ async def start_next_song_if_autoplay_and_idle(db: Session):
         # para que la cola se actualice y el reproductor comience a reproducir.
         await websocket_manager.manager.broadcast_queue_update()
         await websocket_manager.manager.broadcast_play_song(next_song.youtube_id)
-        create_admin_log_entry(db, action="AUTOPLAY_START", details=f"Autoplay inició la canción '{next_song.titulo}'.")
+        create_admin_log_entry(db, action="AUTO_START", details=f"Iniciada automáticamente la canción '{next_song.titulo}'.")
 
 async def avanzar_cola_automaticamente(db: Session):
     """

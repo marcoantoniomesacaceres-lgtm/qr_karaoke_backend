@@ -11,8 +11,7 @@ async function loadDashboardPage() {
         document.getElementById('summary-profits').textContent = `$${ganancias.toFixed(2)}`;
         document.getElementById('summary-songs').textContent = Number(summary.canciones_cantadas) || 0;
         document.getElementById('summary-users').textContent = Number(summary.usuarios_activos) || 0;
-        // Cargar el estado real del autoplay desde el servidor
-        loadAutoplayStatus();
+
         loadRecentOrders();
     } catch (error) {
         showNotification(`Error al cargar resumen: ${error.message}`, 'error');
@@ -78,16 +77,7 @@ async function loadRecentOrders() {
     }
 }
 
-async function loadAutoplayStatus() {
-    try {
-        const result = await apiFetch('/admin/autoplay/status');
-        const status = result && typeof result.autoplay_status !== 'undefined' ? result.autoplay_status : false;
-        updateAutoplayStatus(status);
-    } catch (error) {
-        console.error('Error al cargar estado de autoplay:', error);
-        updateAutoplayStatus(false); // Fallback a desactivado si hay error
-    }
-}
+
 
 async function handleBroadcast() {
     const message = document.getElementById('broadcast-message-input').value.trim();
@@ -142,7 +132,7 @@ function setupDashboardListeners() {
     if (broadcastBtn) broadcastBtn.addEventListener('click', handleBroadcast);
     if (resetBtn) resetBtn.addEventListener('click', handleResetNight);
     if (reactionBtns) reactionBtns.addEventListener('click', handleSendReaction);
-    if (autoplayToggle) autoplayToggle.addEventListener('change', handleToggleAutoplay);
+
 
     const openPlayerBtnMain = document.getElementById('open-player-dashboard-main');
     if (openPlayerBtnMain) {
