@@ -354,200 +354,201 @@
             background-color: #6c757d;
         }
 
+        .order-item .cancel-btn {
+            background-color: #cf6679;
+            /* Rojo suave */
+        }
+
+        .order-item .cancel-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
         #notification.error {
-            .order-item .cancel-btn {
-                background-color: #cf6679;
-                /* Rojo suave */
-            }
+            background-color: #cf6679;
+            color: #121212;
+        }
 
-            .order-item .cancel-btn:disabled {
-                background-color: #555;
-                cursor: not-allowed;
-                background-color: #cf6679;
-                color: #121212;
-            }
+        #notification.success {
+            background-color: #66bb6a;
+            color: #121212;
+        }
 
-            #notification.success {
-                background-color: #66bb6a;
-                color: #121212;
-            }
+        /* Estilos para el boton confirmar pedido */
+        #cart-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            background-color: #bb86fc;
+            color: #121212;
+            height: 60px;
+            border-radius: 8px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1500;
+            transition: transform 0.2s;
+        }
 
-            /* Estilos para el boton confirmar pedido */
-            #cart-fab {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                width: 60px;
-                background-color: #bb86fc;
-                color: #121212;
-                height: 60px;
-                border-radius: 8px;
-                padding: 12px 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
-                font-size: 1em;
-                cursor: pointer;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-                z-index: 1500;
-                transition: transform 0.2s;
-            }
+        #cart-fab:hover {
+            transform: scale(1.1);
+        }
 
-            #cart-fab:hover {
-                transform: scale(1.1);
-            }
+        #cart-count {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #f44336;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
 
-            #cart-count {
-                position: absolute;
-                top: 0;
-                right: 0;
-                background: #f44336;
-                color: white;
-                border-radius: 50%;
-                width: 22px;
-                height: 22px;
-                font-size: 14px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-            }
+        .modal-content .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+        }
 
-            .modal-content .cart-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 8px 0;
-                border-bottom: 1px solid #333;
-            }
+        .modal-content .cart-item-name {
+            flex-grow: 1;
+        }
 
-            .modal-content .cart-item-name {
-                flex-grow: 1;
-            }
+        /* Estilos para las reacciones con emoticonos */
+        .reaction-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Para que no interfiera con los clics */
+            overflow: hidden;
+            z-index: 9999;
+        }
 
-            /* Estilos para las reacciones con emoticonos */
-            .reaction-container {
-                position: fixed;
-                bottom: 0;
-                right: 0;
-                width: 100%;
-                height: 100%;
-                pointer-events: none;
-                /* Para que no interfiera con los clics */
-                overflow: hidden;
-                z-index: 9999;
-            }
+        .reaction-emoji {
+            position: absolute;
+            bottom: -50px;
+            /* Empieza fuera de la pantalla */
+            font-size: 3rem;
+            animation: float-up 5s ease-out forwards;
+        }
 
-            .reaction-emoji {
-                position: absolute;
-                bottom: -50px;
-                /* Empieza fuera de la pantalla */
-                font-size: 3rem;
-                animation: float-up 5s ease-out forwards;
+        @keyframes float-up {
+            to {
+                bottom: 100%;
+                transform: translateX(var(--tx, 0)) scale(1.5);
+                opacity: 0;
             }
+        }
 
-            @keyframes float-up {
-                to {
-                    bottom: 100%;
-                    transform: translateX(var(--tx, 0)) scale(1.5);
-                    opacity: 0;
-                }
-            }
+        /* Estilos para la sección \"Mis Cuentas\" */
+        .account-view {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+        }
 
-            /* Estilos para la sección "Mis Cuentas" */
-            .account-view {
-                background-color: #1e1e1e;
-                padding: 20px;
-                border-radius: 8px;
-            }
+        .account-summary {
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
 
-            .account-summary {
-                font-size: 1.1em;
-                line-height: 1.6;
-            }
+        .account-summary strong {
+            font-size: 1.2em;
+        }
 
-            .account-summary strong {
-                font-size: 1.2em;
-            }
+        .saldo-pendiente {
+            font-size: 1.3em !important;
+            font-weight: bold;
+        }
 
-            .saldo-pendiente {
-                font-size: 1.3em !important;
-                font-weight: bold;
-            }
+        .saldo-ok {
+            color: #66bb6a;
+        }
 
-            .saldo-ok {
-                color: #66bb6a;
-            }
+        .saldo-debe {
+            color: #cf6679;
+        }
 
-            .saldo-debe {
-                color: #cf6679;
-            }
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
 
-            .details-section {
-                margin-top: 15px;
-                background-color: #2a2a2a;
-                padding: 10px;
-                border-radius: 5px;
-                max-height: 250px;
-                overflow-y: auto;
-            }
+        /* Estilos para la sección \"Mi Consumo\" */
+        .account-view {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            /* Added for consistent layout with admin dashboard */
+            flex-direction: column;
+            /* Added for consistent layout with admin dashboard */
+        }
 
-            /* Estilos para la sección "Mi Consumo" */
-            .account-view {
-                background-color: #1e1e1e;
-                padding: 20px;
-                border-radius: 8px;
-                display: flex;
-                /* Added for consistent layout with admin dashboard */
-                flex-direction: column;
-                /* Added for consistent layout with admin dashboard */
-            }
+        .account-summary {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
 
-            .account-summary {
-                margin-bottom: 15px;
-                font-size: 1.1em;
-            }
+        .account-summary div {
+            margin-bottom: 8px;
+        }
 
-            .account-summary div {
-                margin-bottom: 8px;
-            }
+        .saldo-pendiente {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
 
-            .saldo-pendiente {
-                font-size: 1.3em;
-                font-weight: bold;
-            }
+        .saldo-ok {
+            color: #66bb6a;
+        }
 
-            .saldo-ok {
-                color: #66bb6a;
-            }
+        /* Using existing success color */
+        .saldo-debe {
+            color: #cf6679;
+        }
 
-            /* Using existing success color */
-            .saldo-debe {
-                color: #cf6679;
-            }
+        /* Using existing error color */
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 250px;
+            /* Adjusted for user dashboard */
+            overflow-y: auto;
+        }
 
-            /* Using existing error color */
-            .details-section {
-                margin-top: 15px;
-                background-color: #2a2a2a;
-                padding: 10px;
-                border-radius: 5px;
-                max-height: 250px;
-                /* Adjusted for user dashboard */
-                overflow-y: auto;
-            }
+        .details-section h4 {
+            margin-top: 0;
+            color: #bb86fc;
+        }
 
-            .details-section h4 {
-                margin-top: 0;
-                color: #bb86fc;
-            }
-
-            .details-section .item-list li {
-                padding: 8px 4px;
-                border-bottom: 1px dotted #444;
-                font-size: 0.95em;
-            }
+        .details-section .item-list li {
+            padding: 8px 4px;
+            border-bottom: 1px dotted #444;
+            font-size: 0.95em;
+        }
     </style>
 </head>
 
