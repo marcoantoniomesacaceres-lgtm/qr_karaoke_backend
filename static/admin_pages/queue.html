@@ -1,15 +1,12 @@
 <h2>Cola de Canciones</h2>
 <div class="grid" style="grid-template-columns: 1fr 350px;">
     <div class="card">
-        <div class="autoplay-container">
+        <div class="queue-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3>Cola Aprobada</h3>
-            <div class="autoplay-label">
-                <span>Activar Autoplay Automático</span>
-                <label class="switch">
-                    <input type="checkbox" id="autoplay-toggle-queue">
-                    <span class="slider"></span>
-                </label>
-            </div>
+            <button id="pause-resume-btn" class="pause-btn" style="padding: 8px 16px; font-size: 0.9em;">
+                ⏸️ Pausar
+            </button>
         </div>
         <ul id="approved-songs-list" class="item-list">
             <p>Cargando cola de canciones...</p>

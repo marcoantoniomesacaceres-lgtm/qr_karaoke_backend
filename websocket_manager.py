@@ -128,6 +128,20 @@ class ConnectionManager:
         payload = {"type": "restart_song"}
         await self._broadcast(json.dumps(payload))
 
+    async def broadcast_pause(self):
+        """
+        Envía un evento para pausar la reproducción actual.
+        """
+        payload = {"type": "pause_playback"}
+        await self._broadcast(json.dumps(payload))
+
+    async def broadcast_resume(self):
+        """
+        Envía un evento para reanudar la reproducción.
+        """
+        payload = {"type": "resume_playback"}
+        await self._broadcast(json.dumps(payload))
+
     async def broadcast_notification(self, mensaje: str):
         """
         Envía un mensaje de notificación global a todas las pantallas conectadas.
