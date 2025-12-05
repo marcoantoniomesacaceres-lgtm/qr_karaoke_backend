@@ -515,6 +515,24 @@ async def restart_current_song(db: Session = Depends(get_db)):
     crud.create_admin_log_entry(db, action="RESTART_SONG", details="Canción actual reiniciada.")
     return {"mensaje": "Canción reiniciada."}
 
+@router.post("/player/pause", status_code=200, summary="Pausar la reproducción")
+async def pause_playback(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Pausa la reproducción en el player.
+    """
+    await websocket_manager.manager.broadcast_pause()
+    crud.create_admin_log_entry(db, action="PAUSE_PLAYBACK", details="Reproducción pausada por admin.")
+    return {"mensaje": "Reproducción pausada."}
+
+@router.post("/player/resume", status_code=200, summary="Reanudar la reproducción")
+async def resume_playback(db: Session = Depends(get_db)):
+    """
+    **[Admin]** Reanuda la reproducción en el player.
+    """
+    await websocket_manager.manager.broadcast_resume()
+    crud.create_admin_log_entry(db, action="RESUME_PLAYBACK", details="Reproducción reanudada por admin.")
+    return {"mensaje": "Reproducción reanudada."}
+
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
 def get_total_income_report(db: Session = Depends(get_db)):
     """

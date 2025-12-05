@@ -238,11 +238,19 @@
     <div id="reaction-container" class="reaction-container"></div>
 
     <script>
-        // NO cargar YouTube API JS - evita conflictos con Tracking Prevention y CORS
-        // Usaremos solo iframes simples que funcionan sin problemas
-        window.onYouTubeIframeAPIReady = function () {
-            console.log("YouTube API ready (but we don't use it).");
-        };
+        // Cargar YouTube IFrame API para control programático
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Variable global para el reproductor de YouTube
+        let ytPlayer = null;
+
+        // Callback cuando la API está lista
+        function onYouTubeIframeAPIReady() {
+            console.log("✅ YouTube IFrame API lista y cargada");
+        }
     </script>
     <script>
         // Usar WebSocket URL relativa para funcionar tanto en HTTP como HTTPS
@@ -260,6 +268,7 @@
         // Variables para rastrear el video actual (necesarias para reiniciar)
         let currentVideoId = null;
         let currentVideoDuration = 0;
+        let nextSongInfo = null; // Información de la siguiente canción para mostrar en transición
 
         // --- Lógica del Carrusel de Fondos ---
         const backgroundImages = [];
@@ -285,35 +294,85 @@
             backgroundCarousel.classList.remove('active');
         }
 
-        // 2. Función para crear reproductor con iframe mejorada con referrerpolicy
-        function insertYouTubeIframe(videoId) {
+        // Función para crear el reproductor de YouTube con la API
+        function createYouTubePlayer(videoId) {
             const container = document.getElementById('player-container');
             if (!container) {
                 console.error('player-container not found in DOM');
                 return;
             }
 
-            // Construir URL del embed con parámetros optimizados
-            const embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&controls=1&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1`;
+            // Limpiar contenedor y crear div para el reproductor
+            container.innerHTML = '<div id="youtube-iframe"></div>';
 
-            container.innerHTML = `
-                <iframe 
-                    id="youtube-iframe"
-                    title="YouTube video player"
-                    src="${embedUrl}"
-                    width="100%"
-                    height="100%"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen
-                    loading="lazy"
-                    referrerpolicy="origin"
-                    style="border:none; display:block;"></iframe>
-                <div style="position:absolute;bottom:2%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#FFF;padding:15px 25px;border-radius:8px;z-index:1000;font-size:1.2vw;max-width:85vw;text-align:center;border:2px solid #4CAF50;">
-                    <b>▶️ LA CANTA QUE RANA   </b>
-                </div>
-            `;
-            console.log('iframe del video insertado exitosamente con referrerpolicy="origin"');
+            // Crear reproductor con YouTube IFrame API
+            ytPlayer = new YT.Player('youtube-iframe', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'iv_load_policy': 3,
+                    'playsinline': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+
+            console.log('✅ Reproductor de YouTube creado con API para video:', videoId);
+        }
+
+        // Evento cuando el reproductor está listo
+        function onPlayerReady(event) {
+            console.log('✅ Reproductor listo, iniciando reproducción');
+            event.target.playVideo();
+        }
+
+        // Evento cuando cambia el estado del reproductor
+        function onPlayerStateChange(event) {
+            // YT.PlayerState.ENDED = 0
+            if (event.data === YT.PlayerState.ENDED) {
+                console.log('🎬 Video terminado, iniciando transición de 5 segundos...');
+                showTransitionScreen();
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                console.log('▶️ Video reproduciéndose');
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                console.log('⏸️ Video pausado');
+            }
+        }
+
+        // Mostrar pantalla de transición entre canciones
+        function showTransitionScreen() {
+            // Limpiar el reproductor
+            const container = document.getElementById('player-container');
+            container.innerHTML = '';
+
+            // Mostrar pantalla de espera con fondo
+            startCarousel();
+
+            // Actualizar mensaje de standby con información de la siguiente canción
+            const standbyParagraph = standbyScreen.querySelector('p');
+            if (nextSongInfo) {
+                standbyParagraph.innerHTML = `
+                    <strong style="color: #4CAF50; font-size: 1.2em;">Próxima canción:</strong><br><br>
+                    <span style="font-size: 1.5em;">${nextSongInfo.titulo}</span><br>
+                    <span style="font-size: 1em; color: #b0b0b0;">Por: ${nextSongInfo.cantante}</span><br><br>
+                    <span style="font-size: 0.9em; color: #888;">Comenzando en 5 segundos...</span>
+                `;
+            } else {
+                standbyParagraph.innerHTML = 'Cargando siguiente canción...';
+            }
+
+            // Esperar 5 segundos antes de avanzar a la siguiente canción
+            setTimeout(() => {
+                console.log('⏭️ Transición completada, avanzando a la siguiente canción');
+                advanceToNextSong();
+            }, 5000);
         }
 
         // Función para avanzar automáticamente a la siguiente canción
@@ -347,28 +406,27 @@
             currentVideoId = videoId;
             currentVideoDuration = duration;
 
-            // Limpiar temporizador anterior si existe
+            // Limpiar temporizador anterior si existe (ya no lo necesitamos)
             if (autoplayTimer) {
                 clearTimeout(autoplayTimer);
                 autoplayTimer = null;
-                console.log('🔄 Temporizador anterior limpiado');
+                console.log('🔄 Temporizador anterior limpiado (ya no se usa)');
             }
 
             stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
-            insertYouTubeIframe(videoId);
 
-            // Si tenemos la duración, configurar temporizador
-            if (duration && duration > 0) {
-                const timerDuration = (duration + 3) * 1000; // +3 segundos de buffer
-                console.log(`⏱️ Configurando temporizador de autoplay para ${timerDuration}ms (${duration + 3}s)`);
-
-                autoplayTimer = setTimeout(() => {
-                    console.log('⏰ Temporizador de autoplay activado');
-                    advanceToNextSong();
-                }, timerDuration);
+            // Si el reproductor ya existe, cargar el nuevo video
+            if (ytPlayer && ytPlayer.loadVideoById) {
+                console.log('🔄 Cargando nuevo video en reproductor existente');
+                ytPlayer.loadVideoById(videoId);
             } else {
-                console.warn('⚠️ No se proporcionó duración, autoplay automático deshabilitado');
+                // Crear nuevo reproductor
+                console.log('🆕 Creando nuevo reproductor');
+                createYouTubePlayer(videoId);
             }
+
+            // NOTA: Ya no usamos temporizador porque detectamos el fin del video automáticamente
+            // con el evento onStateChange del YouTube IFrame API
         }
 
         // 3. Conexión WebSocket para recibir órdenes
@@ -441,7 +499,23 @@
                     }, 10000);
                 }
 
-                // 5. Reacciones
+                // 5. Pausar reproducción
+                if (data.type === 'pause_playback') {
+                    if (ytPlayer && ytPlayer.pauseVideo) {
+                        ytPlayer.pauseVideo();
+                        console.log('⏸️ Video pausado por admin');
+                    }
+                }
+
+                // 6. Reanudar reproducción
+                if (data.type === 'resume_playback') {
+                    if (ytPlayer && ytPlayer.playVideo) {
+                        ytPlayer.playVideo();
+                        console.log('▶️ Video reanudado por admin');
+                    }
+                }
+
+                // 7. Reacciones
                 if (data.type === 'reaction' && data.payload && data.payload.reaction) {
                     const emoji = document.createElement('div');
                     emoji.className = 'reaction-emoji';
@@ -455,9 +529,9 @@
                     setTimeout(() => emoji.remove(), 6000); // Limpiar el emoji del DOM después de la animación
                 }
 
-                // 6. Actualización de la cola (Fallback)
+                // 8. Actualización de la cola (Fallback)
                 // Si no es un tipo específico de los anteriores, asumimos que es data de la cola
-                if (!['play_song', 'song_finished', 'notification', 'reaction', 'restart_song'].includes(data.type)) {
+                if (!['play_song', 'song_finished', 'notification', 'reaction', 'restart_song', 'pause_playback', 'resume_playback'].includes(data.type)) {
                     updateQueueUI(data);
                 }
             };
@@ -488,14 +562,22 @@
                 nowPlayingInfo.innerHTML = `<div class="info-title">Esperando canción...</div><div class="info-artist"></div>`;
             }
 
-            // Actualizar "Siguiente"
+            // Actualizar "Siguiente" y guardar información para la transición
             if (queueData.upcoming && queueData.upcoming.length > 0) {
                 const nextSong = queueData.upcoming[0];
                 const addedBy = nextSong.usuario.mesa ? nextSong.usuario.mesa.nombre : nextSong.usuario.nick;
+
+                // Guardar información de la siguiente canción para mostrar en la transición
+                nextSongInfo = {
+                    titulo: nextSong.titulo,
+                    cantante: addedBy
+                };
+
                 upcomingInfo.innerHTML = `
                     <div class="info-title">${nextSong.titulo}</div>
                     <div class="info-artist">Por: <strong>${addedBy}</strong></div>`;
             } else {
+                nextSongInfo = null;
                 upcomingInfo.innerHTML = `<div class="info-title">No hay canciones en espera</div><div class="info-artist"></div>`;
             }
         }

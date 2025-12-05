@@ -292,6 +292,28 @@ async function handleQueueActions(event) {
     }
 }
 
+async function handlePauseResume() {
+    const btn = document.getElementById('pause-resume-btn');
+    if (!btn) return;
+
+    const isPausing = btn.innerText.includes('Pausar');
+    const endpoint = isPausing ? '/admin/player/pause' : '/admin/player/resume';
+    const newText = isPausing ? '▶️ Reanudar' : '⏸️ Pausar';
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    try {
+        await apiFetch(endpoint, { method: 'POST' });
+        btn.innerHTML = newText;
+        showNotification(isPausing ? 'Se ha enviado la orden de PAUSA.' : 'Se ha enviado la orden de REANUDAR.', 'info');
+    } catch (error) {
+        showNotification(`Error: ${error.message}`, 'error');
+        btn.innerHTML = originalText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+
 function setupQueueListeners() {
     const searchForm = document.getElementById('admin-search-form');
     const songsBtn = document.getElementById('admin-search-songs-btn');
@@ -304,5 +326,7 @@ function setupQueueListeners() {
     if (karaokeBtn) karaokeBtn.addEventListener('click', (e) => handleAdminSearch(e, true));
     if (resultsContainer) resultsContainer.addEventListener('click', handleAdminAddSong);
     if (songsList) songsList.addEventListener('click', handleQueueActions);
+    const pauseBtn = document.getElementById('pause-resume-btn');
+    if (pauseBtn) pauseBtn.addEventListener('click', handlePauseResume);
 
 }

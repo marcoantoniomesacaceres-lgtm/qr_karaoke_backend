@@ -255,6 +255,14 @@
                         player.seekTo(0);
                         player.playVideo();
                     }
+                } else if (data.type === 'pause_playback') {
+                    if (player && typeof player.pauseVideo === 'function') {
+                        player.pauseVideo();
+                    }
+                } else if (data.type === 'resume_playback') {
+                    if (player && typeof player.playVideo === 'function') {
+                        player.playVideo();
+                    }
                 }
             };
         }
