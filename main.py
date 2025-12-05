@@ -84,6 +84,13 @@ async def read_index():
     """
     return FileResponse(os.path.join("static", "index.html"))
 
+@app.get("/bees", response_class=FileResponse, include_in_schema=False)
+async def read_bees_index():
+    """
+    Sirve la aplicación de frontend con diseño BEES (el archivo index_bees.html).
+    """
+    return FileResponse(os.path.join("static", "index_bees.html"))
+
 @app.get("/admin", response_class=FileResponse, include_in_schema=False)
 async def read_admin_index():
     """
