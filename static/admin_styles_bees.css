@@ -1,0 +1,806 @@
+/* ============================================
+   ADMIN DASHBOARD - ESTILO BEES
+   ============================================ */
+
+:root {
+    /* Colores BEES */
+    --bees-yellow: #FFD700;
+    --bees-yellow-dark: #FFC700;
+    --bees-yellow-light: #FFED4E;
+    --bees-black: #1A1A1A;
+    --bees-gray: #F5F5F5;
+    --bees-white: #FFFFFF;
+
+    /* Colores principales */
+    --bg-color: #F5F5F5;
+    --surface-color: #FFFFFF;
+    --primary-color: #FFD700;
+    --primary-variant: #FFC700;
+    --secondary-color: #1A1A1A;
+
+    /* Colores de texto */
+    --text-color: #1A1A1A;
+    --text-secondary: #666666;
+
+    /* Colores de estado */
+    --error-color: #FF4444;
+    --success-color: #4CAF50;
+    --warning-color: #FFC107;
+    --info-color: #2196F3;
+
+    /* Sombras */
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   LAYOUT GENERAL
+   ============================================ */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+}
+
+/* ============================================
+   SIDEBAR
+   ============================================ */
+
+.sidebar {
+    width: 240px;
+    background-color: var(--surface-color);
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    position: fixed;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border-right: 3px solid var(--primary-color);
+}
+
+.sidebar h1 {
+    color: var(--primary-color);
+    font-size: 1.5em;
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.sidebar .nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar .nav-menu li a {
+    display: block;
+    padding: 12px 15px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 12px;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.sidebar .nav-menu li a:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.sidebar .nav-menu li a.active {
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+    font-weight: bold;
+}
+
+/* ============================================
+   CONTENIDO PRINCIPAL
+   ============================================ */
+
+.main-content {
+    margin-left: 240px;
+    flex-grow: 1;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-weight: bold;
+}
+
+/* ============================================
+   GRID LAYOUTS
+   ============================================ */
+
+.grid {
+    display: grid;
+    gap: 20px;
+}
+
+.grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* ============================================
+   TARJETAS (CARDS)
+   ============================================ */
+
+.card {
+    background-color: var(--surface-color);
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid #E0E0E0;
+    transition: all 0.3s;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--bees-black);
+    font-weight: bold;
+}
+
+/* ============================================
+   LISTAS Y ITEMS
+   ============================================ */
+
+.item-list {
+    list-style: none;
+    padding: 0;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #E0E0E0;
+    transition: background-color 0.2s;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item:hover {
+    background-color: rgba(255, 215, 0, 0.05);
+}
+
+.item.inactive {
+    background-color: rgba(255, 68, 68, 0.05);
+    opacity: 0.6;
+}
+
+.item-details {
+    flex-grow: 1;
+}
+
+.item-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--text-color);
+}
+
+.item-meta {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.item-stock {
+    font-weight: bold;
+}
+
+.stock-low {
+    color: var(--warning-color);
+}
+
+.stock-out {
+    color: var(--error-color);
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+
+.item-actions button {
+    margin-left: 10px;
+    padding: 8px 16px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.item-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-activate {
+    background-color: var(--success-color);
+}
+
+.btn-deactivate {
+    background-color: var(--error-color);
+}
+
+.btn-approve {
+    background-color: var(--success-color);
+}
+
+.btn-generate-qr {
+    background-color: var(--primary-color) !important;
+    color: var(--bees-black) !important;
+}
+
+.btn-delete {
+    background-color: var(--error-color);
+}
+
+.btn-reject {
+    background-color: var(--error-color);
+}
+
+.btn-action {
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+}
+
+.btn-despachado {
+    background-color: var(--success-color);
+}
+
+.btn-no-despachado {
+    background-color: var(--warning-color);
+    color: var(--bees-black) !important;
+}
+
+.btn-no-despachado:hover {
+    background-color: var(--error-color);
+    color: white !important;
+}
+
+/* ============================================
+   FORMULARIOS
+   ============================================ */
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: calc(100% - 24px);
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #E0E0E0;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+button.form-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+button.form-btn:hover {
+    background-color: var(--primary-variant);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ============================================
+   BADGES DE ESTADO
+   ============================================ */
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-active {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.status-inactive {
+    background-color: var(--text-secondary);
+    color: white;
+}
+
+.status-pendiente {
+    background-color: var(--warning-color);
+    color: var(--bees-black);
+}
+
+.status-aprobado {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.status-reproduciendo {
+    background-color: var(--info-color);
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ============================================
+   NOTIFICACIONES
+   ============================================ */
+
+#notification {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    transition: bottom 0.5s ease-in-out;
+    z-index: 1000;
+    text-align: center;
+    min-width: 250px;
+    font-weight: bold;
+}
+
+#notification.show {
+    bottom: 20px;
+}
+
+#notification.success {
+    background-color: var(--success-color);
+    color: white;
+}
+
+#notification.error {
+    background-color: var(--error-color);
+    color: white;
+}
+
+#notification.info {
+    background-color: var(--info-color);
+    color: white;
+}
+
+#notification.admin-global-message {
+    font-size: 1.3em;
+    font-weight: bold;
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+    animation: pulse 2s infinite alternate;
+}
+
+/* ============================================
+   COMPONENTES ESPECÍFICOS
+   ============================================ */
+
+.summary-card {
+    text-align: center;
+}
+
+.summary-value {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin: 10px 0;
+}
+
+.dangerous-zone button {
+    background-color: var(--error-color);
+}
+
+.dangerous-zone button:hover {
+    background-color: #cc0000;
+}
+
+.song-item-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.song-item-info img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* ============================================
+   TABLAS
+   ============================================ */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+th {
+    background-color: rgba(255, 215, 0, 0.1);
+    color: var(--text-color);
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: rgba(255, 215, 0, 0.05);
+}
+
+/* ============================================
+   BOTÓN DE LOGOUT
+   ============================================ */
+
+.logout-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 200px;
+    background: none;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+}
+
+/* ============================================
+   REACCIONES
+   ============================================ */
+
+.reaction-container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.reaction-emoji {
+    position: absolute;
+    bottom: -50px;
+    font-size: 2.5rem;
+    animation: float-up 5s ease-out forwards;
+}
+
+@keyframes float-up {
+    to {
+        bottom: 100%;
+        transform: translateX(var(--tx, 0)) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: rotate(-10deg);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: rotate(10deg);
+    }
+}
+
+.shaking {
+    display: inline-block;
+    animation: shake 0.8s cubic-bezier(.36, .07, .19, .97) both infinite;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+}
+
+/* ============================================
+   QR CODE
+   ============================================ */
+
+#qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#qr-code-container canvas {
+    border: 5px solid var(--primary-color);
+    border-radius: 12px;
+    background-color: white;
+}
+
+#qr-code-container .btn-deactivate {
+    background-color: var(--error-color);
+}
+
+#qr-code-container .btn-activate {
+    background-color: var(--info-color);
+}
+
+/* ============================================
+   TOGGLE SWITCH (AUTOPLAY)
+   ============================================ */
+
+.autoplay-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.autoplay-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #CCC;
+    transition: .4s;
+    border-radius: 28px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--primary-color);
+}
+
+input:checked+.slider:before {
+    transform: translateX(22px);
+}
+
+/* ============================================
+   CUENTAS POR MESA
+   ============================================ */
+
+.account-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-summary {
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+.account-summary div {
+    margin-bottom: 8px;
+}
+
+.saldo-pendiente {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.saldo-ok {
+    color: var(--success-color);
+}
+
+.saldo-debe {
+    color: var(--error-color);
+}
+
+.details-section {
+    margin-top: 15px;
+    background-color: rgba(255, 215, 0, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #E0E0E0;
+}
+
+/* ============================================
+   MODAL DE SOBREPAGO
+   ============================================ */
+
+#overpayment-card {
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(135deg, #FFFFFF 0%, #FFFACD 100%);
+}
+
+#overpayment-card h3 {
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+}
+
+#overpayment-message {
+    color: var(--text-color);
+    font-size: 1.1em;
+    line-height: 1.6;
+    text-align: center;
+}
+
+#confirm-overpayment-btn {
+    background-color: var(--success-color) !important;
+    transition: all 0.3s ease;
+}
+
+#confirm-overpayment-btn:hover {
+    background-color: #45a049 !important;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+    transform: translateY(-2px);
+}
+
+#cancel-overpayment-btn {
+    background-color: var(--text-secondary) !important;
+    transition: all 0.3s ease;
+}
+
+#cancel-overpayment-btn:hover {
+    background-color: #999 !important;
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px;
+        padding: 20px;
+    }
+
+    .grid-4,
+    .grid-3,
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
