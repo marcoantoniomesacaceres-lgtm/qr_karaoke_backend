@@ -415,12 +415,15 @@
 
             stopCarousel(); // Oculta standby, muestra overlay y detiene carrusel
 
-            // Si el reproductor ya existe, cargar el nuevo video
-            if (ytPlayer && ytPlayer.loadVideoById) {
+            // Verificamos si el iframe realmente existe (puede haber sido borrado por la transición)
+            const iframeExists = document.getElementById('youtube-iframe');
+
+            // Si el reproductor ya existe y el iframe está en el DOM, cargar el nuevo video
+            if (ytPlayer && ytPlayer.loadVideoById && iframeExists) {
                 console.log('🔄 Cargando nuevo video en reproductor existente');
                 ytPlayer.loadVideoById(videoId);
             } else {
-                // Crear nuevo reproductor
+                // Crear nuevo reproductor (el contenedor fue limpiado o es la primera carga)
                 console.log('🆕 Creando nuevo reproductor');
                 createYouTubePlayer(videoId);
             }

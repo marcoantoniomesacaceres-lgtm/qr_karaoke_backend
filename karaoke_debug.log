@@ -598,3 +598,63 @@
 2025-12-09 15:39:15,806 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-09 15:39:15,824 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-09 15:39:15,831 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 15:49:29,946 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-09 15:49:29,948 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-09 15:49:31,930 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 15:49:31,931 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-09 15:49:31,932 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 15:49:32,567 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 15:49:32,574 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 15:49:32,575 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'U9GFert9tkU', '5yLGjXTF6MY', 'Fs_BnnaEUts', 'bY61n7lwzrY', 'xnO-49PvGCY', 'aJ5wyBE9M_0', 'hb5t-D5QVBI', 'yzZKapAPQeg']
+2025-12-09 15:49:32,578 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 15:49:32,760 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2CbY61n7lwzrY%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2Chb5t-D5QVBI%2CyzZKapAPQeg&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 15:49:32,781 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 15:49:32,787 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 16:03:26,358 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-09 16:03:26,362 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-09 16:03:28,134 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 16:03:28,135 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-09 16:03:28,137 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 16:03:28,842 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 16:03:28,857 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 16:03:28,861 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'U9GFert9tkU', '5yLGjXTF6MY', 'Fs_BnnaEUts', 'bY61n7lwzrY', 'xnO-49PvGCY', 'aJ5wyBE9M_0', '6mysi-heljE', 'hb5t-D5QVBI']
+2025-12-09 16:03:28,864 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 16:03:29,135 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2CbY61n7lwzrY%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2C6mysi-heljE%2Chb5t-D5QVBI&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 16:03:29,156 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 16:03:29,163 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 16:04:00,605 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'mark antony'
+2025-12-09 16:04:00,606 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'mark antony' (Karaoke Mode: False)
+2025-12-09 16:04:02,252 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 16:04:02,253 - youtube - INFO - Búsqueda por texto: 'mark antony'
+2025-12-09 16:04:02,253 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 16:04:02,897 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=mark+antony&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 16:04:02,903 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 16:04:02,903 - youtube - INFO - IDs de video encontrados: ['dRwMTzHf4jo', 'mRY-D9fnzt8', 'yTLWGt4e6Hw', '5S9Y2zBZmz0', 'BFaRWXEpFrs', 'g4S3jUtqcyM', '3VmoZrxXbmg', '0nvNEGEaEis', 'o0b48EWd0iI', 'S1rCziOoRig']
+2025-12-09 16:04:02,904 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 16:04:03,096 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=dRwMTzHf4jo%2CmRY-D9fnzt8%2CyTLWGt4e6Hw%2C5S9Y2zBZmz0%2CBFaRWXEpFrs%2Cg4S3jUtqcyM%2C3VmoZrxXbmg%2C0nvNEGEaEis%2Co0b48EWd0iI%2CS1rCziOoRig&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 16:04:03,106 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 16:04:03,108 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 16:04:16,962 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes'
+2025-12-09 16:04:16,963 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes' (Karaoke Mode: False)
+2025-12-09 16:04:18,583 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 16:04:18,584 - youtube - INFO - Búsqueda por texto: 'los gigantes'
+2025-12-09 16:04:18,585 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 16:04:19,187 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 16:04:19,192 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 16:04:19,193 - youtube - INFO - IDs de video encontrados: ['C4cGljNvCig', 'LA4X4fyJOcg', 'jsD3QWHtvGI', 'L5nz4iOqY08', 'RTGq5spQaW4', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'rGEuptUFQ2Q', 'UWTLJ91A8QA', 'i8YLs0luEak']
+2025-12-09 16:04:19,197 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 16:04:19,420 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=C4cGljNvCig%2CLA4X4fyJOcg%2CjsD3QWHtvGI%2CL5nz4iOqY08%2CRTGq5spQaW4%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CrGEuptUFQ2Q%2CUWTLJ91A8QA%2Ci8YLs0luEak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 16:04:19,435 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 16:04:19,437 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 16:04:43,687 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'alci acosta'
+2025-12-09 16:04:43,688 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'alci acosta' (Karaoke Mode: False)
+2025-12-09 16:04:45,278 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 16:04:45,279 - youtube - INFO - Búsqueda por texto: 'alci acosta'
+2025-12-09 16:04:45,279 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 16:04:45,803 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=alci+acosta&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 16:04:45,821 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 16:04:45,826 - youtube - INFO - IDs de video encontrados: ['EHUl9p3vLD0', 'j9G5Q_HrV5g', 'Eo5dUwmhlyM', 'pooEp9U0Xe8', '_jK301cPjv8', 'zT7LFHWW35c', 'XfqUBFPfDR0', 'hj0bHZHXM5Y', 'sO0D2a7H0fk', 'SbE6iDsdg9Q']
+2025-12-09 16:04:45,832 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 16:04:46,046 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=EHUl9p3vLD0%2Cj9G5Q_HrV5g%2CEo5dUwmhlyM%2CpooEp9U0Xe8%2C_jK301cPjv8%2CzT7LFHWW35c%2CXfqUBFPfDR0%2Chj0bHZHXM5Y%2CsO0D2a7H0fk%2CSbE6iDsdg9Q&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 16:04:46,078 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 16:04:46,080 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
