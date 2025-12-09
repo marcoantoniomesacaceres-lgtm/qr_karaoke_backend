@@ -96,7 +96,9 @@ function renderCatalog(products) {
                     <p class="product-card-category">${product.categoria}</p>
                     <div class="product-card-footer">
                         <span class="product-price">$${product.valor}</span>
-                        <button class="add-to-cart-btn" data-product-id="${product.id}" data-product-name="${product.nombre}" data-product-stock="${product.stock}" data-product-price="${product.valor}">Añadir</button>
+                        <div class="add-btn-container" data-product-id="${product.id}" data-product-name="${product.nombre}" data-product-stock="${product.stock}" data-product-price="${product.valor}" data-quantity="0">
+                            <button class="add-to-cart-btn">Añadir</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -351,15 +353,74 @@ async function handleAddSong(event) {
 }
 
 async function handleAddToCart(event) {
-    if (!event.target.classList.contains('add-to-cart-btn')) return;
+    // Find the container (works for both button clicks and quantity button clicks)
+    const container = event.target.closest('.add-btn-container');
+    if (!container) return;
 
-    const button = event.target;
-    const productId = button.dataset.productId;
-    const productName = button.dataset.productName;
-    const productStock = parseInt(button.dataset.productStock, 10);
+    const productId = container.dataset.productId;
+    const productName = container.dataset.productName;
+    const productStock = parseInt(container.dataset.productStock, 10);
+    let currentQuantity = parseInt(container.dataset.quantity, 10);
 
-    addToCart(productId, productName, productStock);
-    showNotification(`${productName} añadido al carrito.`, 'success', 1500);
+    // Determine which button was clicked
+    if (event.target.classList.contains('add-to-cart-btn')) {
+        // Initial "Añadir" button clicked
+        currentQuantity = 1;
+        updateQuantityDisplay(container, currentQuantity);
+        updateCartQuantity(productId, productName, currentQuantity);
+        showNotification(`${productName} añadido al carrito.`, 'success', 1500);
+    } else if (event.target.classList.contains('quantity-btn-plus')) {
+        // Plus button clicked
+        if (currentQuantity < productStock) {
+            currentQuantity++;
+            updateQuantityDisplay(container, currentQuantity);
+            updateCartQuantity(productId, productName, currentQuantity);
+        }
+    } else if (event.target.classList.contains('quantity-btn-minus')) {
+        // Minus button clicked
+        currentQuantity--;
+        if (currentQuantity === 0) {
+            // Return to "Añadir" button state
+            updateQuantityDisplay(container, 0);
+            removeFromCart(productId);
+        } else {
+            updateQuantityDisplay(container, currentQuantity);
+            updateCartQuantity(productId, productName, currentQuantity);
+        }
+    }
+}
+
+function updateQuantityDisplay(container, quantity) {
+    container.dataset.quantity = quantity;
+
+    if (quantity === 0) {
+        // Show "Añadir" button
+        container.innerHTML = '<button class="add-to-cart-btn">Añadir</button>';
+    } else {
+        // Show quantity counter
+        container.innerHTML = `
+            <div class="quantity-counter">
+                <button class="quantity-btn quantity-btn-minus">−</button>
+                <span class="quantity-display">${quantity}</span>
+                <button class="quantity-btn quantity-btn-plus">+</button>
+            </div>
+        `;
+    }
+}
+
+function updateCartQuantity(productId, productName, quantity) {
+    const existingItem = state.cart.find(item => item.producto_id === productId);
+    if (existingItem) {
+        existingItem.cantidad = quantity;
+    } else {
+        state.cart.push({ producto_id: productId, nombre: productName, cantidad: quantity });
+    }
+    renderCart();
+}
+
+function removeFromCart(productId) {
+    state.cart = state.cart.filter(item => item.producto_id !== productId);
+    renderCart();
 }
 
 async function handleAddAllToCart() {

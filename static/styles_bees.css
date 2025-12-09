@@ -390,6 +390,53 @@ body {
     background: var(--bees-yellow-dark);
 }
 
+/* QUANTITY COUNTER (BEES STYLE) */
+.add-btn-container {
+    min-width: 80px;
+}
+
+.quantity-counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bees-yellow);
+    border-radius: 8px;
+    overflow: hidden;
+    gap: 2px;
+}
+
+.quantity-btn {
+    background: var(--bees-yellow-dark);
+    color: var(--bees-black);
+    border: none;
+    padding: 6px 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 28px;
+}
+
+.quantity-btn:hover {
+    background: var(--bees-yellow);
+    transform: scale(1.1);
+}
+
+.quantity-btn:active {
+    transform: scale(0.95);
+}
+
+.quantity-display {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1em;
+    color: var(--bees-black);
+    padding: 0 4px;
+    min-width: 24px;
+}
+
+
 /* BOTÓN "AGREGAR TODO" */
 .btn-add-all {
     width: 100%;

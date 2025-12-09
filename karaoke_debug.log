@@ -466,3 +466,87 @@
 2025-12-05 16:09:39,613 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2CbY61n7lwzrY%2CxnO-49PvGCY%2C6mysi-heljE%2CaJ5wyBE9M_0%2Chb5t-D5QVBI&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-05 16:09:39,621 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-05 16:09:39,623 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:25,357 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:25,363 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:27,653 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:27,654 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:27,656 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:28,360 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:28,369 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:28,370 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'L5nz4iOqY08', 'WyueNqPNUrQ', 'iolgNqlfI14', '3kWwGa4W8Ak', 'i8YLs0luEak', '8veX6aXeaBU']
+2025-12-09 09:41:28,371 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:28,578 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CL5nz4iOqY08%2CWyueNqPNUrQ%2CiolgNqlfI14%2C3kWwGa4W8Ak%2Ci8YLs0luEak%2C8veX6aXeaBU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:28,591 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:28,594 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:28,619 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:28,652 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:30,575 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:30,577 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:30,581 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:31,233 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:31,241 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:31,242 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'jsD3QWHtvGI', 'C4cGljNvCig', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'L5nz4iOqY08', 'UWTLJ91A8QA', '8veX6aXeaBU', 'i8YLs0luEak', '3kWwGa4W8Ak']
+2025-12-09 09:41:31,255 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:31,455 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CjsD3QWHtvGI%2CC4cGljNvCig%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CL5nz4iOqY08%2CUWTLJ91A8QA%2C8veX6aXeaBU%2Ci8YLs0luEak%2C3kWwGa4W8Ak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:31,470 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:31,472 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:31,499 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:31,506 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:33,412 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:33,413 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:33,414 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:33,980 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:33,994 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:34,014 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'L5nz4iOqY08', 'iolgNqlfI14', 'WyueNqPNUrQ', '3kWwGa4W8Ak', '8veX6aXeaBU', 'UWTLJ91A8QA']
+2025-12-09 09:41:34,017 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:34,218 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CL5nz4iOqY08%2CiolgNqlfI14%2CWyueNqPNUrQ%2C3kWwGa4W8Ak%2C8veX6aXeaBU%2CUWTLJ91A8QA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:34,237 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:34,239 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:34,324 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:34,339 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:36,502 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:36,503 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:36,504 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:37,128 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:37,133 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:37,134 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'jsD3QWHtvGI', 'C4cGljNvCig', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'UWTLJ91A8QA', 'L5nz4iOqY08', '8veX6aXeaBU', '3kWwGa4W8Ak', 'i8YLs0luEak']
+2025-12-09 09:41:37,135 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:37,313 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CjsD3QWHtvGI%2CC4cGljNvCig%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CUWTLJ91A8QA%2CL5nz4iOqY08%2C8veX6aXeaBU%2C3kWwGa4W8Ak%2Ci8YLs0luEak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:37,326 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:37,328 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:37,358 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:37,399 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:39,304 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:39,305 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:39,306 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:39,989 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:39,993 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:39,994 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'L5nz4iOqY08', 'WyueNqPNUrQ', '1SfX4eK7aaw', 'iolgNqlfI14', '3kWwGa4W8Ak', 'i8YLs0luEak']
+2025-12-09 09:41:39,995 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:40,222 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CL5nz4iOqY08%2CWyueNqPNUrQ%2C1SfX4eK7aaw%2CiolgNqlfI14%2C3kWwGa4W8Ak%2Ci8YLs0luEak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:40,233 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:40,235 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:41:40,257 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del ballenato'
+2025-12-09 09:41:40,291 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del ballenato' (Karaoke Mode: False)
+2025-12-09 09:41:42,110 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:41:42,111 - youtube - INFO - Búsqueda por texto: 'los gigantes del ballenato'
+2025-12-09 09:41:42,112 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:41:42,701 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:41:42,725 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:41:42,728 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'L5nz4iOqY08', 'WyueNqPNUrQ', 'iolgNqlfI14', '3kWwGa4W8Ak', '8veX6aXeaBU', 'UWTLJ91A8QA']
+2025-12-09 09:41:42,730 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:41:42,902 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CL5nz4iOqY08%2CWyueNqPNUrQ%2CiolgNqlfI14%2C3kWwGa4W8Ak%2C8veX6aXeaBU%2CUWTLJ91A8QA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:41:42,916 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:41:42,919 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 09:42:27,544 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-09 09:42:27,547 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-09 09:42:29,234 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 09:42:29,235 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-09 09:42:29,237 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 09:42:29,873 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 09:42:29,878 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 09:42:29,879 - youtube - INFO - IDs de video encontrados: ['KI3pWvM19Pc', '9o1ea3O_GTs', '76aba24n66U', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'bu5WOIoGAIU', 'NP3LASw8uWY', 'KTT2QhqY23g', 'SAe4DxIadxM']
+2025-12-09 09:42:29,881 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 09:42:30,447 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=KI3pWvM19Pc%2C9o1ea3O_GTs%2C76aba24n66U%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2Cbu5WOIoGAIU%2CNP3LASw8uWY%2CKTT2QhqY23g%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 09:42:30,459 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 09:42:30,461 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
