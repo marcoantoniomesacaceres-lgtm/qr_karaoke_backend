@@ -35,11 +35,22 @@ function renderApprovedSongs(songs, listElement) {
 
         if (index === 0) {
             // First item (Playing): Show full 2x3 grid control
+
+            // Determine the current state of the pause button from the hidden global button
+            const globalPauseBtn = document.getElementById('pause-resume-btn');
+            // If global button says "Reanudar" (it's paused), we show "Reanudar"
+            // If global button says "Pausar" (it's playing), we show "Pausar"
+            // Default to "Pausar" if not found
+            let pauseBtnText = '⏸️ Pausar';
+            if (globalPauseBtn && globalPauseBtn.innerText.includes('Reanudar')) {
+                pauseBtnText = '▶️ Reanudar';
+            }
+
             buttonsHtml = `
                 <div class="queue-actions-grid">
                     <!-- Row 1: Reproducir | Pausar -->
                     <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
-                    <button class="btn-action" data-id="player-pause" data-action="pause-resume-toggle" title="Pausar/Reanudar">Pausar</button>
+                    <button class="btn-action" data-id="player-pause" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseBtnText}</button>
                     
                     <!-- Row 2: Bajar | Subir -->
                     <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
@@ -51,15 +62,8 @@ function renderApprovedSongs(songs, listElement) {
                 </div>
             `;
         } else {
-            // Other items: Standard controls
-            buttonsHtml = `
-                <div class="item-actions">
-                    <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
-                    <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
-                    <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
-                    <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
-                </div>
-            `;
+            // Other items: No buttons as requested
+            buttonsHtml = '';
         }
 
         li.innerHTML = `
@@ -331,6 +335,13 @@ async function handlePauseResume() {
     try {
         await apiFetch(endpoint, { method: 'POST' });
         btn.innerHTML = newText;
+
+        // Sync the grid button if it exists
+        const gridPauseBtn = document.querySelector('button[data-action="pause-resume-toggle"]');
+        if (gridPauseBtn) {
+            gridPauseBtn.innerHTML = newText;
+        }
+
         showNotification(isPausing ? 'Se ha enviado la orden de PAUSA.' : 'Se ha enviado la orden de REANUDAR.', 'info');
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
