@@ -5,8 +5,656 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - LA CANTA QUE RANA</title>
-    <link rel="stylesheet" href="/static/admin_styles_bees.css">
     <link rel="stylesheet" href="/static/admin_pages/reports.css">
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #f44336;
+            /* Rojo Admin */
+            --primary-variant: #d32f2f;
+            --secondary-color: #bb86fc;
+            --text-color: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --error-color: #cf6679;
+            --success-color: #66bb6a;
+            --warning-color: #ffc107;
+            --info-color: #2196F3;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--surface-color);
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            position: fixed;
+            overflow-y: auto;
+        }
+
+        .sidebar h1 {
+            color: var(--primary-color);
+            font-size: 1.5em;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar .nav-menu li a {
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar .nav-menu li a:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--primary-color);
+        }
+
+        .sidebar .nav-menu li a.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            flex-grow: 1;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        /* Estilos de listas y tablas */
+        .item-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+        }
+
+        .item.inactive {
+            background-color: rgba(207, 102, 121, 0.1);
+            opacity: 0.6;
+        }
+
+        .item-details {
+            flex-grow: 1;
+        }
+
+        .item-title {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .item-meta {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .item-stock {
+            font-weight: bold;
+        }
+
+        .stock-low {
+            color: var(--warning-color);
+        }
+
+        .stock-out {
+            color: var(--error-color);
+        }
+
+        .item-actions button {
+            margin-left: 10px;
+            padding: 8px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .item-actions button:hover {
+            opacity: 0.8;
+        }
+
+        .btn-activate {
+            background-color: var(--success-color);
+        }
+
+        .btn-deactivate {
+            background-color: var(--error-color);
+        }
+
+        .btn-approve {
+            background-color: var(--success-color);
+        }
+
+        .btn-generate-qr {
+            background-color: var(--success-color) !important;
+        }
+
+        /* Verde */
+        .btn-delete {
+            background-color: var(--error-color);
+        }
+
+        /* Añadido para el botón de eliminar */
+        .btn-reject {
+            background-color: var(--error-color);
+        }
+
+        .btn-action {
+            background-color: var(--info-color);
+        }
+
+        /* Colores específicos para botones de despacho de pedidos */
+        .btn-despachado {
+            background-color: var(--success-color);
+            /* Verde */
+        }
+
+        .btn-no-despachado {
+            background-color: var(--warning-color);
+            /* Naranja */
+            color: var(--bg-color) !important;
+            /* Texto oscuro para mejor contraste */
+        }
+
+        .btn-no-despachado:hover {
+            background-color: var(--error-color);
+            /* Rojo al pasar el cursor */
+        }
+
+        /* Estilos de Formularios */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: calc(100% - 24px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        button.form-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button.form-btn:hover {
+            background-color: var(--primary-variant);
+        }
+
+        /* Badges de estado */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: var(--bg-color);
+            text-transform: capitalize;
+        }
+
+        .status-active {
+            background-color: var(--success-color);
+        }
+
+        .status-inactive {
+            background-color: var(--text-secondary);
+        }
+
+        .status-pendiente {
+            background-color: var(--warning-color);
+        }
+
+        .status-aprobado {
+            background-color: var(--success-color);
+        }
+
+        .status-reproduciendo {
+            background-color: var(--info-color);
+        }
+
+        /* Notificaciones */
+        #notification {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 1000;
+            text-align: center;
+            min-width: 250px;
+        }
+
+        #notification.show {
+            bottom: 20px;
+        }
+
+        #notification.success {
+            background-color: var(--success-color);
+            color: var(--bg-color);
+        }
+
+        #notification.error {
+            background-color: var(--error-color);
+            color: var(--bg-color);
+        }
+
+        #notification.info {
+            background-color: var(--info-color);
+            color: var(--bg-color);
+        }
+
+        /* Estilo especial para los mensajes globales del admin */
+        #notification.admin-global-message {
+            font-size: 1.3em;
+            font-weight: bold;
+            background-color: var(--secondary-color);
+            color: var(--bg-color);
+            animation: pulse 2s infinite alternate;
+            /* Opcional: animación sutil */
+        }
+
+
+        /* Componentes específicos */
+        .summary-card {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .dangerous-zone button {
+            background-color: var(--error-color);
+        }
+
+        .dangerous-zone button:hover {
+            background-color: #a04f5b;
+        }
+
+        .song-item-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .song-item-info img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        th {
+            background-color: #2a2a2a;
+        }
+
+        .logout-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 200px;
+            background: none;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--surface-color);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Estilos para las reacciones con emoticonos */
+        .reaction-container {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Para que no interfiera con los clics */
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .reaction-emoji {
+            position: absolute;
+            bottom: -50px;
+            /* Empieza fuera de la pantalla */
+            font-size: 2.5rem;
+            animation: float-up 5s ease-out forwards;
+        }
+
+        @keyframes float-up {
+            to {
+                bottom: 100%;
+                transform: translateX(var(--tx, 0)) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Animación para la alerta de nuevo pedido */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: rotate(-10deg);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .shaking {
+            display: inline-block;
+            /* Necesario para que la transformación funcione correctamente */
+            animation: shake 0.8s cubic-bezier(.36, .07, .19, .97) both infinite;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+        }
+
+        /* Estilos específicos para el Código QR */
+        #qr-code-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qr-code-container canvas {
+            border: 5px solid white;
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        /* Sobrescribir colores de botones de activar/desactivar mesa */
+        #qr-code-container .btn-deactivate {
+            background-color: var(--error-color);
+        }
+
+        /* Rojo */
+        #qr-code-container .btn-activate {
+            background-color: var(--info-color);
+        }
+
+        /* Azul */
+    </style>
+    <style>
+        /* Estilos para el toggle switch de Autoplay */
+        .autoplay-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .autoplay-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+    <style>
+        /* Estilos para la página de Cuentas por Mesa */
+        .account-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .account-summary {
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .account-summary div {
+            margin-bottom: 8px;
+        }
+
+        .saldo-pendiente {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .saldo-ok {
+            color: var(--success-color);
+        }
+
+        .saldo-debe {
+            color: var(--error-color);
+        }
+
+        .details-section {
+            margin-top: 15px;
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* Estilo para el modal de confirmación de sobrepago */
+        #overpayment-card {
+            border: 2px solid var(--secondary-color);
+            /* Violeta */
+            box-shadow: 0 0 25px rgba(187, 134, 252, 0.6);
+            background: linear-gradient(135deg, #1e1e1e 0%, #2a1e3e 100%);
+            /* Fondo con toque violeta */
+        }
+
+        #overpayment-card h3 {
+            color: var(--secondary-color);
+            /* Título violeta */
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        #overpayment-message {
+            color: var(--text-color);
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        #confirm-overpayment-btn {
+            background-color: var(--success-color) !important;
+            /* Verde para confirmar */
+            transition: all 0.3s ease;
+        }
+
+        #confirm-overpayment-btn:hover {
+            background-color: #4caf50 !important;
+            box-shadow: 0 0 15px rgba(102, 187, 106, 0.5);
+            transform: translateY(-2px);
+        }
+
+        #cancel-overpayment-btn {
+            background-color: var(--text-secondary) !important;
+            transition: all 0.3s ease;
+        }
+
+        #cancel-overpayment-btn:hover {
+            background-color: #999 !important;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 
 <body>
