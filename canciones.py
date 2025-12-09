@@ -72,7 +72,8 @@ async def anadir_cancion(
     hora_cierre_str = config.settings.KARAOKE_CIERRE
     try:
         h, m = map(int, hora_cierre_str.split(':'))
-        ahora = datetime.datetime.now()
+        from timezone_utils import now_bogota
+        ahora = now_bogota()
         hora_cierre = ahora.replace(hour=h, minute=m, second=0, microsecond=0)
         if hora_cierre < ahora:
             hora_cierre += datetime.timedelta(days=1)

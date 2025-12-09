@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import func, case, or_
-from sqlalchemy.orm import joinedload # Importar joinedload
+
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, case, or_, and_, desc
 import secrets
 from typing import List, Optional
 import datetime
 import models, schemas
+from timezone_utils import now_bogota
 from decimal import Decimal # Importar Decimal
 
 def get_mesa_by_qr(db: Session, qr_code: str):
@@ -111,7 +112,7 @@ def get_cola_priorizada(db: Session):
     2. El consumo total del usuario.
     3. Orden manual establecido por el administrador.
     """
-    hora_limite = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+    hora_limite = now_bogota() - datetime.timedelta(hours=1)
 
     # Subconsulta única para obtener estadísticas de consumo por usuario
     user_consumption_stats_subq = (
@@ -342,7 +343,7 @@ def marcar_cancion_actual_como_cantada(db: Session):
 
     # 3. Actualizar el estado de la canción a 'cantada'
     cancion_actual.estado = "cantada"
-    cancion_actual.finished_at = datetime.datetime.utcnow()
+    cancion_actual.finished_at = now_bogota()
 
     # 4. Dar puntos al usuario por cantar (puntos base + puntaje de IA)
     if cancion_actual.usuario:
@@ -359,7 +360,7 @@ def marcar_siguiente_como_reproduciendo(db: Session):
         return None
     
     siguiente_cancion[0].estado = "reproduciendo"
-    siguiente_cancion[0].started_at = datetime.datetime.utcnow()
+    siguiente_cancion[0].started_at = now_bogota()
     db.commit()
     db.refresh(siguiente_cancion[0])
     return siguiente_cancion[0]
@@ -373,7 +374,7 @@ def get_tiempo_espera_para_cancion(db: Session, cancion_id: int) -> int:
     
     tiempo_espera_total = 0
     if cancion_actual:
-        tiempo_transcurrido = (datetime.datetime.utcnow() - cancion_actual.started_at).total_seconds()
+        tiempo_transcurrido = (now_bogota() - cancion_actual.started_at).total_seconds()
         tiempo_restante_actual = max(0, cancion_actual.duracion_seconds - tiempo_transcurrido)
         tiempo_espera_total += tiempo_restante_actual
 

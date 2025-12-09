@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 import datetime
 
 from database import Base
+from timezone_utils import now_bogota
 
 class Mesa(Base):
     __tablename__ = "mesas"
@@ -24,7 +25,7 @@ class Usuario(Base):
     nick = Column(String, index=True)
     puntos = Column(Integer, default=0)
     nivel = Column(String, default="bronce")  # bronce, plata, oro
-    last_active = Column(DateTime, default=datetime.datetime.utcnow)
+    last_active = Column(DateTime, default=now_bogota)
     is_silenced = Column(Boolean, default=False) # Nuevo campo para silenciar
     is_active = Column(Boolean, default=True)  # Para desconectar usuarios sin eliminar
     
@@ -46,7 +47,7 @@ class Cancion(Base):
     started_at = Column(DateTime, nullable=True)  # Hora en que empieza a sonar
     orden_manual = Column(Integer, nullable=True)  # Posición manual establecida por el admin
     puntuacion_ia = Column(Integer, nullable=True) # Nuevo campo para el puntaje de la IA
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)  # Hora en que se añade
+    created_at = Column(DateTime, default=now_bogota)  # Hora en que se añade
     finished_at = Column(DateTime, nullable=True) # Hora en que se termina de cantar
     
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
@@ -71,7 +72,7 @@ class Consumo(Base):
     id = Column(Integer, primary_key=True, index=True)
     cantidad = Column(Integer, default=1)
     valor_total = Column(Numeric(10, 2))  # Valor total de la transacción (cantidad * precio_unitario)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=now_bogota)
     
     producto_id = Column(Integer, ForeignKey("productos.id"))
     mesa_id = Column(Integer, ForeignKey("mesas.id"))  # CAMBIO: Consumos asignados a mesa, no usuario
@@ -86,12 +87,12 @@ class BannedNick(Base):
     __tablename__ = "banned_nicks"
     id = Column(Integer, primary_key=True, index=True)
     nick = Column(String, unique=True, index=True)
-    banned_at = Column(DateTime, default=datetime.datetime.utcnow)
+    banned_at = Column(DateTime, default=now_bogota)
 
 class AdminLog(Base):
     __tablename__ = "admin_logs"
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=now_bogota)
     action = Column(String, index=True)
     details = Column(String, nullable=True)
 
@@ -101,7 +102,7 @@ class AdminApiKey(Base):
     key = Column(String, unique=True, index=True, nullable=False)
     description = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=now_bogota)
     last_used = Column(DateTime, nullable=True)
 
 class Pago(Base):
@@ -110,7 +111,7 @@ class Pago(Base):
     id = Column(Integer, primary_key=True, index=True)
     monto = Column(Numeric(10, 2), nullable=False)
     metodo_pago = Column(String, default="Efectivo")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=now_bogota)
 
     mesa_id = Column(Integer, ForeignKey("mesas.id"))
 
