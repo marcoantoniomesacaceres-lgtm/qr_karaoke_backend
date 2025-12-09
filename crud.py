@@ -106,38 +106,140 @@ def update_cancion_estado(db: Session, cancion_id: int, nuevo_estado: str):
 
 def get_cola_priorizada(db: Session):
     """
-    Obtiene la lista de canciones aprobadas, ordenadas por prioridad.
-    La prioridad se basa en:
-    1. Si el último consumo fue hace menos de 1 hora.
-    2. El consumo total del usuario.
-    3. Orden manual establecido por el administrador.
+    Obtiene la lista de canciones aprobadas, ordenadas por el algoritmo de "Cola Justa".
+    
+    Reglas:
+    1. Orden Manual: Las canciones con `orden_manual` tienen prioridad absoluta y mantienen su orden relativo.
+    2. Agrupación por Mesa: El resto de canciones se agrupan por su mesa de origen.
+    3. Categorías de Mesa (basado en consumo total de la mesa):
+        - ORO (> $150.000): Cupo de 3 canciones por turno.
+        - PLATA (> $50.000): Cupo de 2 canciones por turno.
+        - BRONCE (<= $50.000): Cupo de 1 canción por turno.
+    4. Round Robin: Se iteran las mesas (ordenadas por la hora de llegada de su primera canción pendiente)
+       y se toman N canciones (según su cupo) en cada turno.
     """
-    hora_limite = now_bogota() - datetime.timedelta(hours=1)
-
-    # Subconsulta única para obtener estadísticas de consumo por usuario
-    user_consumption_stats_subq = (
-        db.query(
-            models.Usuario.id.label("usuario_id"),
-            func.sum(models.Consumo.valor_total).label("total_consumido"),
-            func.max(models.Consumo.created_at).label("ultimo_consumo_ts"),
-        )
-        .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
-        .group_by(models.Usuario.id)
-        .subquery()
-    )
-
-    # Expresión 'case' para determinar la prioridad de actividad del usuario
-    prioridad_actividad = case((user_consumption_stats_subq.c.ultimo_consumo_ts > hora_limite, 1), else_=0).label("prioridad_actividad")
-
-    # Consulta principal que une canciones con el consumo del usuario
-    return (
+    from collections import deque
+    
+    # 1. Obtener todas las canciones aprobadas
+    # Ordenamos por ID ascendente para respetar el orden de llegada "natural" dentro de cada mesa
+    todas_canciones = (
         db.query(models.Cancion)
         .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
-        .outerjoin(user_consumption_stats_subq, models.Usuario.id == user_consumption_stats_subq.c.usuario_id)
         .filter(models.Cancion.estado == "aprobado")
-        .order_by(models.Cancion.orden_manual.asc().nulls_last(), prioridad_actividad.desc(), func.coalesce(user_consumption_stats_subq.c.total_consumido, 0).desc(), models.Cancion.id.asc())
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
         .all()
     )
+
+    # 2. Separar canciones con orden manual (Prioridad Absoluta)
+    cola_manual = []
+    cola_pool = []
+    
+    for cancion in todas_canciones:
+        if cancion.orden_manual is not None:
+            # Insertar respetando el valor de orden_manual si es posible, o simplemente al principio
+            cola_manual.append(cancion)
+        else:
+            cola_pool.append(cancion)
+            
+    # Si solo hay canciones manuales, retornamos
+    if not cola_pool:
+        return cola_manual
+
+    # 3. Agrupar canciones por Mesa
+    match_mesa_canciones = {} # {mesa_id: deque([canciones])}
+    mesa_arrival_time = {} # {mesa_id: primer_id_cancion} para ordenar turnos
+    
+    mesas_involucradas_ids = set()
+
+    for cancion in cola_pool:
+        mesa_id = cancion.usuario.mesa_id
+        if not mesa_id:
+            # Si un usuario no tiene mesa (ej. DJ), lo tratamos como una mesa "ficticia" con ID negativo
+            # o lo agrupamos en un grupo especial. Asumamos ID 0 para "Sin Mesa"
+            mesa_id = 0
+            
+        if mesa_id not in match_mesa_canciones:
+            match_mesa_canciones[mesa_id] = deque()
+            mesa_arrival_time[mesa_id] = cancion.id # El ID más bajo es el primero que llegó
+            mesas_involucradas_ids.add(mesa_id)
+            
+        match_mesa_canciones[mesa_id].append(cancion)
+
+    # 4. Calcular Categoría (Tier) de cada Mesa
+    # Necesitamos el consumo total de cada mesa involucrada
+    # Definimos umbrales
+    UMBRAL_ORO = 150000
+    UMBRAL_PLATA = 50000
+    
+    mesa_tiers = {} # {mesa_id: 'oro'|'plata'|'bronce'}
+    mesa_quotas = {} # {mesa_id: int}
+    
+    if mesas_involucradas_ids:
+        # Consulta eficiente para obtener consumos de las mesas relevantes
+        # Excluimos la mesa 0 (sin mesa/DJ) de la consulta de base de datos
+        ids_reales = [mid for mid in mesas_involucradas_ids if mid != 0]
+        
+        consumos_mesas = {}
+        if ids_reales:
+            rows = (
+                db.query(
+                    models.Usuario.mesa_id,
+                    func.sum(models.Consumo.valor_total)
+                )
+                .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+                .filter(models.Usuario.mesa_id.in_(ids_reales))
+                .group_by(models.Usuario.mesa_id)
+                .all()
+            )
+            for mid, total in rows:
+                consumos_mesas[mid] = total or 0
+        
+        # Asignar quotas
+        for mid in mesas_involucradas_ids:
+            total = consumos_mesas.get(mid, 0)
+            
+            # DJ / Sin Mesa (ID 0) recibe trato Preferencial o Estándar?
+            # Vamos a darle trato de ORO al DJ si se usa para poner música activamente.
+            if mid == 0: 
+                quota = 3 
+            elif total >= UMBRAL_ORO:
+                quota = 3
+            elif total >= UMBRAL_PLATA:
+                quota = 2
+            else:
+                quota = 1
+                
+            mesa_quotas[mid] = quota
+
+    # 5. Construir la Cola Round-Robin
+    cola_justa = []
+    
+    # Ordenamos las mesas por orden de llegada (quién puso canción primero)
+    orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
+    
+    # Bucle Round Robin
+    while match_mesa_canciones:
+        # Iterar sobre una copia de la lista de mesas para poder borrar claves del diccionario principal
+        for mesa_id in orden_turnos_mesas:
+            if mesa_id not in match_mesa_canciones:
+                continue
+                
+            queue_de_mesa = match_mesa_canciones[mesa_id]
+            cupo = mesa_quotas.get(mesa_id, 1)
+            
+            # Tomar hasta 'cupo' canciones
+            tomadas = 0
+            while tomadas < cupo and queue_de_mesa:
+                cancion = queue_de_mesa.popleft()
+                cola_justa.append(cancion)
+                tomadas += 1
+            
+            # Si la mesa se queda sin canciones, la eliminamos del diccionario
+            if not queue_de_mesa:
+                del match_mesa_canciones[mesa_id]
+    
+    # 6. Fusionar: Manual + Justa
+    return cola_manual + cola_justa
 
 def get_producto_by_nombre(db: Session, nombre: str):
     """Busca un producto por su nombre."""
