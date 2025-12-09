@@ -57,7 +57,10 @@ async function loadRecentOrders() {
                 <div class="item-details">
                     <div class="item-title">
                         ${mesaNombre} pidió:
-                        <span class="order-alert-icon shaking">🔔</span>
+                        <div class="tooltip-container">
+                            <span class="tooltip-text">PEDIDO PENDIENTE POR DESPACHAR</span>
+                            <span class="order-alert-icon shaking">🔔</span>
+                        </div>
                     </div>
                     <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
                     <div class="item-meta">

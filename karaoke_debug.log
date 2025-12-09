@@ -550,3 +550,27 @@
 2025-12-09 09:42:30,447 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=KI3pWvM19Pc%2C9o1ea3O_GTs%2C76aba24n66U%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2Cbu5WOIoGAIU%2CNP3LASw8uWY%2CKTT2QhqY23g%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-09 09:42:30,459 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-09 09:42:30,461 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-09 11:11:54,869 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-09 11:11:54,874 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-09 11:11:57,663 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 11:11:57,664 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-09 11:11:57,665 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 11:11:58,701 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 11:11:58,808 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 11:11:58,811 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '2JbrCXDNGcA', '6kYEW6oQfpw', 'rERCTLp4CK8']
+2025-12-09 11:11:58,813 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 11:11:58,997 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 11:11:59,011 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 11:11:59,013 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-09 11:13:38,940 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-09 11:13:38,942 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-09 11:13:40,700 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-09 11:13:40,701 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-09 11:13:40,702 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-09 11:13:41,318 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-09 11:13:41,322 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-09 11:13:41,323 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', '5yLGjXTF6MY', 'U9GFert9tkU', 'Fs_BnnaEUts', 'GC3GdqqOYRc', 'Yh0uZiFZRIg', 'hb5t-D5QVBI', '8ocO7EuqQfY', 'KHiSvtEsRug']
+2025-12-09 11:13:41,324 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-09 11:13:41,502 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2C5yLGjXTF6MY%2CU9GFert9tkU%2CFs_BnnaEUts%2CGC3GdqqOYRc%2CYh0uZiFZRIg%2Chb5t-D5QVBI%2C8ocO7EuqQfY%2CKHiSvtEsRug&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-09 11:13:41,510 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-09 11:13:41,512 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

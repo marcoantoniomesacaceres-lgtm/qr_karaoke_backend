@@ -609,6 +609,54 @@ tr:hover {
     backface-visibility: hidden;
 }
 
+/* Tooltip container */
+/* Tooltip container */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Tooltip text */
+.tooltip-text {
+    visibility: visible;
+    width: 220px;
+    background-color: #ff0000;
+    /* Rojo vivo explícito */
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    left: 100%;
+    /* Move to right */
+    margin-left: 15px;
+    /* Add spacing */
+    transform: translateY(-50%);
+    /* Center vertically */
+    font-size: 0.85em;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+    opacity: 0.95;
+}
+
+/* Tooltip arrow */
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    /* Arrow on left side */
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent #ff0000 transparent transparent;
+    /* Pointing left */
+}
+
 /* ============================================
    QR CODE
    ============================================ */
