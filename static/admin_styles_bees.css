@@ -307,6 +307,25 @@ h2 {
     color: white !important;
 }
 
+.queue-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    min-width: 200px;
+    margin-left: 10px;
+}
+
+.queue-actions-grid button {
+    width: 100%;
+    margin-left: 0 !important;
+    padding: 8px 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+}
+
 /* ============================================
    FORMULARIOS
    ============================================ */

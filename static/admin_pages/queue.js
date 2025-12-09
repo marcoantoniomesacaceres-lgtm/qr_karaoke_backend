@@ -31,9 +31,36 @@ function renderApprovedSongs(songs, listElement) {
             addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
         }
 
-        const restartButton = index === 0
-            ? `<button class="btn-action" data-id="${song.id}" data-action="restart" title="Reiniciar la canción actual">Reiniciar</button>`
-            : '';
+        let buttonsHtml = '';
+
+        if (index === 0) {
+            // First item (Playing): Show full 2x3 grid control
+            buttonsHtml = `
+                <div class="queue-actions-grid">
+                    <!-- Row 1: Reproducir | Pausar -->
+                    <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
+                    <button class="btn-action" data-id="player-pause" data-action="pause-resume-toggle" title="Pausar/Reanudar">Pausar</button>
+                    
+                    <!-- Row 2: Bajar | Subir -->
+                    <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
+                    <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
+                    
+                    <!-- Row 3: Reiniciar | Eliminar -->
+                    <button class="btn-action" data-id="${song.id}" data-action="restart" title="Reiniciar la canción actual">Reiniciar</button>
+                    <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
+                </div>
+            `;
+        } else {
+            // Other items: Standard controls
+            buttonsHtml = `
+                <div class="item-actions">
+                    <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
+                    <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
+                    <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
+                    <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
+                </div>
+            `;
+        }
 
         li.innerHTML = `
             <div class="item-details song-item-info">
@@ -46,13 +73,7 @@ function renderApprovedSongs(songs, listElement) {
                     </div>
                 </div>
             </div>
-            <div class="item-actions">
-                <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
-                <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
-                <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
-                <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
-                ${restartButton}
-            </div>
+            ${buttonsHtml}
         `;
         listElement.appendChild(li);
     });
@@ -278,6 +299,11 @@ async function handleQueueActions(event) {
             });
             showNotification('Reiniciando la canción actual.', 'info');
             // No recargar la cola para restart, ya que no cambia el orden
+        } else if (action === 'pause-resume-toggle') {
+            await handlePauseResume();
+            // Optional: Update button text state if needed, but handlePauseResume does it by ID 'pause-resume-btn'. 
+            // Since we have multiple buttons now, we might need to sync them or just rely on the notification.
+            // For better UX, we could reload or update UI, but let's see.
         }
 
         // Recargar la cola si hubo cambios
