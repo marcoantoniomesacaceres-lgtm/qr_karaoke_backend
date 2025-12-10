@@ -203,7 +203,8 @@ body {
     border: none;
     font-size: 1.5em;
     cursor: pointer;
-    margin-left: 15px;
+    margin-right: 5px;
+    /* Add slight spacing to right, though parent gap handles most */
     padding: 10px;
     border-radius: 50%;
     transition: background-color 0.3s;
