@@ -1017,3 +1017,32 @@ def delete_api_key(key_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Clave de API no encontrada.")
     crud.create_admin_log_entry(db, action="DELETE_API_KEY", details=f"Clave de API ID {key_id} ('{deleted_key.description}') eliminada.")
     return Response(status_code=204)
+
+# --- Cuentas por Mesa endpoints ---
+
+@router.post("/tables/{mesa_id}/new-account", summary="Abrir una nueva cuenta para la mesa")
+def open_new_account(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Cierra la cuenta actual de la mesa (si hay) y abre una nueva.
+    Los usuarios no se borran, pero los consumos futuros irán a la nueva cuenta.
+    """
+    new_cuenta = crud.create_new_active_cuenta(db, mesa_id)
+    return {"message": "Nueva cuenta creada exitosamente.", "cuenta_id": new_cuenta.id}
+
+@router.get("/tables/{mesa_id}/previous-accounts", response_model=List[schemas.CuentaInfo], summary="Obtener cuentas anteriores de la mesa")
+def get_previous_accounts(mesa_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Listado de cuentas cerradas de la mesa.
+    """
+    cuentas = crud.get_previous_cuentas(db, mesa_id)
+    return cuentas
+
+@router.get("/accounts/{cuenta_id}", response_model=schemas.MesaEstadoPago, summary="Obtener detalle de una cuenta (activa o pasada)")
+def get_account_details(cuenta_id: int, db: Session = Depends(get_db)):
+    """
+    **[Admin]** Obtiene el estado de cuenta completo de una cuenta específica (activa o cerrada).
+    """
+    status = crud.get_cuenta_payment_status(db, cuenta_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Cuenta no encontrada.")
+    return status

@@ -307,12 +307,18 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
     valor_total_transaccion = db_producto.valor * consumo.cantidad
 
     # 4. Crear el registro de consumo ASIGNADO A LA MESA (no al usuario)
+    # Obtener o crear cuenta activa
+    active_cuenta = get_active_cuenta(db, db_usuario.mesa_id)
+    if not active_cuenta:
+         active_cuenta = create_new_active_cuenta(db, db_usuario.mesa_id)
+
     db_consumo = models.Consumo(
         producto_id=consumo.producto_id,
         cantidad=consumo.cantidad,
         valor_total=valor_total_transaccion,
         mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
-        usuario_id=usuario_id  # Mantener referencia al usuario que pidió (tracking)
+        usuario_id=usuario_id,  # Mantener referencia al usuario que pidió (tracking)
+        cuenta_id=active_cuenta.id
     )
 
     # 5. Descontar del stock
@@ -379,13 +385,19 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
             valor_linea = db_producto.valor * item.cantidad
             valor_total_pedido += valor_linea
 
+            # Asegurar cuenta activa (solo una vez)
+            active_cuenta = get_active_cuenta(db, db_usuario.mesa_id)
+            if not active_cuenta:
+                active_cuenta = create_new_active_cuenta(db, db_usuario.mesa_id)
+
             # Creamos el objeto Consumo ASIGNADO A LA MESA
             db_consumo = models.Consumo(
                 producto_id=item.producto_id,
                 cantidad=item.cantidad,
                 valor_total=valor_linea,
                 mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
-                usuario_id=usuario_id  # Mantener referencia al usuario que pidió
+                usuario_id=usuario_id,  # Mantener referencia al usuario que pidió
+                cuenta_id=active_cuenta.id
             )
             db.add(db_consumo)
             consumos_creados.append(db_consumo)
@@ -1609,10 +1621,16 @@ def create_pago_for_mesa(db: Session, pago: schemas.PagoCreate) -> models.Pago:
     if not db_mesa:
         return None
 
+    # Obtener o crear cuenta activa
+    active_cuenta = get_active_cuenta(db, pago.mesa_id)
+    if not active_cuenta:
+         active_cuenta = create_new_active_cuenta(db, pago.mesa_id)
+
     db_pago = models.Pago(
         monto=pago.monto,
         metodo_pago=pago.metodo_pago,
-        mesa_id=pago.mesa_id
+        mesa_id=pago.mesa_id,
+        cuenta_id=active_cuenta.id
     )
     db.add(db_pago)
     db.commit()
@@ -1675,49 +1693,26 @@ def get_all_tables_payment_status(db: Session) -> List[dict]:
 def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
     """
     Obtiene un estado de cuenta detallado para una mesa específica.
-    CAMBIO: Ahora los consumos se consultan directamente de mesa_id (no por usuario).
-    Todos los consumos de los 10 usuarios se consolidan en la cuenta de la mesa.
+    CAMBIO: Se obtiene el estado de la CUENTA ACTIVA de la mesa.
     """
-    mesa = get_mesa_by_id(db, mesa_id=mesa_id)
-    if not mesa:
-        return None
-
-    # 1. Calcular total consumido POR LA MESA (consolidando todos sus usuarios)
-    total_consumido = (
-        db.query(func.sum(models.Consumo.valor_total))
-        .filter(models.Consumo.mesa_id == mesa.id)
-        .scalar() or Decimal('0.00')
-    )
-
-    # 2. Calcular total pagado
-    total_pagado = (
-        db.query(func.sum(models.Pago.monto))
-        .filter(models.Pago.mesa_id == mesa.id)
-        .scalar() or Decimal('0.00')
-    )
-
-    # 3. Calcular saldo pendiente
-    saldo_pendiente = total_consumido - total_pagado
-
-    # 4. Obtener detalles de consumos y pagos (ahora directo de mesa_id)
-    consumos_detalle = db.query(models.Consumo).filter(
-        models.Consumo.mesa_id == mesa.id
-    ).order_by(models.Consumo.created_at.asc()).all()
+    # 1. Obtener la cuenta activa
+    # Nota: Usamos la función helper definida abajo. Como Python permite referencias forward en runtime,
+    # esto funcionará siempre que se llame después de definir get_active_cuenta.
+    # Pero para estar seguros, la importaremos o asumiremos que está en el scope global del módulo.
+    # Dado que get_active_cuenta está en este mismo archivo, está bien.
     
-    pagos_detalle = db.query(models.Pago).filter(models.Pago.mesa_id == mesa.id).order_by(models.Pago.created_at.asc()).all()
-
-    consumos_items = [
-        schemas.ConsumoItemDetalle(
-            producto_nombre=c.producto.nombre,
-            cantidad=c.cantidad,
-            valor_total=c.valor_total,
-            created_at=c.created_at
-        ) for c in consumos_detalle
-    ]
-
-    return schemas.MesaEstadoPago(
-        mesa_id=mesa.id, mesa_nombre=mesa.nombre, total_consumido=total_consumido, total_pagado=total_pagado, saldo_pendiente=saldo_pendiente, consumos=consumos_items, pagos=pagos_detalle
-    ).dict()
+    active_cuenta = get_active_cuenta(db, mesa_id)
+    
+    if not active_cuenta:
+         # Si no hay cuenta activa, devolvemos un estado vacío pero válido
+         mesa = get_mesa_by_id(db, mesa_id)
+         if not mesa: return None
+         return schemas.MesaEstadoPago(
+             mesa_id=mesa.id, mesa_nombre=mesa.nombre, 
+             total_consumido=Decimal(0), total_pagado=Decimal(0), saldo_pendiente=Decimal(0), consumos=[], pagos=[]
+         ).dict()
+         
+    return get_cuenta_payment_status(db, active_cuenta.id)
 
 async def start_next_song_if_autoplay_and_idle(db: Session):
     """
@@ -1905,3 +1900,87 @@ def get_admin_api_key(db: Session, key: str):
         db.commit()
     
     return db_key
+
+# --- Account (Cuenta) Management ---
+
+def get_active_cuenta(db: Session, mesa_id: int) -> Optional[models.Cuenta]:
+    """Obtiene la cuenta activa actual de una mesa."""
+    return db.query(models.Cuenta).filter(models.Cuenta.mesa_id == mesa_id, models.Cuenta.is_active == True).first()
+
+def create_new_active_cuenta(db: Session, mesa_id: int):
+    """
+    Cierra la cuenta activa actual (si existe) y crea una nueva.
+    """
+    # 1. Buscar y cerrar cuenta activa existente
+    active = get_active_cuenta(db, mesa_id)
+    if active:
+        active.is_active = False
+        active.closed_at = now_bogota()
+    
+    # 2. Crear nueva cuenta activa
+    new_cuenta = models.Cuenta(mesa_id=mesa_id, is_active=True, created_at=now_bogota())
+    db.add(new_cuenta)
+    db.commit()
+    db.refresh(new_cuenta)
+    return new_cuenta
+
+def get_previous_cuentas(db: Session, mesa_id: int):
+    """Obtiene el historial de cuentas cerradas de una mesa."""
+    return db.query(models.Cuenta).filter(models.Cuenta.mesa_id == mesa_id, models.Cuenta.is_active == False).order_by(models.Cuenta.closed_at.desc()).all()
+
+def get_cuenta_by_id(db: Session, cuenta_id: int):
+    """Busca una cuenta por su ID."""
+    return db.query(models.Cuenta).filter(models.Cuenta.id == cuenta_id).first()
+
+def get_cuenta_payment_status(db: Session, cuenta_id: int) -> Optional[dict]:
+    """
+    Obtiene el estado de pago de una CUENTA específica (activa o cerrada).
+    """
+    cuenta = get_cuenta_by_id(db, cuenta_id)
+    if not cuenta:
+        return None
+    
+    mesa = cuenta.mesa
+    
+    # 1. Calcular total consumido EN ESTA CUENTA
+    total_consumido = (
+        db.query(func.sum(models.Consumo.valor_total))
+        .filter(models.Consumo.cuenta_id == cuenta.id)
+        .scalar() or Decimal('0.00')
+    )
+
+    # 2. Calcular total pagado EN ESTA CUENTA
+    total_pagado = (
+        db.query(func.sum(models.Pago.monto))
+        .filter(models.Pago.cuenta_id == cuenta.id)
+        .scalar() or Decimal('0.00')
+    )
+
+    # 3. Calcular saldo pendiente
+    saldo_pendiente = total_consumido - total_pagado
+
+    # 4. Obtener detalles
+    consumos_detalle = db.query(models.Consumo).filter(
+        models.Consumo.cuenta_id == cuenta.id
+    ).order_by(models.Consumo.created_at.asc()).all()
+    
+    pagos_detalle = db.query(models.Pago).filter(models.Pago.cuenta_id == cuenta.id).order_by(models.Pago.created_at.asc()).all()
+
+    consumos_items = [
+        schemas.ConsumoItemDetalle(
+            producto_nombre=c.producto.nombre,
+            cantidad=c.cantidad,
+            valor_total=c.valor_total,
+            created_at=c.created_at
+        ) for c in consumos_detalle
+    ]
+
+    return schemas.MesaEstadoPago(
+        mesa_id=mesa.id, 
+        mesa_nombre=mesa.nombre, 
+        total_consumido=total_consumido, 
+        total_pagado=total_pagado, 
+        saldo_pendiente=saldo_pendiente, 
+        consumos=consumos_items, 
+        pagos=pagos_detalle
+    ).dict()

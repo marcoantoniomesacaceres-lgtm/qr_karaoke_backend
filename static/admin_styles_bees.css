@@ -798,6 +798,84 @@ input:checked+.slider:before {
 
 .details-section {
     margin-top: 15px;
+}
+
+/* --- Account Management Buttons --- */
+.account-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.btn-payment {
+    padding: 10px 16px;
+    background-color: var(--primary-color);
+    color: var(--bees-black);
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-payment:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn-new-account {
+    padding: 10px 16px;
+    background-color: var(--secondary-color);
+    /* #1A1A1A */
+    color: #FFF;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-prev-accounts {
+    padding: 10px 16px;
+    background-color: #666;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-new-account:hover,
+.btn-prev-accounts:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.history-item {
+    transition: background-color 0.2s;
+}
+
+.history-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar for details */
+#details-content::-webkit-scrollbar,
+#history-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+#details-content::-webkit-scrollbar-thumb,
+#history-list::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+}
+
+
+.details-section ul {
     background-color: rgba(255, 215, 0, 0.05);
     padding: 10px;
     border-radius: 8px;

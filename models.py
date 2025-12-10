@@ -17,6 +17,20 @@ class Mesa(Base):
     usuarios = relationship("Usuario", back_populates="mesa")
     consumos = relationship("Consumo", back_populates="mesa")  # NUEVO: Relación con consumos
     pagos = relationship("Pago", back_populates="mesa") # Relación con Pagos
+    cuentas = relationship("Cuenta", back_populates="mesa") # Relación con Cuentas
+
+class Cuenta(Base):
+    __tablename__ = "cuentas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    mesa_id = Column(Integer, ForeignKey("mesas.id"))
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=now_bogota)
+    closed_at = Column(DateTime, nullable=True)
+
+    mesa = relationship("Mesa", back_populates="cuentas")
+    consumos = relationship("Consumo", back_populates="cuenta")
+    pagos = relationship("Pago", back_populates="cuenta")
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -81,6 +95,9 @@ class Consumo(Base):
     producto = relationship("Producto", back_populates="consumos")
     mesa = relationship("Mesa", back_populates="consumos")  # Relación con mesa
     usuario = relationship("Usuario")  # Relación sin backref (solo para consultas)
+    
+    cuenta_id = Column(Integer, ForeignKey("cuentas.id"), nullable=True) # Nueva columna
+    cuenta = relationship("Cuenta", back_populates="consumos")
     is_dispatched = Column(Boolean, default=False) # Nuevo campo para marcar si ya fue entregado
 
 class BannedNick(Base):
@@ -117,6 +134,9 @@ class Pago(Base):
 
     # Relación: Un pago pertenece a una mesa
     mesa = relationship("Mesa", back_populates="pagos")
+    
+    cuenta_id = Column(Integer, ForeignKey("cuentas.id"), nullable=True) # Nueva columna
+    cuenta = relationship("Cuenta", back_populates="pagos")
 
 
 class ConfiguracionGlobal(Base):

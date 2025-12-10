@@ -47,6 +47,8 @@ function renderAccounts(accounts, accountsGrid) {
             </div>
             <div class="account-actions">
                 <button class="btn-payment" data-id="${acc.mesa_id}" data-saldo="${deuda}">Registrar Pago</button>
+                <button class="btn-new-account" data-id="${acc.mesa_id}" style="background-color: var(--secondary-color);">Nueva Cuenta</button>
+                <button class="btn-prev-accounts" data-id="${acc.mesa_id}" style="background-color: var(--background-dark);">Cuentas Anteriores</button>
             </div>
         `;
 
@@ -203,6 +205,103 @@ async function handleDeleteAccount(event) {
     showNotification('Eliminar cuentas no está soportado por el backend.', 'error');
 }
 
+async function handleNewAccount(event) {
+    const button = event.target;
+    if (!button.matches('.btn-new-account')) return;
+    const mesaId = button.dataset.id;
+    if (!confirm('¿Estás seguro de crear una nueva cuenta? La cuenta actual se guardará en el historial.')) return;
+
+    try {
+        await apiFetch(`/admin/tables/${mesaId}/new-account`, { method: 'POST' });
+        showNotification('Nueva cuenta creada exitosamente.', 'success');
+        await loadAccountsPage();
+    } catch (e) {
+        showNotification(e.message || 'Error creating new account', 'error');
+    }
+}
+
+async function handlePreviousAccounts(event) {
+    const button = event.target;
+    if (!button.matches('.btn-prev-accounts')) return;
+    const mesaId = button.dataset.id;
+
+    try {
+        const history = await apiFetch(`/admin/tables/${mesaId}/previous-accounts`);
+        showHistoryModal(history);
+    } catch (e) {
+        showNotification(e.message || 'Error fetching history', 'error');
+    }
+}
+
+function showHistoryModal(history) {
+    const modal = document.getElementById('account-history-modal');
+    const list = document.getElementById('history-list');
+    if (!modal || !list) return;
+
+    list.innerHTML = '';
+    if (!history || history.length === 0) {
+        list.innerHTML = '<p>No hay cuentas anteriores registradas.</p>';
+    } else {
+        history.forEach(acc => {
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.style.padding = '10px';
+            item.style.borderBottom = '1px solid #444';
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.alignItems = 'center';
+
+            const closedDate = new Date(acc.closed_at || acc.created_at).toLocaleString();
+
+            const info = document.createElement('span');
+            info.textContent = `Cuenta #${acc.id} - Cerrada: ${closedDate}`;
+
+            const btn = document.createElement('button');
+            btn.className = 'form-btn small';
+            btn.textContent = 'Ver Detalle';
+            btn.onclick = () => showAccountDetails(acc.id);
+
+            item.appendChild(info);
+            item.appendChild(btn);
+            list.appendChild(item);
+        });
+    }
+    modal.style.display = 'flex';
+}
+
+async function showAccountDetails(cuentaId) {
+    try {
+        const details = await apiFetch(`/admin/accounts/${cuentaId}`);
+        const modal = document.getElementById('account-details-modal');
+        const content = document.getElementById('details-content');
+        if (!modal || !content) return;
+
+        const consumos = details.consumos || [];
+        const pagos = details.pagos || [];
+
+        content.innerHTML = `
+            <div class="account-summary" style="margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <p><strong>Mesa:</strong> ${details.mesa_nombre}</p>
+                <p><strong>Total Consumido:</strong> $${details.total_consumido}</p>
+                <p><strong>Total Pagado:</strong> $${details.total_pagado}</p>
+                <p><strong>Saldo Pendiente:</strong> $${details.saldo_pendiente}</p>
+            </div>
+            <h4>Consumos</h4>
+            <ul style="margin-bottom: 20px;">
+                ${consumos.length ? consumos.map(c => `<li>${c.cantidad}x ${c.producto_nombre} — $${c.valor_total} <small>(${new Date(c.created_at).toLocaleString()})</small></li>`).join('') : '<li>Sin consumos</li>'}
+            </ul>
+             <h4>Pagos</h4>
+            <ul>
+                ${pagos.length ? pagos.map(p => `<li>$${p.monto} — <small>${new Date(p.created_at).toLocaleString()}</small></li>`).join('') : '<li>Sin pagos</li>'}
+            </ul>
+        `;
+        modal.style.display = 'flex';
+
+    } catch (e) {
+        showNotification(e.message, 'error');
+    }
+}
+
 function setupAccountsListeners() {
     const accountsGrid = document.getElementById('accounts-grid');
     const paymentModal = document.getElementById('payment-modal');
@@ -210,12 +309,21 @@ function setupAccountsListeners() {
     const closePaymentModalBtn = document.getElementById('payment-modal-close');
     const overpaymentModal = document.getElementById('confirm-overpayment-modal');
 
+    // New modals
+    const historyModal = document.getElementById('account-history-modal');
+    const detailsModal = document.getElementById('account-details-modal');
+    const closeHistoryBtn = document.getElementById('history-modal-close');
+    const closeDetailsBtn = document.getElementById('details-modal-close');
+
     if (accountsGrid) {
         accountsGrid.addEventListener('click', handlePaymentModal);
         accountsGrid.addEventListener('click', handleDeleteAccount);
+        accountsGrid.addEventListener('click', handleNewAccount);
+        accountsGrid.addEventListener('click', handlePreviousAccounts);
     }
     // Attach submit listener to the form, not the button
     if (paymentForm) paymentForm.addEventListener('submit', handlePaymentSubmit);
+
     if (closePaymentModalBtn) {
         closePaymentModalBtn.addEventListener('click', () => {
             if (paymentModal) paymentModal.style.display = 'none';
@@ -227,7 +335,6 @@ function setupAccountsListeners() {
         });
     }
 
-    // Listener para cerrar el modal de sobrepago al hacer clic fuera
     if (overpaymentModal) {
         overpaymentModal.addEventListener('click', (e) => {
             if (e.target === overpaymentModal) {
@@ -236,4 +343,11 @@ function setupAccountsListeners() {
             }
         });
     }
+
+    // Listeners for new modals
+    if (closeHistoryBtn) closeHistoryBtn.onclick = () => { if (historyModal) historyModal.style.display = 'none'; };
+    if (historyModal) historyModal.onclick = (e) => { if (e.target === historyModal) historyModal.style.display = 'none'; };
+
+    if (closeDetailsBtn) closeDetailsBtn.onclick = () => { if (detailsModal) detailsModal.style.display = 'none'; };
+    if (detailsModal) detailsModal.onclick = (e) => { if (e.target === detailsModal) detailsModal.style.display = 'none'; };
 }

@@ -417,3 +417,11 @@ class AdminApiKeyInfo(BaseModel):
     created_at: datetime
     last_used: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
+
+class CuentaInfo(BaseModel):
+    id: int
+    mesa_id: int
+    is_active: bool
+    created_at: datetime
+    closed_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
