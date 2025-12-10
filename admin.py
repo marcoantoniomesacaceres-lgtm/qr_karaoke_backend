@@ -1057,7 +1057,26 @@ def open_new_account(mesa_id: int, db: Session = Depends(get_db)):
     """
     **[Admin]** Cierra la cuenta actual de la mesa (si hay) y abre una nueva.
     Los usuarios no se borran, pero los consumos futuros irán a la nueva cuenta.
+    **VALIDACIÓN:** No permite crear una nueva cuenta si la actual tiene saldo pendiente.
     """
+    # 1. Verificar si la cuenta actual está a paz y salvo
+    status_dict = crud.get_table_payment_status(db, mesa_id=mesa_id)
+    
+    # Si devuelve dict, lo revisamos. Si es None, es que no hay cuenta o mesa, dejamos pasar al create para que maneje o cree desde cero.
+    if status_dict:
+        saldo_pendiente = status_dict.get("saldo_pendiente", 0)
+        # Aseguramos que sea numérico para la comparación
+        try:
+             saldo_val = float(saldo_pendiente)
+        except:
+             saldo_val = 0.0
+             
+        if saldo_val > 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"No se puede abrir una nueva cuenta. La mesa tiene un saldo pendiente de ${saldo_val:,.0f}."
+            )
+
     new_cuenta = crud.create_new_active_cuenta(db, mesa_id)
     return {"message": "Nueva cuenta creada exitosamente.", "cuenta_id": new_cuenta.id}
 
