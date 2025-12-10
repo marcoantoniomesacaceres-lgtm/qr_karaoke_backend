@@ -802,3 +802,87 @@
 2025-12-10 09:37:15,424 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8%2C6kYEW6oQfpw&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-10 09:37:15,432 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-10 09:37:15,437 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:06:13,796 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-10 10:06:13,800 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-10 10:06:15,849 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:06:15,849 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-10 10:06:15,851 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:06:16,549 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:06:16,558 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:06:16,559 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'onGJj-JIBZk', 'DjfaCC3ZKs8', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8', '1wC6r7L1RvA']
+2025-12-10 10:06:16,563 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:06:16,812 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2ConGJj-JIBZk%2CDjfaCC3ZKs8%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8%2C1wC6r7L1RvA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:06:16,821 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:06:16,823 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:07:41,413 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-10 10:07:41,414 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-10 10:07:43,033 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:07:43,034 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-10 10:07:43,035 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:07:43,577 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:07:43,581 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:07:43,582 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8', '6kYEW6oQfpw']
+2025-12-10 10:07:43,585 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:07:43,793 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8%2C6kYEW6oQfpw&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:07:43,800 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:07:43,802 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:08:34,553 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-10 10:08:34,554 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-10 10:08:36,377 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:08:36,378 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-10 10:08:36,380 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:08:37,129 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:08:37,133 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:08:37,134 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'U9GFert9tkU', '5yLGjXTF6MY', 'Fs_BnnaEUts', 'b5WU3czhh3I', 'xnO-49PvGCY', 'bY61n7lwzrY', '6mysi-heljE', 'aJ5wyBE9M_0']
+2025-12-10 10:08:37,137 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:08:37,354 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2Cb5WU3czhh3I%2CxnO-49PvGCY%2CbY61n7lwzrY%2C6mysi-heljE%2CaJ5wyBE9M_0&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:08:37,364 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:08:37,366 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:08:37,387 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-10 10:08:37,424 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-10 10:08:39,270 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:08:39,272 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-10 10:08:39,274 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:08:39,952 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:08:39,961 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:08:39,963 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'U9GFert9tkU', '5yLGjXTF6MY', 'Fs_BnnaEUts', 'b5WU3czhh3I', 'bY61n7lwzrY', 'xnO-49PvGCY', 'aJ5wyBE9M_0', '6mysi-heljE']
+2025-12-10 10:08:39,968 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:08:40,164 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CU9GFert9tkU%2C5yLGjXTF6MY%2CFs_BnnaEUts%2Cb5WU3czhh3I%2CbY61n7lwzrY%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2C6mysi-heljE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:08:40,175 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:08:40,177 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:09:20,213 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'gigantes del ballenato'
+2025-12-10 10:09:20,214 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'gigantes del ballenato' (Karaoke Mode: False)
+2025-12-10 10:09:22,291 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:09:22,292 - youtube - INFO - Búsqueda por texto: 'gigantes del ballenato'
+2025-12-10 10:09:22,298 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:09:23,001 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:09:23,004 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:09:23,005 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'UWTLJ91A8QA', 'i8YLs0luEak', '1SfX4eK7aaw', 'WyueNqPNUrQ', '8veX6aXeaBU', '3kWwGa4W8Ak']
+2025-12-10 10:09:23,007 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:09:23,233 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CUWTLJ91A8QA%2Ci8YLs0luEak%2C1SfX4eK7aaw%2CWyueNqPNUrQ%2C8veX6aXeaBU%2C3kWwGa4W8Ak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:09:23,245 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:09:23,251 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:09:23,282 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'gigantes del ballenato'
+2025-12-10 10:09:23,335 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'gigantes del ballenato' (Karaoke Mode: False)
+2025-12-10 10:09:25,400 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:09:25,401 - youtube - INFO - Búsqueda por texto: 'gigantes del ballenato'
+2025-12-10 10:09:25,402 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:09:25,922 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=gigantes+del+ballenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:09:25,927 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:09:25,928 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'C4cGljNvCig', 'jsD3QWHtvGI', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'i8YLs0luEak', '1SfX4eK7aaw', '8veX6aXeaBU', 'UWTLJ91A8QA', '3kWwGa4W8Ak']
+2025-12-10 10:09:25,931 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:09:26,107 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CC4cGljNvCig%2CjsD3QWHtvGI%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2Ci8YLs0luEak%2C1SfX4eK7aaw%2C8veX6aXeaBU%2CUWTLJ91A8QA%2C3kWwGa4W8Ak&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:09:26,122 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:09:26,127 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-10 10:25:07,818 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'Dario gomez' (Karaoke Mode: False)
+2025-12-10 10:25:07,836 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'Dario gomez' (Karaoke Mode: False)
+2025-12-10 10:25:10,841 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:25:10,842 - youtube - INFO - Búsqueda por texto: 'Dario gomez'
+2025-12-10 10:25:10,843 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:25:11,647 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=Dario+gomez&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:25:11,660 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:25:11,662 - youtube - INFO - IDs de video encontrados: ['tU2cmjNO7og', 'rTIgnIBsiLY', 'whzIHjfL0uI', '0Gg91nmbZZw', '-zZvuYcfa_I', 'sfcAFejAm04', 'JnGvHYzHCps', 'cyGc4pfrH90', 'KH-fVMbVTm4']
+2025-12-10 10:25:11,663 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:25:11,847 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tU2cmjNO7og%2CrTIgnIBsiLY%2CwhzIHjfL0uI%2C0Gg91nmbZZw%2C-zZvuYcfa_I%2CsfcAFejAm04%2CJnGvHYzHCps%2CcyGc4pfrH90%2CKH-fVMbVTm4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:25:11,895 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:25:11,901 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.

@@ -265,6 +265,14 @@ async function handleLogin(event) {
     }
 }
 
+function handleLogout() {
+    if (confirm('¿Estás seguro de que quieres cerrar la sesión?')) {
+        sessionStorage.removeItem('karaokeUser');
+        // Opcional: sessionStorage.removeItem('karaokeTable'); si queremos obligar a re-escanear
+        window.location.reload();
+    }
+}
+
 async function handleSearch(event, karaokeMode = false) {
     event.preventDefault();
     const query = document.getElementById('search-input').value.trim();
@@ -707,6 +715,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners
     if (connectButton) connectButton.addEventListener('click', handleLogin);
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
     const bottomNav = document.querySelector('.bottom-nav');
     if (bottomNav) bottomNav.addEventListener('click', handleTabClick);

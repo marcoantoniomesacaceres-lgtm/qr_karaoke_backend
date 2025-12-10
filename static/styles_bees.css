@@ -194,7 +194,26 @@ body {
 .stat-label {
     font-size: 0.75em;
     color: #666;
+    color: #666;
     text-transform: uppercase;
+}
+
+.logout-icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    margin-left: 15px;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 /* ============================================
