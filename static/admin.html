@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +20,7 @@
             padding: 20px;
             box-sizing: border-box;
         }
+
         .container {
             background-color: #1e1e1e;
             padding: 2em;
@@ -27,14 +29,18 @@
             max-width: 400px;
             width: 100%;
         }
+
         h1 {
-            color: #f44336; /* Color rojo para admin */
+            color: #f44336;
+            /* Color rojo para admin */
             margin-bottom: 0.5em;
         }
+
         p {
             color: #b0b0b0;
             margin-bottom: 1.5em;
         }
+
         input[type="password"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -45,6 +51,7 @@
             color: #fff;
             font-size: 1em;
         }
+
         button {
             width: 100%;
             padding: 12px;
@@ -57,13 +64,16 @@
             font-weight: bold;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #d32f2f;
         }
+
         button:disabled {
             background-color: #555;
             cursor: not-allowed;
         }
+
         #error-message {
             color: #ffcdd2;
             margin-top: 1em;
@@ -71,6 +81,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container" id="admin-login-container">
         <h1>Acceso de Administrador</h1>
@@ -102,16 +113,26 @@
             errorMessage.textContent = '';
 
             try {
-                // Probamos la clave contra un endpoint de admin simple
-                const response = await fetch('/api/v1/admin/summary', {
-                    headers: { 'X-API-Key': apiKey }
+                // Usamos el nuevo endpoint de autenticación que registra auditoría
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: apiKey })
                 });
 
-                if (response.status === 403) throw new Error('Clave de API incorrecta o inválida.');
+                const data = await response.json();
+
+                if (response.status === 403 || !data.success) {
+                    throw new Error(data.detail || 'Clave de API incorrecta o inválida.');
+                }
+
                 if (!response.ok) throw new Error('Error de autenticación en el servidor.');
 
-                // Si la clave es correcta, la guardamos en sessionStorage y redirigimos
-                sessionStorage.setItem('adminApiKey', apiKey);
+                // Si la clave es correcta, la guardamos
+                sessionStorage.setItem('adminApiKey', data.token);
+                // Opcional: guardar descripción para mostrar "Bienvenido, DJ"
+                sessionStorage.setItem('adminDesc', data.description);
+
                 window.location.href = '/admin/dashboard';
             } catch (error) {
                 errorMessage.textContent = error.message;
@@ -123,4 +144,5 @@
         loginForm.addEventListener('submit', handleAdminLogin);
     </script>
 </body>
+
 </html>

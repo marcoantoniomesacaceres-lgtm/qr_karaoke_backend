@@ -886,3 +886,15 @@
 2025-12-10 10:25:11,847 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tU2cmjNO7og%2CrTIgnIBsiLY%2CwhzIHjfL0uI%2C0Gg91nmbZZw%2C-zZvuYcfa_I%2CsfcAFejAm04%2CJnGvHYzHCps%2CcyGc4pfrH90%2CKH-fVMbVTm4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-10 10:25:11,895 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-10 10:25:11,901 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-10 10:53:27,684 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-10 10:53:27,688 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-10 10:53:29,631 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 10:53:29,631 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-10 10:53:29,632 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 10:53:30,233 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 10:53:30,260 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 10:53:30,262 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'bu5WOIoGAIU', 'SAe4DxIadxM', 'IfoPQ7mGIT0', 'NP3LASw8uWY']
+2025-12-10 10:53:30,263 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 10:53:30,489 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2Cbu5WOIoGAIU%2CSAe4DxIadxM%2CIfoPQ7mGIT0%2CNP3LASw8uWY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 10:53:30,498 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 10:53:30,500 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.

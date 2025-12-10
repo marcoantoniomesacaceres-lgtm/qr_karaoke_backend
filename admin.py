@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, HTTPException
+from fastapi import APIRouter, Depends, Response, HTTPException, Body
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 import models 
@@ -6,13 +6,12 @@ import crud, schemas
 import config
 from database import SessionLocal
 import websocket_manager
-from security import api_key_auth
+from security import api_key_auth, MASTER_API_KEY
 
 router = APIRouter(dependencies=[Depends(api_key_auth)])
 
 # Creamos un nuevo router para las rutas públicas que no necesitan clave de API
 public_router = APIRouter()
-
 
 def get_db():
     db = SessionLocal()
@@ -21,7 +20,40 @@ def get_db():
     finally:
         db.close()
 
+# --- Auth Endpoints (Logging In) ---
+@public_router.post("/auth/login", response_model=schemas.AdminLoginResponse, summary="Iniciar sesión como administrador")
+def admin_login(login_data: schemas.AdminLoginRequest, db: Session = Depends(get_db)):
+    """
+    Verifica la clave de API y registra el inicio de sesión.
+    """
+    key = login_data.api_key.strip()
+    
+    # 1. Verificar Clave Maestra
+    if key == MASTER_API_KEY:
+        crud.create_admin_log_entry(db, action="LOGIN", details="Inicio de sesión con SUPER CLAVE MAESTRA.")
+        return {"success": True, "description": "Super Admin", "token": key}
+
+    # 2. Verificar Clave de Base de Datos
+    db_key = crud.get_admin_api_key(db, key=key)
+    if db_key:
+        crud.create_admin_log_entry(db, action="LOGIN", details=f"Inicio de sesión: {db_key.description}")
+        # Opcional: actualizar last_used
+        db_key.last_used = crud.now_bogota()
+        db.commit()
+        return {"success": True, "description": db_key.description, "token": key}
+    
+    create_admin_log_error(db, "LOGIN_FAILED", "Intento de login fallido con clave incorrecta.")
+    raise HTTPException(status_code=403, detail="Clave de API inválida.")
+
+def create_admin_log_error(db: Session, action: str, details: str):
+    """Helper local para loguear errores sin exponer crud si no es necesario"""
+    try:
+        crud.create_admin_log_entry(db, action=action, details=details)
+    except:
+        pass
+
 # --- Rutas Públicas (para usuarios en mesas) ---
+
 
 @public_router.get("/consumos/mis-pedidos/{usuario_id}", response_model=List[schemas.ConsumoHistorial], summary="Obtener los pedidos de un usuario", tags=["Usuarios"])
 def get_mis_pedidos(usuario_id: int, db: Session = Depends(get_db)):

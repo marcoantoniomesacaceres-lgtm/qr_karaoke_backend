@@ -395,7 +395,16 @@ class MesaEstadoPago(BaseModel):
     pagos: List[PagoView] = []
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
-# --- Schemas for Admin API Keys ---
+# --- Schemas para Login Admin ---
+class AdminLoginRequest(BaseModel):
+    api_key: str
+
+class AdminLoginResponse(BaseModel):
+    success: bool
+    description: str
+    token: str # Retornamos el token mismo (o uno nuevo si implementáramos JWT)
+
+# --- Schemas para Claves de API de Admin ---
 class AdminApiKeyCreate(BaseModel):
     """Schema for creating a new admin API key."""
     description: str
