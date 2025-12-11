@@ -254,7 +254,7 @@ async function handleAdminSearch(event, karaokeMode = false) {
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-weight: 600; color: var(--page-text); font-size: 13px; word-break: break-word;">${song.title}</div>
                         </div>
-                        <button class="bees-btn bees-btn-primary admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 4px 8px; font-size: 11px; white-space: nowrap;">➕ Añadir</button>
+                        <button class="bees-btn bees-btn-primary admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 4px 8px; font-size: 11px; white-space: nowrap; max-width: 85px; min-width: 70px;">➕ Añadir</button>
                     </div>
                 `;
                 resultsContainer.appendChild(resultItem);
