@@ -123,7 +123,7 @@ async function handleReportGeneration() {
     outputDiv.innerHTML = '<div class="bees-alert bees-alert-info"><span class="bees-alert-icon">⏳</span><div>Generando reporte...</div></div>';
 
     try {
-        const data = await apiFetch(`/admin/report/${reportType}`);
+        const data = await apiFetch(`/admin/reports/${reportType}`);
         renderReport(reportType, data, outputDiv);
     } catch (error) {
         outputDiv.innerHTML = `
@@ -278,8 +278,8 @@ function renderReportMetrics(data, container) {
         valueDiv.style.fontSize = '24px';
         valueDiv.style.fontWeight = '700';
         valueDiv.style.color = 'var(--bees-yellow)';
-        valueDiv.textContent = typeof value === 'number' && (key.includes('ingreso') || key.includes('total')) 
-            ? `$${parseFloat(value).toFixed(2)}` 
+        valueDiv.textContent = typeof value === 'number' && (key.includes('ingreso') || key.includes('total'))
+            ? `$${parseFloat(value).toFixed(2)}`
             : value;
 
         card.appendChild(label);

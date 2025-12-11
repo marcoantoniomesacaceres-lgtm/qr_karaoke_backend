@@ -185,7 +185,7 @@ function renderApprovedSongs(songs, listElement) {
         }
 
         const isPlaying = index === 0;
-        const statusBadge = isPlaying 
+        const statusBadge = isPlaying
             ? '<span class="bees-badge bees-badge-success">▶️ Reproduciendo</span>'
             : `<span class="bees-badge bees-badge-info">#${index}</span>`;
 
@@ -254,7 +254,7 @@ async function handleAdminSearch(event, karaokeMode = false) {
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-weight: 600; color: var(--page-text); font-size: 13px; word-break: break-word;">${song.title}</div>
                         </div>
-                        <button class="bees-btn bees-btn-primary admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 6px 10px; font-size: 12px; white-space: nowrap;">➕ Añadir</button>
+                        <button class="bees-btn bees-btn-primary admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 4px 8px; font-size: 11px; white-space: nowrap;">➕ Añadir</button>
                     </div>
                 `;
                 resultsContainer.appendChild(resultItem);
@@ -302,7 +302,7 @@ async function handleAdminAddSong(event) {
             method: 'POST',
             body: JSON.stringify(songData)
         });
-        
+
         const targetName = targetTableId ? 'la mesa' : 'la cola general';
         showNotification(`✅ '${songData.titulo}' añadida a ${targetName}`, 'success');
 
