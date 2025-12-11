@@ -1544,18 +1544,82 @@ def get_o_crear_usuario_admin_para_mesa(db: Session, mesa_id: int) -> models.Usu
     
     return admin_user
 
+def get_canciones_pendientes_por_aprobar(db: Session):
+    """
+    Obtiene las canciones que están en estado 'pendiente' (no aprobadas aún).
+    Ordenadas por fecha de creación.
+    """
+    return db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente'
+    ).order_by(models.Cancion.created_at.asc()).all()
+
+def auto_approve_songs_after_10_minutes(db: Session):
+    """
+    Aprueba automáticamente las primeras 2 canciones pendientes que ya han pasado 10 minutos desde su creación.
+    Las demás canciones permanecen en estado 'pendiente' esperando aprobación manual.
+    """
+    from datetime import timedelta
+    
+    # Obtener canciones pendientes que tienen más de 10 minutos
+    time_threshold = now_bogota() - timedelta(minutes=10)
+    
+    songs_to_auto_approve = db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente',
+        models.Cancion.created_at <= time_threshold
+    ).order_by(models.Cancion.created_at.asc()).limit(2).all()
+    
+    # Aprobar las primeras 2 canciones
+    for cancion in songs_to_auto_approve:
+        cancion.estado = 'aprobado'
+        cancion.approved_at = now_bogota()
+        db.add(cancion)
+    
+    if songs_to_auto_approve:
+        db.commit()
+    
+    return songs_to_auto_approve
+
+def approve_song_by_admin(db: Session, cancion_id: int):
+    """
+    Aprueba una canción manualmente desde el admin.
+    Cambia el estado de 'pendiente' a 'aprobado'.
+    """
+    db_cancion = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'pendiente'
+    ).first()
+    
+    if db_cancion:
+        db_cancion.estado = 'aprobado'
+        db_cancion.approved_at = now_bogota()
+        db.commit()
+        db.refresh(db_cancion)
+    
+    return db_cancion
+
 def get_cola_completa(db: Session):
     """
-    Obtiene la cola completa, incluyendo la canción que está sonando y las próximas.
+    Obtiene la cola completa, incluyendo:
+    - Canción actualmente reproduciendo
+    - Cola aprobada (upcoming)
+    - Cola pendiente por aprobar
     """
+    # Aplicar aprobación automática después de 10 minutos
+    auto_approve_songs_after_10_minutes(db)
+    
     now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
-    upcoming = get_cola_priorizada(db)
+    approved_queue = get_cola_priorizada(db)
+    pending_queue = get_canciones_pendientes_por_aprobar(db)
 
     # Si la canción que se está reproduciendo sigue en la lista de 'upcoming', la quitamos.
     if now_playing:
-        upcoming = [song for song in upcoming if song.id != now_playing.id]
+        approved_queue = [song for song in approved_queue if song.id != now_playing.id]
 
-    return {"now_playing": now_playing, "upcoming": upcoming}
+    return {
+        "now_playing": now_playing, 
+        "upcoming": approved_queue,
+        "pending": pending_queue
+    }
 
 def set_mesa_active_status(db: Session, mesa_id: int, is_active: bool) -> Optional[models.Mesa]:
     """

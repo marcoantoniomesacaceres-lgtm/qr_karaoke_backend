@@ -132,9 +132,20 @@ async def aprobar_cancion(cancion_id: int, db: Session = Depends(get_db), api_ke
 
 @router.post("/{cancion_id}/rechazar", response_model=schemas.Cancion, summary="Rechazar una canción")
 async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
-    db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="rechazada")
+    db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
+    
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada")
+    
+    # Validar que la canción no haya sido aprobada
+    if db_cancion.estado == 'aprobado' or db_cancion.approved_at is not None:
+        raise HTTPException(status_code=403, detail="No se puede eliminar: la canción ya fue aprobada por el sistema")
+    
+    # Solo se pueden rechazar canciones en estado 'pendiente'
+    if db_cancion.estado != 'pendiente':
+        raise HTTPException(status_code=403, detail="Solo se pueden eliminar canciones pendientes")
+    
+    db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="rechazada")
     crud.create_admin_log_entry(db, action="REJECT_SONG", details=f"Canción '{db_cancion.titulo}' rechazada.")
     await websocket_manager.manager.broadcast_queue_update()
     return db_cancion

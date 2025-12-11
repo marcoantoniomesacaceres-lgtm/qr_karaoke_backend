@@ -565,6 +565,86 @@ async def resume_playback(db: Session = Depends(get_db)):
     crud.create_admin_log_entry(db, action="RESUME_PLAYBACK", details="Reproducción reanudada por admin.")
     return {"mensaje": "Reproducción reanudada."}
 
+@router.get("/canciones/pending", response_model=List[schemas.CancionAdminView], summary="Obtener canciones pendientes por aprobar")
+def get_pending_songs(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Obtiene la lista de canciones pendientes por aprobar.
+    """
+    return crud.get_canciones_pendientes_por_aprobar(db)
+
+@router.post("/canciones/{cancion_id}/approve", response_model=schemas.Cancion, summary="Aprobar una canción pendiente")
+async def approve_pending_song(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Aprueba una canción que está en estado 'pendiente'.
+    """
+    db_cancion = crud.approve_song_by_admin(db, cancion_id)
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada o no está pendiente.")
+    
+    crud.create_admin_log_entry(db, action="APPROVE_SONG", details=f"Canción '{db_cancion.titulo}' aprobada manualmente.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return db_cancion
+
+@router.post("/canciones/pending/{cancion_id}/move-up", status_code=200, summary="Mover canción pendiente hacia arriba")
+async def move_pending_song_up(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Mueve una canción pendiente una posición hacia arriba en la cola.
+    """
+    db_cancion = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'pendiente'
+    ).first()
+    
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción pendiente no encontrada.")
+    
+    # Obtener la canción anterior en la cola pendiente
+    previous_song = db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente',
+        models.Cancion.created_at < db_cancion.created_at
+    ).order_by(models.Cancion.created_at.desc()).first()
+    
+    if previous_song:
+        # Intercambiar los tiempos de creación para mantener el orden
+        temp_created = db_cancion.created_at
+        db_cancion.created_at = previous_song.created_at
+        previous_song.created_at = temp_created
+        db.commit()
+    
+    crud.create_admin_log_entry(db, action="MOVE_PENDING_UP", details=f"Canción '{db_cancion.titulo}' movida hacia arriba en cola pendiente.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return {"mensaje": "Canción movida hacia arriba."}
+
+@router.post("/canciones/pending/{cancion_id}/move-down", status_code=200, summary="Mover canción pendiente hacia abajo")
+async def move_pending_song_down(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Mueve una canción pendiente una posición hacia abajo en la cola.
+    """
+    db_cancion = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'pendiente'
+    ).first()
+    
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción pendiente no encontrada.")
+    
+    # Obtener la canción siguiente en la cola pendiente
+    next_song = db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente',
+        models.Cancion.created_at > db_cancion.created_at
+    ).order_by(models.Cancion.created_at.asc()).first()
+    
+    if next_song:
+        # Intercambiar los tiempos de creación para mantener el orden
+        temp_created = db_cancion.created_at
+        db_cancion.created_at = next_song.created_at
+        next_song.created_at = temp_created
+        db.commit()
+    
+    crud.create_admin_log_entry(db, action="MOVE_PENDING_DOWN", details=f"Canción '{db_cancion.titulo}' movida hacia abajo en cola pendiente.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return {"mensaje": "Canción movida hacia abajo."}
+
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
 def get_total_income_report(db: Session = Depends(get_db)):
     """

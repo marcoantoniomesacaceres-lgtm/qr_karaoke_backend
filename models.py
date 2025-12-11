@@ -62,6 +62,7 @@ class Cancion(Base):
     orden_manual = Column(Integer, nullable=True)  # Posición manual establecida por el admin
     puntuacion_ia = Column(Integer, nullable=True) # Nuevo campo para el puntaje de la IA
     created_at = Column(DateTime, default=now_bogota)  # Hora en que se añade
+    approved_at = Column(DateTime, nullable=True)  # Hora en que fue aprobada (10 min después de created_at)
     finished_at = Column(DateTime, nullable=True) # Hora en que se termina de cantar
     
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))

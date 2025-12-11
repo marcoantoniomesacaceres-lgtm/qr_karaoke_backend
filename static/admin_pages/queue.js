@@ -61,6 +61,34 @@ async function loadQueuePage() {
         queueCard.appendChild(queueList);
         mainContainer.appendChild(queueCard);
 
+        // Tarjeta de cola pendiente por aprobar
+        const pendingQueueCard = document.createElement('div');
+        pendingQueueCard.className = 'bees-card';
+
+        const pendingQueueHeader = document.createElement('div');
+        pendingQueueHeader.className = 'bees-card-header';
+        pendingQueueHeader.innerHTML = `
+            <div class="bees-card-icon">⏳</div>
+            <div class="bees-card-header-content">
+                <h3>Cola Pendiente por Aprobar</h3>
+                <p>Esperando aprobación o automático en 10 min</p>
+            </div>
+        `;
+        pendingQueueCard.appendChild(pendingQueueHeader);
+
+        const pendingQueueList = document.createElement('ul');
+        pendingQueueList.id = 'pending-songs-list';
+        pendingQueueList.style.listStyle = 'none';
+        pendingQueueList.style.padding = '0';
+        pendingQueueList.style.margin = '0';
+
+        const pendingLoadingItem = document.createElement('li');
+        pendingLoadingItem.innerHTML = '<div class="bees-alert bees-alert-info"><span class="bees-alert-icon">⏳</span><div>Cargando canciones pendientes...</div></div>';
+        pendingQueueList.appendChild(pendingLoadingItem);
+
+        pendingQueueCard.appendChild(pendingQueueList);
+        mainContainer.appendChild(pendingQueueCard);
+
         // Tarjeta de búsqueda
         const searchCard = document.createElement('div');
         searchCard.className = 'bees-card';
@@ -127,7 +155,7 @@ async function loadQueuePage() {
 async function loadQueueData() {
     try {
         // Cargar cola
-        let queueData = currentQueueData || { now_playing: null, upcoming: [] };
+        let queueData = currentQueueData || { now_playing: null, upcoming: [], pending: [] };
         if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
             queueData = await apiFetch('/canciones/cola');
         }
@@ -136,6 +164,12 @@ async function loadQueueData() {
         const approvedSongsList = document.getElementById('approved-songs-list');
         if (approvedSongsList) {
             renderApprovedSongs(queueData, approvedSongsList);
+        }
+
+        // Cargar canciones pendientes
+        const pendingSongsList = document.getElementById('pending-songs-list');
+        if (pendingSongsList) {
+            renderPendingSongs(queueData.pending || [], pendingSongsList);
         }
     } catch (error) {
         console.error('Error loading queue:', error);
@@ -219,6 +253,65 @@ function renderApprovedSongs(songs, listElement) {
                 </div>
                 <div style="display: flex; gap: 8px; margin-bottom: 12px;">
                     ${statusBadge}
+                </div>
+                ${buttonsHtml}
+            </div>
+        `;
+        listElement.appendChild(li);
+    });
+}
+
+function renderPendingSongs(songs, listElement) {
+    listElement.innerHTML = '';
+    
+    if (!songs || songs.length === 0) {
+        const emptyItem = document.createElement('li');
+        emptyItem.innerHTML = '<div class="bees-alert bees-alert-info"><span class="bees-alert-icon">✅</span><div>No hay canciones pendientes por aprobar.</div></div>';
+        listElement.appendChild(emptyItem);
+        return;
+    }
+
+    songs.forEach((song, index) => {
+        const li = document.createElement('li');
+        li.style.marginBottom = '16px';
+
+        let addedBy = 'Desconocido';
+        if (song.usuario) {
+            addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
+        }
+
+        // Calcular cuánto tiempo falta para aprobación automática
+        const createdTime = new Date(song.created_at);
+        const approvalTime = new Date(createdTime.getTime() + 10 * 60 * 1000);
+        const now = new Date();
+        const timeRemaining = Math.ceil((approvalTime - now) / 1000);
+        
+        const timeText = timeRemaining > 0 
+            ? `${Math.floor(timeRemaining / 60)}:${String(timeRemaining % 60).padStart(2, '0')} para aprobación`
+            : 'Esperando aprobación manual';
+
+        // Botones para gestionar la canción pendiente
+        const buttonsHtml = `
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px;">
+                <button class="bees-btn bees-btn-success bees-btn-small" data-id="${song.id}" data-action="approve-pending" title="Aprobar ahora">✅ Aprobar</button>
+                <button class="bees-btn bees-btn-info bees-btn-small" data-id="${song.id}" data-action="move-pending-up" title="Subir">⬆️ Subir</button>
+                <button class="bees-btn bees-btn-warning bees-btn-small" data-id="${song.id}" data-action="move-pending-down" title="Bajar">⬇️ Bajar</button>
+                <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove-pending" title="Eliminar">❌ Eliminar</button>
+            </div>
+        `;
+
+        li.innerHTML = `
+            <div style="background: var(--page-input-bg); border-radius: 12px; padding: 16px; border-left: 4px solid var(--bees-orange);">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura" style="width: 60px; height: 45px; border-radius: 6px; object-fit: cover;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--page-text); margin-bottom: 4px; word-break: break-word;">${song.titulo}</div>
+                        <div style="font-size: 12px; color: var(--page-text-secondary);">Agregada por: <strong>${addedBy}</strong></div>
+                        <div style="font-size: 11px; color: var(--page-text-secondary); margin-top: 4px;">⏱️ ${timeText}</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <span class="bees-badge bees-badge-warning">⏳ Pendiente #${index + 1}</span>
                 </div>
                 ${buttonsHtml}
             </div>
@@ -337,6 +430,11 @@ async function reloadApprovedQueue() {
         if (approvedSongsList) {
             renderApprovedSongs(queueData, approvedSongsList);
         }
+
+        const pendingSongsList = document.getElementById('pending-songs-list');
+        if (pendingSongsList) {
+            renderPendingSongs(queueData.pending || [], pendingSongsList);
+        }
     } catch (error) {
         console.error('Error al recargar cola:', error);
     }
@@ -392,6 +490,50 @@ async function handleQueueActions(event) {
 
         } else if (action === 'pause-resume-toggle') {
             await handlePauseResume();
+
+        } else if (action === 'approve-pending') {
+            // Aprobar una canción pendiente
+            try {
+                await apiFetch(`/admin/canciones/${songId}/approve`, { method: 'POST' });
+                showNotification('✅ Canción aprobada', 'success');
+                shouldReloadQueue = true;
+            } catch (error) {
+                showNotification(`Error al aprobar: ${error.message}`, 'error');
+            }
+
+        } else if (action === 'move-pending-up') {
+            // Mover canción pendiente hacia arriba
+            try {
+                await apiFetch(`/admin/canciones/pending/${songId}/move-up`, { method: 'POST' });
+                showNotification('⬆️ Canción movida hacia arriba', 'info');
+                shouldReloadQueue = true;
+            } catch (error) {
+                showNotification(`Error al mover: ${error.message}`, 'error');
+            }
+
+        } else if (action === 'move-pending-down') {
+            // Mover canción pendiente hacia abajo
+            try {
+                await apiFetch(`/admin/canciones/pending/${songId}/move-down`, { method: 'POST' });
+                showNotification('⬇️ Canción movida hacia abajo', 'info');
+                shouldReloadQueue = true;
+            } catch (error) {
+                showNotification(`Error al mover: ${error.message}`, 'error');
+            }
+
+        } else if (action === 'remove-pending') {
+            // Eliminar una canción pendiente
+            if (!confirm('¿Eliminar esta canción pendiente?')) {
+                button.disabled = false;
+                return;
+            }
+            try {
+                await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
+                showNotification('❌ Canción eliminada', 'info');
+                shouldReloadQueue = true;
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            }
         }
 
         if (shouldReloadQueue) {
@@ -439,6 +581,7 @@ function setupQueueListeners() {
     const karaokeBtn = document.getElementById('admin-search-karaoke-btn');
     const resultsContainer = document.getElementById('admin-search-results');
     const songsList = document.getElementById('approved-songs-list');
+    const pendingSongsList = document.getElementById('pending-songs-list');
 
     if (songsBtn) {
         songsBtn.addEventListener('click', (e) => handleAdminSearch(e, false));
@@ -451,5 +594,8 @@ function setupQueueListeners() {
     }
     if (songsList) {
         songsList.addEventListener('click', handleQueueActions);
+    }
+    if (pendingSongsList) {
+        pendingSongsList.addEventListener('click', handleQueueActions);
     }
 }

@@ -1345,3 +1345,51 @@
 2025-12-11 16:03:42,706 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2ConGJj-JIBZk%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-11 16:03:42,713 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-11 16:03:42,715 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-11 16:50:51,908 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-11 16:50:51,912 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-11 16:50:54,095 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 16:50:54,096 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-11 16:50:54,096 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 16:50:55,002 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 16:50:55,033 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 16:50:55,034 - youtube - INFO - IDs de video encontrados: ['U9GFert9tkU', '69NZ0WUo0dM', 'VazD45BRodk', 'INFbHAj5URI', 'nnY1xnbBW4w', 'n40eIkhL4cE', 'OzRLhBc7cXw', 'ZPnsj2Ov2z8', 'Yh0uZiFZRIg', 'GC3GdqqOYRc']
+2025-12-11 16:50:55,036 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 16:50:55,228 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=U9GFert9tkU%2C69NZ0WUo0dM%2CVazD45BRodk%2CINFbHAj5URI%2CnnY1xnbBW4w%2Cn40eIkhL4cE%2COzRLhBc7cXw%2CZPnsj2Ov2z8%2CYh0uZiFZRIg%2CGC3GdqqOYRc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 16:50:55,261 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 16:50:55,272 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-11 16:50:55,346 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-11 16:50:55,347 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-11 16:50:56,875 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 16:50:56,876 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-11 16:50:56,877 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 16:50:57,389 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 16:50:57,395 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 16:50:57,395 - youtube - INFO - IDs de video encontrados: ['VazD45BRodk', 'U9GFert9tkU', '69NZ0WUo0dM', 'b5WU3czhh3I', 'GC3GdqqOYRc', '4nx4FMJUI8s', 'nnY1xnbBW4w', 'OHDfiCZgUy8', 'INFbHAj5URI', 'KxfOF--rymo']
+2025-12-11 16:50:57,397 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 16:50:57,574 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=VazD45BRodk%2CU9GFert9tkU%2C69NZ0WUo0dM%2Cb5WU3czhh3I%2CGC3GdqqOYRc%2C4nx4FMJUI8s%2CnnY1xnbBW4w%2COHDfiCZgUy8%2CINFbHAj5URI%2CKxfOF--rymo&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 16:50:57,580 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 16:50:57,582 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-11 16:51:05,544 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-11 16:51:05,545 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-11 16:51:07,110 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 16:51:07,111 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-11 16:51:07,112 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 16:51:07,666 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 16:51:07,737 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 16:51:07,738 - youtube - INFO - IDs de video encontrados: ['U9GFert9tkU', 'VazD45BRodk', '69NZ0WUo0dM', 'GC3GdqqOYRc', 'b5WU3czhh3I', 'INFbHAj5URI', 'nnY1xnbBW4w', '4nx4FMJUI8s', 'OHDfiCZgUy8', 'Yh0uZiFZRIg']
+2025-12-11 16:51:07,741 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 16:51:07,931 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=U9GFert9tkU%2CVazD45BRodk%2C69NZ0WUo0dM%2CGC3GdqqOYRc%2Cb5WU3czhh3I%2CINFbHAj5URI%2CnnY1xnbBW4w%2C4nx4FMJUI8s%2COHDfiCZgUy8%2CYh0uZiFZRIg&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 16:51:07,955 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 16:51:07,962 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-11 16:51:07,990 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-11 16:51:07,996 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-11 16:51:09,851 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 16:51:09,852 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-11 16:51:09,854 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 16:51:10,818 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 16:51:10,828 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 16:51:10,829 - youtube - INFO - IDs de video encontrados: ['U9GFert9tkU', '69NZ0WUo0dM', 'VazD45BRodk', 'INFbHAj5URI', 'ZPnsj2Ov2z8', 'nnY1xnbBW4w', 'n40eIkhL4cE', 'OzRLhBc7cXw', 'mHbPijjfWFA', 'KxfOF--rymo']
+2025-12-11 16:51:10,830 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 16:51:11,016 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=U9GFert9tkU%2C69NZ0WUo0dM%2CVazD45BRodk%2CINFbHAj5URI%2CZPnsj2Ov2z8%2CnnY1xnbBW4w%2Cn40eIkhL4cE%2COzRLhBc7cXw%2CmHbPijjfWFA%2CKxfOF--rymo&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 16:51:11,028 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 16:51:11,034 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

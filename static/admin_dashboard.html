@@ -416,8 +416,12 @@
                                 // Actualizar la lista si la pestaña de cola está visible
                                 if (document.getElementById('queue').classList.contains('active')) {
                                     const approvedListEl = document.getElementById('approved-songs-list');
+                                    const pendingListEl = document.getElementById('pending-songs-list');
                                     if (approvedListEl && typeof renderApprovedSongs === 'function') {
                                         renderApprovedSongs(currentQueueData, approvedListEl);
+                                    }
+                                    if (pendingListEl && typeof renderPendingSongs === 'function') {
+                                        renderPendingSongs(currentQueueData.pending || [], pendingListEl);
                                     }
                                 }
                                 break;
