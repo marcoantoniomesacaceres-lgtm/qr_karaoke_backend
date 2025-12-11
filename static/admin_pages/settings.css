@@ -1,0 +1,603 @@
+/* ============================================
+   SETTINGS PAGE - ESTILO BEES
+   ============================================ */
+
+:root {
+  /* Paleta BEES */
+  --bees-yellow: #FFD700;
+  --bees-black: #1A1A1A;
+  --bees-gray: #F6F7FB;
+  --bees-card-bg: #FFFFFF;
+  --bees-border: #E2E2E2;
+  --bees-green: #4CAF50;
+  --bees-blue: #1976D2;
+  --bees-red: #FF4444;
+  
+  /* Estilos */
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  
+  /* Modo claro (por defecto) */
+  --settings-bg: #FFFFFF;
+  --settings-card-bg: #FFFFFF;
+  --settings-text: #1A1A1A;
+  --settings-text-secondary: #666666;
+  --settings-border: #E2E2E2;
+  --settings-input-bg: #F6F7FB;
+}
+
+/* Modo oscuro */
+[data-theme="dark"] {
+  --settings-bg: #1A1A1A;
+  --settings-card-bg: #2A2A2A;
+  --settings-text: #FFFFFF;
+  --settings-text-secondary: #AAAAAA;
+  --settings-border: #404040;
+  --settings-input-bg: #333333;
+}
+
+#settings {
+  padding: 30px;
+  background: var(--settings-bg);
+  min-height: 100vh;
+}
+
+/* ============================================
+   ENCABEZADO BEES
+   ============================================ */
+
+.settings-header {
+  background: linear-gradient(135deg, var(--bees-yellow) 0%, #FFC700 100%);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.settings-header-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-header-content h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--bees-black);
+}
+
+.settings-header-content p {
+  margin: 8px 0 0 0;
+  color: #333;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ============================================
+   GRID DE TARJETAS
+   ============================================ */
+
+.settings-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+/* ============================================
+   TARJETA GENERAL BEES
+   ============================================ */
+
+.settings-card {
+  background: var(--settings-card-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--settings-border);
+  transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.settings-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.settings-card-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 199, 0, 0.1) 100%);
+  border-radius: 14px;
+}
+
+.settings-card-header-content h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--settings-text);
+}
+
+.settings-card-header-content p {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--settings-text-secondary);
+}
+
+/* ============================================
+   FORMULARIOS BEES
+   ============================================ */
+
+.bees-form-group {
+  margin-bottom: 20px;
+}
+
+.bees-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--settings-text);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bees-form-group input,
+.bees-form-group select,
+.bees-form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--settings-border);
+  border-radius: 12px;
+  background: var(--settings-input-bg);
+  color: var(--settings-text);
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.bees-form-group input:focus,
+.bees-form-group select:focus,
+.bees-form-group textarea:focus {
+  outline: none;
+  border-color: var(--bees-yellow);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+  background: var(--settings-card-bg);
+}
+
+.bees-form-group.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bees-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--bees-yellow);
+}
+
+.bees-checkbox-label {
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* ============================================
+   BOTONES BEES
+   ============================================ */
+
+.bees-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.bees-btn-primary {
+  background: linear-gradient(135deg, var(--bees-yellow) 0%, #FFC700 100%);
+  color: var(--bees-black);
+  box-shadow: var(--shadow);
+}
+
+.bees-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.bees-btn-primary:active {
+  transform: translateY(0);
+}
+
+.bees-btn-secondary {
+  background: var(--settings-card-bg);
+  color: var(--bees-yellow);
+  border: 2px solid var(--bees-yellow);
+}
+
+.bees-btn-secondary:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.bees-btn-danger {
+  background: var(--bees-red);
+  color: white;
+  font-size: 14px;
+  padding: 10px 20px;
+  width: auto;
+}
+
+.bees-btn-danger:hover {
+  background: #FF2222;
+  transform: translateY(-2px);
+}
+
+.bees-btn-success {
+  background: var(--bees-green);
+  color: white;
+}
+
+.bees-btn-success:hover {
+  background: #45A049;
+  transform: translateY(-2px);
+}
+
+.bees-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   SECCIÓN DE HORA DE CIERRE
+   ============================================ */
+
+.closing-time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.closing-time-display {
+  background: linear-gradient(135deg, var(--bees-yellow) 0%, #FFC700 100%);
+  padding: 24px;
+  border-radius: var(--radius);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.closing-time-display-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.closing-time-display-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--bees-black);
+  margin: 8px 0 0 0;
+  font-family: 'Courier New', monospace;
+}
+
+/* ============================================
+   SECCIÓN DE TEMA
+   ============================================ */
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.theme-option {
+  padding: 16px;
+  border: 2px solid var(--settings-border);
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--settings-input-bg);
+}
+
+.theme-option:hover {
+  border-color: var(--bees-yellow);
+  transform: translateY(-2px);
+}
+
+.theme-option.active {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 199, 0, 0.1) 100%);
+  border-color: var(--bees-yellow);
+  box-shadow: inset 0 0 0 1px var(--bees-yellow);
+}
+
+.theme-option-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.theme-option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--settings-text);
+}
+
+/* ============================================
+   SECCIÓN DE NOTIFICACIONES
+   ============================================ */
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: var(--settings-input-bg);
+  border-radius: 12px;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.notification-item-icon {
+  font-size: 24px;
+}
+
+.notification-item-content {
+  flex: 1;
+}
+
+.notification-item-title {
+  font-weight: 600;
+  color: var(--settings-text);
+  margin: 0;
+}
+
+.notification-item-desc {
+  font-size: 13px;
+  color: var(--settings-text-secondary);
+  margin: 4px 0 0 0;
+}
+
+.notification-toggle {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+/* ============================================
+   SECCIÓN DE CLAVES API
+   ============================================ */
+
+.api-keys-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.api-key-item {
+  padding: 16px;
+  background: var(--settings-input-bg);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid var(--bees-yellow);
+}
+
+.api-key-info {
+  flex: 1;
+}
+
+.api-key-description {
+  font-weight: 600;
+  color: var(--settings-text);
+  margin: 0;
+  font-size: 14px;
+}
+
+.api-key-dates {
+  font-size: 12px;
+  color: var(--settings-text-secondary);
+  margin: 6px 0 0 0;
+}
+
+.api-key-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================
+   GENERADOR DE CLAVES
+   ============================================ */
+
+.generated-key-display {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+  border: 2px solid var(--bees-green);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 20px;
+  display: none;
+}
+
+.generated-key-display.show {
+  display: block;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.generated-key-title {
+  color: var(--bees-green);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+}
+
+.generated-key-warning {
+  background: rgba(255, 193, 7, 0.2);
+  border-left: 4px solid var(--bees-yellow);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--settings-text);
+}
+
+.key-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.key-input-group input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--settings-border);
+  border-radius: 12px;
+  background: var(--settings-input-bg);
+  color: var(--settings-text);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.key-input-group button {
+  padding: 12px 24px;
+  background: var(--bees-green);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.key-input-group button:hover {
+  background: #45A049;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   MENSAJE DE EXITO/ERROR
+   ============================================ */
+
+.settings-message {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  animation: slideIn 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-message.success {
+  background: rgba(76, 175, 80, 0.2);
+  border-left: 4px solid var(--bees-green);
+  color: var(--bees-green);
+}
+
+.settings-message.error {
+  background: rgba(255, 68, 68, 0.2);
+  border-left: 4px solid var(--bees-red);
+  color: var(--bees-red);
+}
+
+.settings-message.warning {
+  background: rgba(255, 193, 7, 0.2);
+  border-left: 4px solid var(--bees-yellow);
+  color: #FFC700;
+}
+
+.settings-message-icon {
+  font-size: 20px;
+}
+
+/* ============================================
+   GRID RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  #settings {
+    padding: 16px;
+  }
+
+  .settings-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .settings-container {
+    grid-template-columns: 1fr;
+  }
+
+  .closing-time-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-options {
+    grid-template-columns: 1fr;
+  }
+
+  .bees-btn {
+    width: 100%;
+  }
+
+  .settings-card {
+    padding: 16px;
+  }
+}
+
+/* ============================================
+   ANIMACIONES ADICIONALES
+   ============================================ */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.bees-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
