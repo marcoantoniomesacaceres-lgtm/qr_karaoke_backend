@@ -234,18 +234,6 @@ function renderQuickActions(dashboardContainer) {
     `;
     container.appendChild(broadcastSection);
 
-    // Zona peligrosa
-    const dangerSection = document.createElement('div');
-    dangerSection.style.background = 'rgba(255, 68, 68, 0.1)';
-    dangerSection.style.padding = '16px';
-    dangerSection.style.borderRadius = '12px';
-    dangerSection.style.borderLeft = '4px solid var(--bees-red)';
-    dangerSection.innerHTML = `
-        <div style="font-weight: 600; color: var(--bees-red); margin-bottom: 12px;">⚠️ Zona Peligrosa</div>
-        <button class="bees-btn bees-btn-danger bees-btn-small" id="reset-night-btn" style="width: 100%;">🔄 Reiniciar Noche</button>
-    `;
-    container.appendChild(dangerSection);
-
     card.appendChild(container);
     dashboardContainer.appendChild(card);
 }
@@ -327,12 +315,6 @@ function setupDashboardListeners() {
     const broadcastBtn = document.getElementById('broadcast-btn');
     if (broadcastBtn) {
         broadcastBtn.addEventListener('click', handleBroadcast);
-    }
-
-    // Reset night
-    const resetBtn = document.getElementById('reset-night-btn');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', handleResetNight);
     }
 
     // Reacciones

@@ -219,6 +219,26 @@ function renderSettings(settings, container) {
     `;
     cardsContainer.appendChild(apiKeysCard);
 
+    // ============= TARJETA 6: ZONA PELIGROSA =============
+    const dangerCard = document.createElement('div');
+    dangerCard.className = 'settings-card';
+    dangerCard.style.borderLeft = '4px solid var(--bees-red)';
+    dangerCard.style.background = 'rgba(255, 68, 68, 0.05)';
+    dangerCard.innerHTML = `
+        <div class="settings-card-header">
+            <div class="settings-card-icon" style="color: var(--bees-red);">⚠️</div>
+            <div class="settings-card-header-content">
+                <h3 style="color: var(--bees-red);">Zona Peligrosa</h3>
+                <p>Acciones que afectan toda la aplicación</p>
+            </div>
+        </div>
+        <div style="padding: 12px; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid var(--bees-red); margin-bottom: 16px;">
+            <strong style="color: var(--bees-red);">⚠️ Advertencia:</strong> Estas acciones no se pueden deshacer fácilmente.
+        </div>
+        <button class="bees-btn bees-btn-danger" id="reset-night-btn" style="width: 100%; padding: 12px;">🔄 Reiniciar Noche</button>
+    `;
+    cardsContainer.appendChild(dangerCard);
+
     container.appendChild(cardsContainer);
 
     // Configurar listeners después de renderizar
@@ -457,6 +477,7 @@ function setupSettingsListeners() {
     const generalSettingsForm = document.getElementById('general-settings-form');
     const themeSettingsForm = document.getElementById('theme-settings-form');
     const notificationsSettingsForm = document.getElementById('notifications-settings-form');
+    const resetNightBtn = document.getElementById('reset-night-btn');
     
     // Closing time form
     if (closingTimeForm && !closingTimeForm.dataset.listenerAttached) {
@@ -501,6 +522,25 @@ function setupSettingsListeners() {
         notificationsSettingsForm.dataset.listenerAttached = '1';
     }
 
+    // Reset night button
+    if (resetNightBtn) {
+        resetNightBtn.addEventListener('click', handleResetNight);
+    }
+
     // Load API keys
     loadApiKeys();
+}
+
+async function handleResetNight() {
+    if (!confirm('⚠️ ACCIÓN DESTRUCTIVA\n\n¿Estás seguro de reiniciar la noche?\nSe borrarán: mesas, usuarios, canciones y consumos.')) {
+        return;
+    }
+    
+    try {
+        await apiFetch('/admin/reset-night', { method: 'POST' });
+        showNotification('✅ Sistema reiniciado correctamente.', 'success');
+        setTimeout(() => loadSettingsPage(), 300);
+    } catch (error) {
+        showNotification(`❌ ${error.message}`, 'error');
+    }
 }
