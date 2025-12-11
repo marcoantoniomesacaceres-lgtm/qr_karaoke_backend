@@ -1,10 +1,160 @@
-// Queue Page Module
+// Queue Page Module - BEES Style
 // Manejo: cola de canciones, búsqueda de canciones, añadir canciones
+
+async function loadQueuePage() {
+    const queueContainer = document.getElementById('queue');
+    if (!queueContainer) return;
+
+    try {
+        queueContainer.innerHTML = '';
+
+        // Encabezado
+        const header = document.createElement('div');
+        header.className = 'bees-header';
+        header.innerHTML = `
+            <div class="bees-header-icon">🎵</div>
+            <div class="bees-header-content">
+                <h1>Cola de Canciones</h1>
+                <p>Gestión de la reproducción</p>
+            </div>
+        `;
+        queueContainer.appendChild(header);
+
+        // Contenedor de dos columnas
+        const mainContainer = document.createElement('div');
+        mainContainer.style.display = 'grid';
+        mainContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(500px, 1fr))';
+        mainContainer.style.gap = '24px';
+        mainContainer.style.marginBottom = '30px';
+
+        // Tarjeta de cola
+        const queueCard = document.createElement('div');
+        queueCard.className = 'bees-card';
+
+        const queueHeader = document.createElement('div');
+        queueHeader.className = 'bees-card-header';
+        queueHeader.innerHTML = `
+            <div class="bees-card-icon">▶️</div>
+            <div class="bees-card-header-content">
+                <h3>Cola Aprobada</h3>
+                <p>Canciones en reproducción</p>
+            </div>
+        `;
+        queueCard.appendChild(queueHeader);
+
+        const queueList = document.createElement('ul');
+        queueList.id = 'approved-songs-list';
+        queueList.style.listStyle = 'none';
+        queueList.style.padding = '0';
+        queueList.style.margin = '0';
+
+        const loadingItem = document.createElement('li');
+        loadingItem.innerHTML = '<div class="bees-alert bees-alert-info"><span class="bees-alert-icon">⏳</span><div>Cargando cola...</div></div>';
+        queueList.appendChild(loadingItem);
+
+        queueCard.appendChild(queueList);
+        mainContainer.appendChild(queueCard);
+
+        // Tarjeta de búsqueda
+        const searchCard = document.createElement('div');
+        searchCard.className = 'bees-card';
+
+        const searchHeader = document.createElement('div');
+        searchHeader.className = 'bees-card-header';
+        searchHeader.innerHTML = `
+            <div class="bees-card-icon">🔍</div>
+            <div class="bees-card-header-content">
+                <h3>Añadir Canción (DJ)</h3>
+                <p>Busca y agrega música</p>
+            </div>
+        `;
+        searchCard.appendChild(searchHeader);
+
+        const searchForm = document.createElement('form');
+        searchForm.id = 'admin-search-form';
+        searchForm.innerHTML = `
+            <div class="bees-form-group">
+                <label for="admin-search-input">Buscar en YouTube</label>
+                <input type="text" id="admin-search-input" placeholder="Artista, canción o URL" required>
+            </div>
+            <div class="bees-form-group">
+                <label for="admin-target-table">Destino</label>
+                <select id="admin-target-table" style="border: 2px solid var(--page-border); border-radius: 8px; padding: 12px; width: 100%; background: var(--page-input-bg); color: var(--page-text); box-sizing: border-box;">
+                    <option value="">🎵 Cola General</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="bees-btn bees-btn-primary bees-btn-small" id="admin-search-songs-btn" style="flex: 1; padding: 12px;">🎶 Canciones</button>
+                <button type="button" class="bees-btn bees-btn-success bees-btn-small" id="admin-search-karaoke-btn" style="flex: 1; padding: 12px;">🎤 Karaoke</button>
+            </div>
+        `;
+        searchCard.appendChild(searchForm);
+
+        const resultsContainer = document.createElement('div');
+        resultsContainer.id = 'admin-search-results';
+        resultsContainer.style.listStyle = 'none';
+        resultsContainer.style.padding = '0';
+        resultsContainer.style.margin = '16px 0 0 0';
+        resultsContainer.style.maxHeight = '500px';
+        resultsContainer.style.overflowY = 'auto';
+        searchCard.appendChild(resultsContainer);
+
+        mainContainer.appendChild(searchCard);
+        queueContainer.appendChild(mainContainer);
+
+        // Cargar datos
+        await loadQueueData();
+        setupQueueListeners();
+    } catch (error) {
+        const queueContainer = document.getElementById('queue');
+        if (queueContainer) {
+            queueContainer.innerHTML = `
+                <div class="bees-alert bees-alert-danger">
+                    <span class="bees-alert-icon">❌</span>
+                    <div>Error al cargar cola: ${error.message}</div>
+                </div>
+            `;
+        }
+    }
+}
+
+async function loadQueueData() {
+    try {
+        // Cargar cola
+        let queueData = currentQueueData || { now_playing: null, upcoming: [] };
+        if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
+            queueData = await apiFetch('/canciones/cola');
+        }
+        currentQueueData = queueData;
+
+        const approvedSongsList = document.getElementById('approved-songs-list');
+        if (approvedSongsList) {
+            renderApprovedSongs(queueData, approvedSongsList);
+        }
+    } catch (error) {
+        console.error('Error loading queue:', error);
+        showNotification(`Error al cargar cola: ${error.message}`, 'error');
+    }
+
+    try {
+        // Cargar mesas
+        const tables = await apiFetch('/mesas/');
+        const targetTableSelect = document.getElementById('admin-target-table');
+        if (targetTableSelect) {
+            targetTableSelect.innerHTML = '<option value="">🎵 Cola General</option>';
+            const activeTables = tables.filter(t => t.is_active);
+            activeTables.forEach(table => {
+                targetTableSelect.innerHTML += `<option value="${table.id}">🏠 ${table.nombre}</option>`;
+            });
+        }
+    } catch (error) {
+        console.error('Error loading tables:', error);
+    }
+}
 
 function renderApprovedSongs(songs, listElement) {
     if (!listElement) return;
 
-    // Handle both array input and object with now_playing/upcoming structure
     let songArray = [];
     if (Array.isArray(songs)) {
         songArray = songs;
@@ -19,113 +169,64 @@ function renderApprovedSongs(songs, listElement) {
 
     listElement.innerHTML = '';
     if (!songArray || songArray.length === 0) {
-        listElement.innerHTML = '<p>La cola de canciones está vacía.</p>';
+        const emptyItem = document.createElement('li');
+        emptyItem.innerHTML = '<div class="bees-alert bees-alert-info"><span class="bees-alert-icon">ℹ️</span><div>La cola de canciones está vacía.</div></div>';
+        listElement.appendChild(emptyItem);
         return;
     }
+
     songArray.forEach((song, index) => {
         const li = document.createElement('li');
-        li.className = 'item';
+        li.style.marginBottom = '16px';
 
         let addedBy = 'Desconocido';
         if (song.usuario) {
             addedBy = song.usuario.mesa ? song.usuario.mesa.nombre : song.usuario.nick;
         }
 
+        const isPlaying = index === 0;
+        const statusBadge = isPlaying 
+            ? '<span class="bees-badge bees-badge-success">▶️ Reproduciendo</span>'
+            : `<span class="bees-badge bees-badge-info">#${index}</span>`;
+
         let buttonsHtml = '';
-
-        if (index === 0) {
-            // First item (Playing): Show full 2x3 grid control
-
-            // Determine the current state of the pause button from the hidden global button
-            const globalPauseBtn = document.getElementById('pause-resume-btn');
-            // If global button says "Reanudar" (it's paused), we show "Reanudar"
-            // If global button says "Pausar" (it's playing), we show "Pausar"
-            // Default to "Pausar" if not found
-            let pauseBtnText = '⏸️ Pausar';
-            if (globalPauseBtn && globalPauseBtn.innerText.includes('Reanudar')) {
-                pauseBtnText = '▶️ Reanudar';
-            }
-
+        if (isPlaying) {
             buttonsHtml = `
-                <div class="queue-actions-grid">
-                    <!-- Row 1: Reproducir | Pausar -->
-                    <button class="btn-approve" data-id="${song.id}" data-action="play" title="Marcar como 'Reproduciendo'">Reproducir</button>
-                    <button class="btn-action" data-id="player-pause" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseBtnText}</button>
-                    
-                    <!-- Row 2: Bajar | Subir -->
-                    <button class="btn-action" data-id="${song.id}" data-action="move-down" title="Mover un puesto hacia abajo">Bajar</button>
-                    <button class="btn-action" data-id="${song.id}" data-action="move-up" title="Mover un puesto hacia arriba">Subir</button>
-                    
-                    <!-- Row 3: Reiniciar | Eliminar -->
-                    <button class="btn-action" data-id="${song.id}" data-action="restart" title="Reiniciar la canción actual">Reiniciar</button>
-                    <button class="btn-reject" data-id="${song.id}" data-action="remove" title="Eliminar de la cola">Eliminar</button>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px;">
+                    <button class="bees-btn bees-btn-success bees-btn-small" data-id="${song.id}" data-action="play" title="Reproducir ahora">▶️ Siguiente</button>
+                    <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">⏸️ Pausar</button>
+                    <button class="bees-btn bees-btn-warning bees-btn-small" data-id="${song.id}" data-action="move-up" title="Reiniciar">🔄 Reiniciar</button>
+                    <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
                 </div>
             `;
-        } else {
-            // Other items: No buttons as requested
-            buttonsHtml = '';
         }
 
         li.innerHTML = `
-            <div class="item-details song-item-info">
-                <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura">
-                <div>
-                    <div class="item-title">${song.titulo}</div>
-                    <div class="item-meta">
-                        Por: <strong>${addedBy}</strong>
-                        ${index === 0 ? '<span class="status-badge status-reproduciendo" style="margin-left: 10px;">Reproduciendo</span>' : ''}
+            <div style="background: var(--page-input-bg); border-radius: 12px; padding: 16px; border-left: 4px solid ${isPlaying ? 'var(--bees-green)' : 'var(--bees-yellow)'};">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <img src="https://i.ytimg.com/vi/${song.youtube_id}/mqdefault.jpg" alt="Miniatura" style="width: 60px; height: 45px; border-radius: 6px; object-fit: cover;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: var(--page-text); margin-bottom: 4px; word-break: break-word;">${song.titulo}</div>
+                        <div style="font-size: 12px; color: var(--page-text-secondary);">Agregada por: <strong>${addedBy}</strong></div>
                     </div>
                 </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    ${statusBadge}
+                </div>
+                ${buttonsHtml}
             </div>
-            ${buttonsHtml}
         `;
         listElement.appendChild(li);
     });
 }
 
-
-async function loadQueuePage() {
-    try {
-        // Si ya tenemos datos en caché (por WebSocket), usarlos primero
-        let queueData = currentQueueData || { now_playing: null, upcoming: [] };
-
-        // Si el caché está vacío, cargar desde servidor
-        if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
-            queueData = await apiFetch('/canciones/cola');
-        }
-
-        // Actualizar el caché con los datos más recientes
-        currentQueueData = queueData;
-
-        const approvedSongsList = document.getElementById('approved-songs-list');
-        // Renderizar directamente desde el objeto (que puede tener now_playing/upcoming)
-        renderApprovedSongs(queueData, approvedSongsList);
-    } catch (error) {
-        showNotification(`Error al cargar cola: ${error.message}`, 'error');
-    }
-
-    try {
-        const tables = await apiFetch('/mesas/');
-        const targetTableSelect = document.getElementById('admin-target-table');
-        if (targetTableSelect) {
-            targetTableSelect.innerHTML = '<option value="">DJ (Cola General)</option>';
-            const activeTables = tables.filter(t => t.is_active);
-            activeTables.forEach(table => {
-                targetTableSelect.innerHTML += `<option value="${table.id}">${table.nombre}</option>`;
-            });
-        }
-    } catch (error) {
-        showNotification(`Error al cargar mesas: ${error.message}`, 'error');
-    }
-
-    // Cargar el estado del autoplay
-
-}
-
 async function handleAdminSearch(event, karaokeMode = false) {
     event.preventDefault();
     const query = document.getElementById('admin-search-input').value.trim();
-    if (!query) return;
+    if (!query) {
+        showNotification('Escribe algo para buscar', 'error');
+        return;
+    }
 
     const songsButton = document.getElementById('admin-search-songs-btn');
     const karaokeButton = document.getElementById('admin-search-karaoke-btn');
@@ -134,35 +235,39 @@ async function handleAdminSearch(event, karaokeMode = false) {
 
     const clickedButton = karaokeMode ? karaokeButton : songsButton;
     const originalText = clickedButton.textContent;
-    clickedButton.textContent = 'Buscando...';
+    clickedButton.textContent = '⏳ Buscando...';
 
     const resultsContainer = document.getElementById('admin-search-results');
-    resultsContainer.innerHTML = '<p>Buscando...</p>';
+    resultsContainer.innerHTML = '';
 
     try {
         const url = `/youtube/search?q=${encodeURIComponent(query)}${karaokeMode ? '&karaoke_mode=true' : ''}`;
         const results = await apiFetch(url);
 
-        resultsContainer.innerHTML = '';
         if (results.length > 0) {
             results.forEach(song => {
-                resultsContainer.innerHTML += `
-                    <li class="item">
-                        <div class="item-details song-item-info">
-                            <img src="${song.thumbnail}" alt="Miniatura">
-                            <div>
-                                <div class="item-title">${song.title}</div>
-                            </div>
+                const resultItem = document.createElement('li');
+                resultItem.style.marginBottom = '12px';
+                resultItem.innerHTML = `
+                    <div style="background: var(--page-input-bg); border-radius: 12px; padding: 12px; border-left: 4px solid var(--bees-blue); display: flex; gap: 12px; align-items: flex-start;">
+                        <img src="${song.thumbnail}" alt="Miniatura" style="width: 50px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0;">
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; color: var(--page-text); font-size: 14px; word-break: break-word;">${song.title}</div>
                         </div>
-                        <button class="btn-approve admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}">Añadir</button>
-                    </li>
+                        <button class="bees-btn bees-btn-primary bees-btn-small admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 8px 12px; font-size: 13px;">➕ Añadir</button>
+                    </div>
                 `;
+                resultsContainer.appendChild(resultItem);
             });
         } else {
-            resultsContainer.innerHTML = '<p>No se encontraron resultados.</p>';
+            const noResults = document.createElement('li');
+            noResults.innerHTML = '<div class="bees-alert bees-alert-warning"><span class="bees-alert-icon">🔍</span><div>No se encontraron resultados</div></div>';
+            resultsContainer.appendChild(noResults);
         }
     } catch (error) {
-        resultsContainer.innerHTML = `<p class="error-msg">Error: ${error.message}</p>`;
+        const errorItem = document.createElement('li');
+        errorItem.innerHTML = `<div class="bees-alert bees-alert-danger"><span class="bees-alert-icon">❌</span><div>Error: ${error.message}</div></div>`;
+        resultsContainer.appendChild(errorItem);
     } finally {
         songsButton.disabled = false;
         karaokeButton.disabled = false;
@@ -171,11 +276,11 @@ async function handleAdminSearch(event, karaokeMode = false) {
 }
 
 async function handleAdminAddSong(event) {
-    if (!event.target.classList.contains('admin-add-song-btn')) return;
+    const button = event.target.closest('.admin-add-song-btn');
+    if (!button) return;
 
-    const button = event.target;
     button.disabled = true;
-    button.textContent = 'Añadiendo...';
+    button.textContent = '⏳ Añadiendo...';
 
     const songData = {
         titulo: button.dataset.title,
@@ -185,7 +290,6 @@ async function handleAdminAddSong(event) {
 
     const targetTableId = document.getElementById('admin-target-table').value;
     let endpoint;
-    let body = JSON.stringify(songData);
 
     if (targetTableId) {
         endpoint = `/admin/mesas/${targetTableId}/add-song`;
@@ -196,43 +300,38 @@ async function handleAdminAddSong(event) {
     try {
         await apiFetch(endpoint, {
             method: 'POST',
-            body: body
+            body: JSON.stringify(songData)
         });
-        const targetName = targetTableId ? `la mesa seleccionada` : 'la cola general';
-        showNotification(`'${songData.titulo}' añadida a ${targetName}.`, 'success');
+        
+        const targetName = targetTableId ? 'la mesa' : 'la cola general';
+        showNotification(`✅ '${songData.titulo}' añadida a ${targetName}`, 'success');
 
-        // Limpiar resultados de búsqueda
+        // Limpiar
         document.getElementById('admin-search-results').innerHTML = '';
+        document.getElementById('admin-search-input').value = '';
 
-        // IMPORTANTE: Recargar la cola aprobada para mostrar la canción recién agregada
+        // Recargar
         await reloadApprovedQueue();
 
     } catch (error) {
         showNotification(error.message, 'error');
     } finally {
         button.disabled = false;
-        button.textContent = 'Añadir';
+        button.textContent = '➕ Añadir';
     }
 }
 
-// Nueva función para recargar solo la cola aprobada sin recargar toda la página
 async function reloadApprovedQueue() {
     try {
-        // Obtener los datos más recientes de la cola desde el servidor
         const queueData = await apiFetch('/canciones/cola');
-
-        // Actualizar el caché global
         currentQueueData = queueData;
 
-        // Actualizar la vista de la cola aprobada
         const approvedSongsList = document.getElementById('approved-songs-list');
         if (approvedSongsList) {
             renderApprovedSongs(queueData, approvedSongsList);
         }
     } catch (error) {
-        console.error('Error al recargar la cola aprobada:', error);
-        // No mostrar notificación de error aquí para no molestar al usuario
-        // La canción ya fue agregada exitosamente
+        console.error('Error al recargar cola:', error);
     }
 }
 
@@ -243,74 +342,51 @@ async function handleQueueActions(event) {
     const songId = button.dataset.id;
     const action = button.dataset.action;
 
-    if (!songId || !action) return;
+    if (!action) return;
 
     button.disabled = true;
-    let shouldReloadQueue = false; // Flag para saber si debemos recargar la cola
+    const originalText = button.textContent;
+    let shouldReloadQueue = false;
 
     try {
         if (action === 'play') {
             const response = await fetch(`${API_BASE_URL}/canciones/siguiente`, {
                 method: "POST",
-                headers: {
-                    "X-API-Key": apiKey
-                }
+                headers: { "X-API-Key": apiKey }
             });
 
             if (response.status === 204) {
                 showNotification('No hay más canciones en la cola.', 'info');
             } else if (response.ok) {
                 const data = await response.json();
-                showNotification(`Reproduciendo ahora: ${data.cancion.titulo}`, 'success');
+                showNotification(`▶️ Reproduciendo: ${data.cancion.titulo}`, 'success');
                 shouldReloadQueue = true;
             } else {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Error al intentar reproducir la canción.');
+                throw new Error(errorData.detail || 'Error al reproducir');
             }
 
         } else if (action === 'remove') {
-            if (confirm('¿Seguro que quieres eliminar esta canción de la cola?')) {
-                await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
-                showNotification('Canción eliminada de la cola.', 'info');
-                shouldReloadQueue = true;
-            } else {
+            if (!confirm('¿Eliminar esta canción?')) {
                 button.disabled = false;
                 return;
             }
-        } else if (action === 'move-up' || action === 'move-down') {
-            const listElement = document.getElementById('approved-songs-list');
-            const songItems = Array.from(listElement.querySelectorAll('li.item'));
-            const songIds = songItems.map(item => item.querySelector('button').dataset.id);
-            const currentIndex = songIds.indexOf(songId);
-
-            if (action === 'move-up' && currentIndex > 0) {
-                [songIds[currentIndex - 1], songIds[currentIndex]] = [songIds[currentIndex], songIds[currentIndex - 1]];
-            } else if (action === 'move-down' && currentIndex < songIds.length - 1) {
-                [songIds[currentIndex], songIds[currentIndex + 1]] = [songIds[currentIndex + 1], songIds[currentIndex]];
-            } else {
-                button.disabled = false;
-                return;
-            }
-
-            await apiFetch('/admin/reorder-queue', { method: 'POST', body: JSON.stringify({ canciones_ids: songIds }) });
-            showNotification('Cola reordenada.', 'info');
+            await apiFetch(`/canciones/${songId}/rechazar`, { method: 'POST' });
+            showNotification('❌ Canción eliminada', 'info');
             shouldReloadQueue = true;
+
         } else if (action === 'restart') {
-            await apiFetch(`/admin/canciones/restart`, { method: 'POST' }).catch(async () => {
-                // Fallback: /admin/canciones/restart doesn't exist, try alternative or skip
-                console.warn('Restart endpoint not available');
-                showNotification('Función de reinicio no disponible en el backend.', 'warning');
-            });
-            showNotification('Reiniciando la canción actual.', 'info');
-            // No recargar la cola para restart, ya que no cambia el orden
+            try {
+                await apiFetch(`/admin/canciones/restart`, { method: 'POST' });
+                showNotification('🔄 Canción reiniciada', 'info');
+            } catch (e) {
+                showNotification('Función no disponible', 'warning');
+            }
+
         } else if (action === 'pause-resume-toggle') {
             await handlePauseResume();
-            // Optional: Update button text state if needed, but handlePauseResume does it by ID 'pause-resume-btn'. 
-            // Since we have multiple buttons now, we might need to sync them or just rely on the notification.
-            // For better UX, we could reload or update UI, but let's see.
         }
 
-        // Recargar la cola si hubo cambios
         if (shouldReloadQueue) {
             await reloadApprovedQueue();
         }
@@ -319,51 +395,38 @@ async function handleQueueActions(event) {
         showNotification(`Error: ${error.message}`, 'error');
     } finally {
         button.disabled = false;
+        button.textContent = originalText;
     }
 }
 
 async function handlePauseResume() {
-    const btn = document.getElementById('pause-resume-btn');
-    if (!btn) return;
+    const isPausing = true; // Simulamos un toggle simple
+    const endpoint = '/admin/player/pause'; // O resume según estado actual
 
-    const isPausing = btn.innerText.includes('Pausar');
-    const endpoint = isPausing ? '/admin/player/pause' : '/admin/player/resume';
-    const newText = isPausing ? '▶️ Reanudar' : '⏸️ Pausar';
-    const originalText = btn.innerHTML;
-
-    btn.disabled = true;
     try {
         await apiFetch(endpoint, { method: 'POST' });
-        btn.innerHTML = newText;
-
-        // Sync the grid button if it exists
-        const gridPauseBtn = document.querySelector('button[data-action="pause-resume-toggle"]');
-        if (gridPauseBtn) {
-            gridPauseBtn.innerHTML = newText;
-        }
-
-        showNotification(isPausing ? 'Se ha enviado la orden de PAUSA.' : 'Se ha enviado la orden de REANUDAR.', 'info');
+        showNotification('⏸️ Control enviado', 'info');
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
-        btn.innerHTML = originalText;
-    } finally {
-        btn.disabled = false;
     }
 }
 
 function setupQueueListeners() {
-    const searchForm = document.getElementById('admin-search-form');
     const songsBtn = document.getElementById('admin-search-songs-btn');
     const karaokeBtn = document.getElementById('admin-search-karaoke-btn');
     const resultsContainer = document.getElementById('admin-search-results');
     const songsList = document.getElementById('approved-songs-list');
-    const autoplayToggle = document.getElementById('autoplay-toggle-queue');
 
-    if (songsBtn) songsBtn.addEventListener('click', (e) => handleAdminSearch(e, false));
-    if (karaokeBtn) karaokeBtn.addEventListener('click', (e) => handleAdminSearch(e, true));
-    if (resultsContainer) resultsContainer.addEventListener('click', handleAdminAddSong);
-    if (songsList) songsList.addEventListener('click', handleQueueActions);
-    const pauseBtn = document.getElementById('pause-resume-btn');
-    if (pauseBtn) pauseBtn.addEventListener('click', handlePauseResume);
-
+    if (songsBtn) {
+        songsBtn.addEventListener('click', (e) => handleAdminSearch(e, false));
+    }
+    if (karaokeBtn) {
+        karaokeBtn.addEventListener('click', (e) => handleAdminSearch(e, true));
+    }
+    if (resultsContainer) {
+        resultsContainer.addEventListener('click', handleAdminAddSong);
+    }
+    if (songsList) {
+        songsList.addEventListener('click', handleQueueActions);
+    }
 }

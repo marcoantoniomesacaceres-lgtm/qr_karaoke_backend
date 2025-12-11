@@ -1,219 +1,171 @@
-/* Estilos adicionales para reportes profesionales con formato APA */
+/* Reports Page - BEES Style */
 
-.professional-report {
-    position: relative;
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    max-width: 1200px;
-    margin: 0 auto;
-    font-family: 'Times New Roman', Times, serif;
+#reports {
+    animation: slideInUp 0.3s ease-out;
 }
 
-.report-header {
-    border-bottom: 3px solid #2c3e50;
-    padding-bottom: 20px;
-    margin-bottom: 30px;
+#reports .bees-header {
+    margin-bottom: 24px;
 }
 
-.watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-size: 120px;
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.03);
-    pointer-events: none;
-    z-index: 0;
-    white-space: nowrap;
-    user-select: none;
+#reports .bees-card {
+    padding: 24px;
 }
 
-.report-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: relative;
-    z-index: 1;
-}
-
-.report-table thead tr {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.report-table th {
-    padding: 15px;
-    text-align: left;
-    border: 1px solid #ddd;
-    font-weight: bold;
-}
-
-.report-table td {
-    padding: 12px;
-    border: 1px solid #ddd;
-}
-
-.report-table tbody tr:nth-child(even) {
-    background: #f8f9fa;
-}
-
-.report-table tbody tr:hover {
-    background: #e9ecef;
-    transition: background 0.3s ease;
-}
-
-.report-summary {
-    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    position: relative;
-    z-index: 1;
-}
-
-.report-footer {
-    border-top: 2px solid #ecf0f1;
-    padding-top: 20px;
-    margin-top: 40px;
-    font-size: 11px;
-    color: #7f8c8d;
-    text-align: center;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin: 30px 0;
-    flex-wrap: wrap;
-}
-
-.btn-action {
-    border: none;
-    padding: 12px 30px;
-    border-radius: 8px;
+/* Report Controls */
+#report-selector {
+    font-family: inherit;
     font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
 }
 
-.btn-action:hover {
+#report-selector:hover {
+    border-color: var(--bees-yellow) !important;
+}
+
+#report-selector:focus {
+    outline: none;
+    border-color: var(--bees-yellow) !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+#generate-report-btn {
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+#generate-report-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-.btn-action:active {
+#generate-report-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.btn-print {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Report Output */
+#report-output {
+    min-height: 100px;
+}
+
+/* Table Styling */
+#reports .bees-table {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: collapse;
+    background: var(--page-input-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#reports .bees-table thead {
+    background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%);
+    color: var(--bees-black);
+    font-weight: 700;
+}
+
+#reports .bees-table th {
+    padding: 14px;
+    text-align: left;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#reports .bees-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--page-border);
+    font-size: 14px;
+    color: var(--page-text);
+}
+
+#reports .bees-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#reports .bees-table tbody tr:hover {
+    background-color: var(--bees-yellow);
+    color: var(--bees-black);
+}
+
+#reports .bees-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Metrics Grid */
+#reports [style*="gridTemplateColumns"] {
+    margin-top: 16px;
+}
+
+#reports .bees-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+#reports .bees-badge-warning {
+    background-color: #FFA500;
     color: white;
 }
 
-.btn-pdf {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-}
-
-.btn-excel {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-}
-
-/* Estilos para impresión */
-@media print {
-    body {
-        margin: 0;
-        padding: 20px;
-        font-family: 'Times New Roman', Times, serif;
-    }
-    
-    .watermark {
-        opacity: 0.02 !important;
-        font-size: 150px !important;
-    }
-    
-    .action-buttons,
-    .no-print {
-        display: none !important;
-    }
-    
-    .professional-report {
-        box-shadow: none;
-        padding: 20px;
-    }
-    
-    table {
-        page-break-inside: avoid;
-    }
-    
-    tr {
-        page-break-inside: avoid;
-    }
-    
-    .report-table thead {
-        display: table-header-group;
-    }
-    
-    .report-table tfoot {
-        display: table-footer-group;
-    }
-    
-    /* Asegurar que los colores se impriman */
-    .report-table thead tr {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
-
-/* Animaciones */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.professional-report {
-    animation: fadeIn 0.5s ease-out;
+/* Info Text */
+#reports p {
+    font-size: 12px;
+    color: var(--page-text-secondary);
+    margin-top: 12px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .professional-report {
-        padding: 20px;
+    #reports .bees-card {
+        padding: 16px;
     }
-    
-    .report-table {
+
+    #reports .bees-table {
         font-size: 12px;
     }
-    
-    .report-table th,
-    .report-table td {
-        padding: 8px;
+
+    #reports .bees-table th,
+    #reports .bees-table td {
+        padding: 10px;
     }
-    
-    .action-buttons {
+
+    #report-selector {
+        min-width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    #reports .bees-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #reports .bees-header-icon {
+        margin-right: 0;
+        margin-bottom: 12px;
+        font-size: 32px;
+    }
+
+    #report-selector,
+    #generate-report-btn {
+        width: 100% !important;
+    }
+
+    #reports [style*="display: flex"] {
         flex-direction: column;
     }
-    
-    .btn-action {
-        width: 100%;
+
+    #reports .bees-table {
+        font-size: 11px;
+        display: block;
+        overflow-x: auto;
     }
-    
-    .watermark {
-        font-size: 60px;
+
+    #reports .bees-table th,
+    #reports .bees-table td {
+        padding: 8px;
     }
 }

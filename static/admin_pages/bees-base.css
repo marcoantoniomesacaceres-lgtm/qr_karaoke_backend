@@ -1,0 +1,539 @@
+/* ============================================
+   BEES STYLE SYSTEM - BASE PARA TODAS LAS PÁGINAS
+   ============================================ */
+
+:root {
+  /* Paleta BEES */
+  --bees-yellow: #FFD700;
+  --bees-black: #1A1A1A;
+  --bees-gray: #F6F7FB;
+  --bees-card-bg: #FFFFFF;
+  --bees-border: #E2E2E2;
+  --bees-green: #4CAF50;
+  --bees-blue: #1976D2;
+  --bees-red: #FF4444;
+  
+  /* Estilos */
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  
+  /* Modo claro (por defecto) */
+  --page-bg: #FFFFFF;
+  --page-card-bg: #FFFFFF;
+  --page-text: #1A1A1A;
+  --page-text-secondary: #666666;
+  --page-border: #E2E2E2;
+  --page-input-bg: #F6F7FB;
+}
+
+/* Modo oscuro */
+[data-theme="dark"] {
+  --page-bg: #1A1A1A;
+  --page-card-bg: #2A2A2A;
+  --page-text: #FFFFFF;
+  --page-text-secondary: #AAAAAA;
+  --page-border: #404040;
+  --page-input-bg: #333333;
+}
+
+/* ============================================
+   ENCABEZADO BEES
+   ============================================ */
+
+.bees-header {
+  background: linear-gradient(135deg, var(--bees-yellow) 0%, #FFC700 100%);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+}
+
+.bees-header-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bees-header-content h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--bees-black);
+}
+
+.bees-header-content p {
+  margin: 8px 0 0 0;
+  color: #333;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ============================================
+   TARJETA GENERAL BEES
+   ============================================ */
+
+.bees-card {
+  background: var(--page-card-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--page-border);
+  transition: all 0.3s ease;
+}
+
+.bees-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.bees-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bees-card-icon {
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 199, 0, 0.1) 100%);
+  border-radius: 14px;
+}
+
+.bees-card-header-content h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--page-text);
+}
+
+.bees-card-header-content p {
+  margin: 6px 0 0 0;
+  font-size: 13px;
+  color: var(--page-text-secondary);
+}
+
+.bees-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--page-text);
+  margin: 0 0 16px 0;
+}
+
+/* ============================================
+   GRID DE TARJETAS
+   ============================================ */
+
+.bees-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.bees-container-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.bees-container-4col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ============================================
+   FORMULARIOS BEES
+   ============================================ */
+
+.bees-form-group {
+  margin-bottom: 20px;
+}
+
+.bees-form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--page-text);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bees-form-group input,
+.bees-form-group select,
+.bees-form-group textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--page-border);
+  border-radius: 12px;
+  background: var(--page-input-bg);
+  color: var(--page-text);
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.bees-form-group input:focus,
+.bees-form-group select:focus,
+.bees-form-group textarea:focus {
+  outline: none;
+  border-color: var(--bees-yellow);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+  background: var(--page-card-bg);
+}
+
+.bees-form-group.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.bees-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--bees-yellow);
+}
+
+.bees-checkbox-label {
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+  color: var(--page-text);
+}
+
+/* ============================================
+   BOTONES BEES
+   ============================================ */
+
+.bees-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.bees-btn-small {
+  padding: 10px 16px;
+  font-size: 14px;
+  width: auto;
+  border-radius: 20px;
+}
+
+.bees-btn-primary {
+  background: linear-gradient(135deg, var(--bees-yellow) 0%, #FFC700 100%);
+  color: var(--bees-black);
+  box-shadow: var(--shadow);
+}
+
+.bees-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.bees-btn-primary:active {
+  transform: translateY(0);
+}
+
+.bees-btn-secondary {
+  background: var(--page-card-bg);
+  color: var(--bees-yellow);
+  border: 2px solid var(--bees-yellow);
+  width: auto;
+}
+
+.bees-btn-secondary:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.bees-btn-danger {
+  background: var(--bees-red);
+  color: white;
+  font-size: 14px;
+  padding: 10px 20px;
+  width: auto;
+}
+
+.bees-btn-danger:hover {
+  background: #FF2222;
+  transform: translateY(-2px);
+}
+
+.bees-btn-success {
+  background: var(--bees-green);
+  color: white;
+  width: auto;
+}
+
+.bees-btn-success:hover {
+  background: #45A049;
+  transform: translateY(-2px);
+}
+
+.bees-btn-info {
+  background: var(--bees-blue);
+  color: white;
+  width: auto;
+}
+
+.bees-btn-info:hover {
+  background: #1565C0;
+  transform: translateY(-2px);
+}
+
+.bees-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   TARJETAS DE MÉTRICAS
+   ============================================ */
+
+.metric-card {
+  background: var(--page-card-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--page-border);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.metric-card-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.metric-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--page-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+}
+
+.metric-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--bees-yellow);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+
+/* ============================================
+   TABLA BEES
+   ============================================ */
+
+.bees-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--page-text);
+}
+
+.bees-table thead {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 199, 0, 0.05) 100%);
+}
+
+.bees-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--page-text);
+  border-bottom: 2px solid var(--page-border);
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.bees-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--page-border);
+}
+
+.bees-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.bees-table tbody tr:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+/* ============================================
+   BADGE BEES
+   ============================================ */
+
+.bees-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bees-badge-success {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--bees-green);
+}
+
+.bees-badge-danger {
+  background: rgba(255, 68, 68, 0.2);
+  color: var(--bees-red);
+}
+
+.bees-badge-warning {
+  background: rgba(255, 193, 7, 0.2);
+  color: #FFC700;
+}
+
+.bees-badge-info {
+  background: rgba(25, 118, 210, 0.2);
+  color: var(--bees-blue);
+}
+
+/* ============================================
+   ALERTA BEES
+   ============================================ */
+
+.bees-alert {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  animation: slideIn 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bees-alert-success {
+  background: rgba(76, 175, 80, 0.2);
+  border-left: 4px solid var(--bees-green);
+  color: var(--bees-green);
+}
+
+.bees-alert-danger {
+  background: rgba(255, 68, 68, 0.2);
+  border-left: 4px solid var(--bees-red);
+  color: var(--bees-red);
+}
+
+.bees-alert-warning {
+  background: rgba(255, 193, 7, 0.2);
+  border-left: 4px solid var(--bees-yellow);
+  color: #FFC700;
+}
+
+.bees-alert-info {
+  background: rgba(25, 118, 210, 0.2);
+  border-left: 4px solid var(--bees-blue);
+  color: var(--bees-blue);
+}
+
+.bees-alert-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   ANIMACIONES BEES
+   ============================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.bees-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   GRID RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .bees-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .bees-header-content h1 {
+    font-size: 22px;
+  }
+
+  .bees-container,
+  .bees-container-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .bees-container-4col {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bees-btn {
+    width: 100%;
+  }
+
+  .bees-card {
+    padding: 16px;
+  }
+
+  .bees-table {
+    font-size: 13px;
+  }
+
+  .bees-table th,
+  .bees-table td {
+    padding: 12px;
+  }
+}

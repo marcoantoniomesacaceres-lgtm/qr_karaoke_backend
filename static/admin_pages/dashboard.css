@@ -1,0 +1,128 @@
+/* ============================================
+   DASHBOARD PAGE - ESTILO BEES
+   ============================================ */
+
+#dashboard {
+  padding: 30px;
+  background: var(--page-bg);
+  min-height: 100vh;
+  transition: background 0.3s ease;
+}
+
+/* Contenedor principal */
+.bees-container-4col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+/* Tarjetas de métricas */
+.metric-card {
+  background: var(--page-card-bg);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--page-border);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--page-card-bg) 0%, rgba(255, 215, 0, 0.05) 100%);
+}
+
+.metric-card-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.metric-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--page-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 8px 0;
+}
+
+.metric-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--bees-yellow);
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  word-break: break-word;
+}
+
+/* Animación para métricas */
+.metric-card:nth-child(1) .metric-card-value {
+  color: #1976D2;
+}
+
+.metric-card:nth-child(2) .metric-card-value {
+  color: var(--bees-green);
+}
+
+.metric-card:nth-child(3) .metric-card-value {
+  color: var(--bees-yellow);
+}
+
+.metric-card:nth-child(4) .metric-card-value {
+  color: #FF9800;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .bees-container-4col {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .metric-card {
+    padding: 16px;
+  }
+  
+  .metric-card-icon {
+    font-size: 32px;
+  }
+  
+  .metric-card-value {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #dashboard {
+    padding: 16px;
+  }
+
+  .bees-container-4col {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .metric-card {
+    padding: 12px;
+  }
+
+  .metric-card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+
+  .metric-card-label {
+    font-size: 11px;
+  }
+
+  .metric-card-value {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bees-container-4col {
+    grid-template-columns: 1fr;
+  }
+}

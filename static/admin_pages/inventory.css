@@ -1,0 +1,23 @@
+/* ============================================
+   INVENTORY PAGE - ESTILO BEES
+   ============================================ */
+
+#inventory {
+  padding: 30px;
+  background: var(--page-bg);
+  min-height: 100vh;
+  transition: background 0.3s ease;
+}
+
+/* Responsive para dos columnas */
+@media (max-width: 1024px) {
+  #inventory > div:first-of-type {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #inventory {
+    padding: 16px;
+  }
+}
