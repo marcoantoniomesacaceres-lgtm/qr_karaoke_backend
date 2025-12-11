@@ -249,12 +249,12 @@ async function handleAdminSearch(event, karaokeMode = false) {
                 const resultItem = document.createElement('li');
                 resultItem.style.marginBottom = '12px';
                 resultItem.innerHTML = `
-                    <div style="background: var(--page-input-bg); border-radius: 12px; padding: 12px; border-left: 4px solid var(--bees-blue); display: flex; gap: 12px; align-items: flex-start;">
+                    <div style="background: var(--page-input-bg); border-radius: 12px; padding: 12px; border-left: 4px solid var(--bees-blue); display: flex; gap: 8px; align-items: center;">
                         <img src="${song.thumbnail}" alt="Miniatura" style="width: 50px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0;">
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-weight: 600; color: var(--page-text); font-size: 14px; word-break: break-word;">${song.title}</div>
+                            <div style="font-weight: 600; color: var(--page-text); font-size: 13px; word-break: break-word;">${song.title}</div>
                         </div>
-                        <button class="bees-btn bees-btn-primary bees-btn-small admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 8px 12px; font-size: 13px;">➕ Añadir</button>
+                        <button class="bees-btn bees-btn-primary admin-add-song-btn" data-title="${song.title}" data-youtube-id="${song.video_id}" data-duration="${song.duration_seconds}" style="flex-shrink: 0; padding: 6px 10px; font-size: 12px; white-space: nowrap;">➕ Añadir</button>
                     </div>
                 `;
                 resultsContainer.appendChild(resultItem);
