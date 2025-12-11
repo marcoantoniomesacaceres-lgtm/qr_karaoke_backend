@@ -910,3 +910,42 @@
 2025-12-10 16:04:53,742 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=QFs3PIZb3js%2CdsLjyLn859g%2C4eCL0l9iD5A%2CTiM_TFpT_DE%2CMkcXU_kn8dw%2CTOYA3PJtVUQ%2CSFE09MuKZk8%2C5ku6b33rHAA%2CsojQgH3DT08%2CElU-VcWEhRU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-10 16:04:53,809 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-10 16:04:53,881 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-11 10:43:02,799 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:43:02,803 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:43:04,705 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 10:43:04,706 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-11 10:43:04,707 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 10:43:05,326 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 10:43:05,334 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 10:43:05,335 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'sU8FqZQOK3k', 'IfoPQ7mGIT0', 'SAe4DxIadxM', 'KTT2QhqY23g']
+2025-12-11 10:43:05,337 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 10:43:05,510 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CsU8FqZQOK3k%2CIfoPQ7mGIT0%2CSAe4DxIadxM%2CKTT2QhqY23g&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 10:43:05,532 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 10:43:05,534 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-11 10:43:08,487 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:43:08,489 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:43:10,048 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 10:43:10,049 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-11 10:43:10,050 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 10:43:10,555 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 10:43:10,576 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 10:43:10,579 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'sU8FqZQOK3k', 'IfoPQ7mGIT0', 'SAe4DxIadxM', 'KTT2QhqY23g']
+2025-12-11 10:43:10,584 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 10:43:10,777 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CsU8FqZQOK3k%2CIfoPQ7mGIT0%2CSAe4DxIadxM%2CKTT2QhqY23g&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 10:43:10,818 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 10:43:10,824 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-11 10:58:00,589 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:58:00,593 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-11 10:58:02,897 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-11 10:58:02,898 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-11 10:58:02,899 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-11 10:58:03,606 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-11 10:58:03,618 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-11 10:58:03,619 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'sU8FqZQOK3k', 'IfoPQ7mGIT0', 'SAe4DxIadxM', 'KTT2QhqY23g']
+2025-12-11 10:58:03,620 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-11 10:58:03,810 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CsU8FqZQOK3k%2CIfoPQ7mGIT0%2CSAe4DxIadxM%2CKTT2QhqY23g&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-11 10:58:03,822 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-11 10:58:03,825 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-11 11:11:12,285 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/productos/ "HTTP/1.1 200 OK"
+2025-12-11 11:11:56,674 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/productos/ "HTTP/1.1 400 Bad Request"
+2025-12-11 11:12:26,426 - httpx - INFO - HTTP Request: POST http://testserver/api/v1/productos/ "HTTP/1.1 400 Bad Request"

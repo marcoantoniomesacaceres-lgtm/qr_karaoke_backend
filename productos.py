@@ -4,6 +4,8 @@ from typing import List, Optional
 from decimal import Decimal
 import os
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from decimal import Decimal
 
 import crud, schemas, models
 from database import SessionLocal
@@ -39,7 +41,8 @@ async def create_product(producto: schemas.ProductoCreate, db: Session = Depends
             # Si no es posible programar la tarea, lo registramos y seguimos
             import logging
             logging.getLogger(__name__).exception("No se pudo programar broadcast de producto")
-        return new_product
+        # Convertimos Decimals a float para que el frontend reciba números y pueda usar `.toFixed()`
+        return JSONResponse(content=jsonable_encoder(new_product, custom_encoder={Decimal: lambda v: float(v)}))
     except HTTPException:
         # Re-raise HTTP exceptions (client errors)
         raise
@@ -70,7 +73,8 @@ def get_products(skip: int = 0, limit: int = 100, db: Session = Depends(get_db),
     else:
         productos = crud.get_productos(db, skip=skip, limit=limit)
 
-    return productos
+    # Convertimos Decimals a float para que el frontend reciba números y pueda usar `.toFixed()`
+    return JSONResponse(content=jsonable_encoder(productos, custom_encoder={Decimal: lambda v: float(v)}))
 
 @router.put("/{producto_id}", response_model=schemas.Producto, summary="Actualizar un producto existente")
 async def update_product(producto_id: int, producto: schemas.ProductoCreate, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
@@ -82,7 +86,7 @@ async def update_product(producto_id: int, producto: schemas.ProductoCreate, db:
         raise HTTPException(status_code=404, detail="Producto no encontrado.")
     crud.create_admin_log_entry(db, action="UPDATE_PRODUCT", details=f"Producto '{db_producto.nombre}' (ID: {producto_id}) actualizado.")
     await websocket_manager.manager.broadcast_product_update() # Notificamos
-    return db_producto
+    return JSONResponse(content=jsonable_encoder(db_producto, custom_encoder={Decimal: lambda v: float(v)}))
 
 @router.delete("/{producto_id}", status_code=204, summary="Eliminar un producto del catálogo")
 async def delete_product(producto_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
@@ -110,7 +114,7 @@ async def edit_product_price(producto_id: int, valor_update: schemas.ProductoVal
     
     crud.create_admin_log_entry(db, action="EDIT_PRODUCT_PRICE", details=f"Precio del producto '{db_producto.nombre}' (ID: {producto_id}) cambiado a {valor_update.valor}.")
     await websocket_manager.manager.broadcast_product_update() # Notificamos
-    return db_producto
+    return JSONResponse(content=jsonable_encoder(db_producto, custom_encoder={Decimal: lambda v: float(v)}))
 
 @router.post("/{producto_id}/deactivate", response_model=schemas.Producto, summary="Desactivar un producto")
 async def deactivate_product(producto_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
@@ -122,7 +126,7 @@ async def deactivate_product(producto_id: int, db: Session = Depends(get_db), ap
         raise HTTPException(status_code=404, detail="Producto no encontrado.")
     crud.create_admin_log_entry(db, action="DEACTIVATE_PRODUCT", details=f"Producto '{db_producto.nombre}' (ID: {producto_id}) desactivado.")
     await websocket_manager.manager.broadcast_product_update() # Notificamos
-    return db_producto
+    return JSONResponse(content=jsonable_encoder(db_producto, custom_encoder={Decimal: lambda v: float(v)}))
 
 @router.post("/{producto_id}/activate", response_model=schemas.Producto, summary="Reactivar un producto")
 async def activate_product(producto_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
@@ -134,7 +138,7 @@ async def activate_product(producto_id: int, db: Session = Depends(get_db), api_
         raise HTTPException(status_code=404, detail="Producto no encontrado.")
     crud.create_admin_log_entry(db, action="ACTIVATE_PRODUCT", details=f"Producto '{db_producto.nombre}' (ID: {producto_id}) reactivado.")
     await websocket_manager.manager.broadcast_product_update() # Notificamos
-    return db_producto
+    return JSONResponse(content=jsonable_encoder(db_producto, custom_encoder={Decimal: lambda v: float(v)}))
 
 # 📂 Directorio donde se guardarán las imágenes
 UPLOAD_DIR = "static/images/productos"
