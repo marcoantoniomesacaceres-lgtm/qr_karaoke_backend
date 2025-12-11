@@ -104,7 +104,7 @@ function renderCatalog(products) {
             `;
             catalogList.appendChild(productCard);
         });
-        addAllBtn.classList.remove('hidden');
+        addAllBtn.classList.add('hidden');
     } else {
         catalogList.innerHTML = '<p>No hay productos disponibles en este momento.</p>';
         addAllBtn.classList.add('hidden');
@@ -129,7 +129,7 @@ function renderCart() {
         state.cart.forEach(item => {
             cartItemsList.innerHTML += `
                 <div class="cart-item">
-                    <span class="cart-item-name">${item.cantidad}x ${item.nombre}</span>
+                    <span class="cart-item-name">${item.cantidad}x Producto</span>
                     <button class="cart-remove-item-btn" data-product-id="${item.producto_id}">X</button>
                 </div>
             `;
@@ -144,7 +144,7 @@ function addToCart(productId, productName, stock) {
     if (existingItem) {
         if (existingItem.cantidad < stock) existingItem.cantidad++;
     } else {
-        state.cart.push({ producto_id: productId, nombre: productName, cantidad: 1 });
+        state.cart.push({ producto_id: productId, cantidad: 1 });
     }
     renderCart();
 }
