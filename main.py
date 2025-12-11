@@ -21,6 +21,8 @@ models.Base.metadata.create_all(bind=engine)
 
 import crud, schemas, broadcast, thumbnails
 import mesas, canciones, youtube, consumos, usuarios, admin, productos, websocket_manager
+from admin_settings_router import router as settings_router
+from admin_extra_router import router as admin_extra_router
 # --- Configuración de Logging a un archivo ---
 # Esto crea un logger que guarda todo en 'karaoke_debug.log'
 # y también lo muestra en la consola.
@@ -134,6 +136,8 @@ app.include_router(admin.public_router, prefix="/api/v1", tags=["Público"]) # A
 app.include_router(productos.router, prefix="/api/v1/productos", tags=["Productos"])
 app.include_router(broadcast.router, prefix="/api/v1/broadcast", tags=["Broadcast"])
 app.include_router(thumbnails.router)
+app.include_router(settings_router)
+app.include_router(admin_extra_router)
 
 # Monta la carpeta 'static' (sirve archivos estáticos en /static)
 app.mount("/static", StaticFiles(directory="static"), name="static")

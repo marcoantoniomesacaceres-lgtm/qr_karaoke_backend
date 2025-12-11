@@ -898,3 +898,15 @@
 2025-12-10 10:53:30,489 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2Cbu5WOIoGAIU%2CSAe4DxIadxM%2CIfoPQ7mGIT0%2CNP3LASw8uWY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-10 10:53:30,498 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-10 10:53:30,500 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-10 16:04:48,786 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'bachata' (Karaoke Mode: False)
+2025-12-10 16:04:48,806 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'bachata' (Karaoke Mode: False)
+2025-12-10 16:04:52,641 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-10 16:04:52,669 - youtube - INFO - Búsqueda por texto: 'bachata'
+2025-12-10 16:04:52,672 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-10 16:04:53,476 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=bachata&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-10 16:04:53,497 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-10 16:04:53,501 - youtube - INFO - IDs de video encontrados: ['QFs3PIZb3js', 'dsLjyLn859g', '4eCL0l9iD5A', 'TiM_TFpT_DE', 'MkcXU_kn8dw', 'TOYA3PJtVUQ', 'SFE09MuKZk8', '5ku6b33rHAA', 'sojQgH3DT08', 'ElU-VcWEhRU']
+2025-12-10 16:04:53,520 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-10 16:04:53,742 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=QFs3PIZb3js%2CdsLjyLn859g%2C4eCL0l9iD5A%2CTiM_TFpT_DE%2CMkcXU_kn8dw%2CTOYA3PJtVUQ%2CSFE09MuKZk8%2C5ku6b33rHAA%2CsojQgH3DT08%2CElU-VcWEhRU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-10 16:04:53,809 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-10 16:04:53,881 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

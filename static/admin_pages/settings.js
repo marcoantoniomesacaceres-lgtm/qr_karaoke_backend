@@ -256,17 +256,20 @@ function setupSettingsListeners() {
     const closingTimeForm = document.getElementById('closing-time-form');
     const createApiKeyForm = document.getElementById('create-api-key-form');
     const generalSettingsForm = document.getElementById('general-settings-form');
-
-    if (closingTimeForm) {
+    // Prevent attaching multiple identical listeners if function called repeatedly.
+    if (closingTimeForm && !closingTimeForm.dataset.listenerAttached) {
         closingTimeForm.addEventListener('submit', (e) => handleClosingTimeUpdate(e, e.target));
+        closingTimeForm.dataset.listenerAttached = '1';
     }
-    if (createApiKeyForm) {
+    if (createApiKeyForm && !createApiKeyForm.dataset.listenerAttached) {
         createApiKeyForm.addEventListener('submit', (e) => handleCreateApiKey(e, e.target));
+        createApiKeyForm.dataset.listenerAttached = '1';
     }
-    if (generalSettingsForm) {
+    if (generalSettingsForm && !generalSettingsForm.dataset.listenerAttached) {
         generalSettingsForm.addEventListener('submit', (e) => handleGeneralSettingsUpdate(e, e.target));
+        generalSettingsForm.dataset.listenerAttached = '1';
     }
 
-    // Load existing API keys
+    // Load existing API keys (safe to call multiple times)
     loadApiKeys();
 }

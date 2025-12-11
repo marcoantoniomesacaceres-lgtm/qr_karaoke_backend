@@ -508,8 +508,9 @@
                     setupInventoryListeners();
                     break;
                 case 'settings':
-                    loadSettingsPage();
-                    setupSettingsListeners();
+                    // Ensure settings page is fully rendered before attaching listeners
+                    // loadSettingsPage is async so we chain setupSettingsListeners after it resolves
+                    loadSettingsPage().then(() => setupSettingsListeners());
                     break;
                 case 'accounts':
                     loadAccountsPage();
