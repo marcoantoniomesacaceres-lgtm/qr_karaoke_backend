@@ -1,6 +1,12 @@
 // Queue Page Module - BEES Style
 // Manejo: cola de canciones, búsqueda de canciones, añadir canciones
 
+// Estado de reproducción para el control de pausa/reanudación
+let playerState = {
+    isPlaying: true,  // false = pausado, true = reproduciendo
+    currentSongId: null
+};
+
 async function loadQueuePage() {
     const queueContainer = document.getElementById('queue');
     if (!queueContainer) return;
@@ -191,11 +197,12 @@ function renderApprovedSongs(songs, listElement) {
 
         let buttonsHtml = '';
         if (isPlaying) {
+            const pauseButtonText = playerState.isPlaying ? '⏸️ Pausar' : '▶️ Reanudar';
             buttonsHtml = `
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px;">
                     <button class="bees-btn bees-btn-success bees-btn-small" data-id="${song.id}" data-action="play" title="Reproducir ahora">▶️ Siguiente</button>
-                    <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">⏸️ Pausar</button>
-                    <button class="bees-btn bees-btn-warning bees-btn-small" data-id="${song.id}" data-action="move-up" title="Reiniciar">🔄 Reiniciar</button>
+                    <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseButtonText}</button>
+                    <button class="bees-btn bees-btn-warning bees-btn-small" data-action="restart" title="Reiniciar">🔄 Reiniciar</button>
                     <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
                 </div>
             `;
@@ -400,12 +407,28 @@ async function handleQueueActions(event) {
 }
 
 async function handlePauseResume() {
-    const isPausing = true; // Simulamos un toggle simple
-    const endpoint = '/admin/player/pause'; // O resume según estado actual
-
     try {
+        // Verificar si hay una canción en reproducción
+        const queueData = await apiFetch('/canciones/cola');
+        const nowPlaying = queueData.now_playing;
+        
+        if (!nowPlaying) {
+            showNotification('No hay canción en reproducción', 'warning');
+            return;
+        }
+        
+        // Alternar entre pausar y reanudar basado en el estado actual
+        const endpoint = playerState.isPlaying ? '/admin/player/pause' : '/admin/player/resume';
+        const action = playerState.isPlaying ? 'pausada' : 'reanudada';
+        
         await apiFetch(endpoint, { method: 'POST' });
-        showNotification('⏸️ Control enviado', 'info');
+        
+        // Actualizar el estado local
+        playerState.isPlaying = !playerState.isPlaying;
+        playerState.currentSongId = nowPlaying.id;
+        
+        showNotification(`⏸️ Reproducción ${action}`, 'info');
+        await reloadApprovedQueue();
     } catch (error) {
         showNotification(`Error: ${error.message}`, 'error');
     }

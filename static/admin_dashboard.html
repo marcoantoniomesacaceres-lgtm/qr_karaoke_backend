@@ -421,6 +421,32 @@
                                     }
                                 }
                                 break;
+                            case 'pause_playback':
+                                // Sincronizar el estado de pausa en el frontend
+                                if (typeof playerState !== 'undefined') {
+                                    playerState.isPlaying = false;
+                                    // Actualizar la UI si la cola está visible
+                                    if (document.getElementById('queue').classList.contains('active')) {
+                                        const approvedListEl = document.getElementById('approved-songs-list');
+                                        if (approvedListEl && typeof renderApprovedSongs === 'function') {
+                                            renderApprovedSongs(currentQueueData, approvedListEl);
+                                        }
+                                    }
+                                }
+                                break;
+                            case 'resume_playback':
+                                // Sincronizar el estado de reanudación en el frontend
+                                if (typeof playerState !== 'undefined') {
+                                    playerState.isPlaying = true;
+                                    // Actualizar la UI si la cola está visible
+                                    if (document.getElementById('queue').classList.contains('active')) {
+                                        const approvedListEl = document.getElementById('approved-songs-list');
+                                        if (approvedListEl && typeof renderApprovedSongs === 'function') {
+                                            renderApprovedSongs(currentQueueData, approvedListEl);
+                                        }
+                                    }
+                                }
+                                break;
                             case 'reaction':
                                 const reactionPayload = data.payload;
                                 if (reactionPayload && reactionPayload.reaction) {
