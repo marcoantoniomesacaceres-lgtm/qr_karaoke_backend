@@ -1453,3 +1453,201 @@
 2025-12-12 10:05:19,666 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tvUc8GEovac%2C76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CIfoPQ7mGIT0%2CSAe4DxIadxM%2CNP3LASw8uWY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-12 10:05:19,675 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-12 10:05:19,677 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-12 11:33:56,005 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 11:33:56,008 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 11:33:57,886 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:33:57,886 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-12 11:33:57,887 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:33:58,524 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:33:58,533 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:33:58,534 - youtube - INFO - IDs de video encontrados: ['tvUc8GEovac', '76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'KTT2QhqY23g', 'bu5WOIoGAIU', 'NP3LASw8uWY']
+2025-12-12 11:33:58,535 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:33:58,720 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tvUc8GEovac%2C76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CKTT2QhqY23g%2Cbu5WOIoGAIU%2CNP3LASw8uWY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:33:58,754 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:33:58,756 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-12 11:34:41,310 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 11:34:41,311 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 11:34:42,828 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:34:42,829 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-12 11:34:42,829 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:34:43,373 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:34:43,379 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:34:43,380 - youtube - INFO - IDs de video encontrados: ['tvUc8GEovac', '76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'SAe4DxIadxM', 'KTT2QhqY23g', 'bu5WOIoGAIU']
+2025-12-12 11:34:43,384 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:34:43,567 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tvUc8GEovac%2C76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CSAe4DxIadxM%2CKTT2QhqY23g%2Cbu5WOIoGAIU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:34:43,576 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:34:43,578 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-12 11:35:35,274 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:35:35,276 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:35:36,820 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:35:36,822 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:35:36,823 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:35:37,388 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:35:37,391 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:35:37,392 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'DjfaCC3ZKs8', 'oOl5vy6KiAs', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:35:37,394 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:35:37,613 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:35:37,643 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:35:37,646 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:35:37,661 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:35:37,670 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:35:39,321 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:35:39,321 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:35:39,322 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:35:39,873 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:35:39,876 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:35:39,877 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'DjfaCC3ZKs8', 'oOl5vy6KiAs', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:35:39,881 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:35:40,103 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:35:40,110 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:35:40,112 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:35:51,665 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:35:51,670 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:35:53,268 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:35:53,269 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:35:53,270 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:35:53,793 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:35:53,804 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:35:53,805 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'DjfaCC3ZKs8', 'oOl5vy6KiAs', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:35:53,809 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:35:54,033 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:35:54,043 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:35:54,045 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:35:54,060 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:35:54,061 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:35:55,708 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:35:55,709 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:35:55,710 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:35:56,295 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:35:56,301 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:35:56,304 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'DjfaCC3ZKs8', 'oOl5vy6KiAs', 'onGJj-JIBZk', '6kYEW6oQfpw', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8', '1wC6r7L1RvA', 'UAAy5oTPUOE', 'k1jzUtKrFk0', 'A4VTPpOFLwc', 'nBhUJ9Rf8s0', 'UjYXahcriA0', 'CfGKChXwc4s', 'eHflKESzSEY', 'caP_V6eHGYY', 'DWUpLPxb-lA', 'gEejTe7PHxs', 'EZ0uGZyQYkk', 'dg-Xh5NNMIk', 'Fzf8tGmrND8', 'PXm8cQKQA7M']
+2025-12-12 11:35:56,305 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:35:56,571 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2ConGJj-JIBZk%2C6kYEW6oQfpw%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8%2C1wC6r7L1RvA%2CUAAy5oTPUOE%2Ck1jzUtKrFk0%2CA4VTPpOFLwc%2CnBhUJ9Rf8s0%2CUjYXahcriA0%2CCfGKChXwc4s%2CeHflKESzSEY%2CcaP_V6eHGYY%2CDWUpLPxb-lA%2CgEejTe7PHxs%2CEZ0uGZyQYkk%2Cdg-Xh5NNMIk%2CFzf8tGmrND8%2CPXm8cQKQA7M&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:35:56,585 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:35:56,588 - youtube - INFO - Procesamiento finalizado. Se encontraron 25 resultados formateados.
+2025-12-12 11:38:30,398 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:38:30,399 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:38:32,073 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:38:32,074 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:38:32,074 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:38:32,684 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:38:32,696 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:38:32,697 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:38:32,702 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:38:33,232 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:38:33,239 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:38:33,241 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:38:33,260 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:38:33,292 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:38:34,913 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:38:34,914 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:38:34,915 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:38:35,711 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:38:35,718 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:38:35,719 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'DjfaCC3ZKs8', 'oOl5vy6KiAs', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:38:35,736 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:38:35,915 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CDjfaCC3ZKs8%2CoOl5vy6KiAs%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:38:35,949 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:38:35,952 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:47:45,136 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:47:45,142 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:47:47,117 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:47:47,118 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:47:47,119 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:47:47,726 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:47:47,738 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:47:47,740 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:47:47,743 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:47:47,963 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:47:47,973 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:47:47,975 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 11:47:47,990 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-12 11:47:47,991 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-12 11:47:49,644 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 11:47:49,646 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-12 11:47:49,648 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 11:47:50,601 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 11:47:50,608 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 11:47:50,609 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', '6kYEW6oQfpw', 'onGJj-JIBZk', '2JbrCXDNGcA', 'IRSedFplzCc', 'rERCTLp4CK8']
+2025-12-12 11:47:50,615 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 11:47:50,796 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2C6kYEW6oQfpw%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 11:47:50,803 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 11:47:50,806 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 15:16:58,760 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:16:58,762 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:17:00,937 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:17:00,938 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:17:00,939 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:17:00,957 - youtube - ERROR - Error de red al conectar con YouTube: [Errno 11001] getaddrinfo failed
+2025-12-12 15:17:00,973 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:17:00,974 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:17:02,703 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:17:02,704 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:17:02,705 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:17:02,709 - youtube - ERROR - Error de red al conectar con YouTube: [Errno 11001] getaddrinfo failed
+2025-12-12 15:18:03,163 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 15:18:03,164 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 15:18:04,823 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:18:04,824 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-12 15:18:04,826 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:18:04,830 - youtube - ERROR - Error de red al conectar con YouTube: [Errno 11001] getaddrinfo failed
+2025-12-12 15:33:34,117 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 15:33:34,120 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-12 15:33:35,676 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:33:35,677 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-12 15:33:35,678 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:33:36,278 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 15:33:36,287 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 15:33:36,288 - youtube - INFO - IDs de video encontrados: ['tvUc8GEovac', '76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'bZLojmRvRd8', 'O_Jv-_nEqWk', 'KTT2QhqY23g', 'NP3LASw8uWY', 'SAe4DxIadxM']
+2025-12-12 15:33:36,290 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 15:33:36,543 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=tvUc8GEovac%2C76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CbZLojmRvRd8%2CO_Jv-_nEqWk%2CKTT2QhqY23g%2CNP3LASw8uWY%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 15:33:36,559 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 15:33:36,561 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-12 15:34:03,325 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:34:03,328 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:34:04,773 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:34:04,774 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:34:04,775 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:34:05,368 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 15:34:05,380 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 15:34:05,386 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '6kYEW6oQfpw', 'rERCTLp4CK8', '1wC6r7L1RvA']
+2025-12-12 15:34:05,388 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 15:34:05,616 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C6kYEW6oQfpw%2CrERCTLp4CK8%2C1wC6r7L1RvA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 15:34:05,626 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 15:34:05,628 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 15:34:05,649 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:34:05,675 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:34:07,296 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:34:07,297 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:34:07,298 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:34:07,903 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 15:34:07,906 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 15:34:07,907 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'ftfeDRZA5iE', 'onGJj-JIBZk', 'IRSedFplzCc', '6kYEW6oQfpw', 'UjYXahcriA0', 'eHflKESzSEY']
+2025-12-12 15:34:07,908 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 15:34:08,087 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2CftfeDRZA5iE%2ConGJj-JIBZk%2CIRSedFplzCc%2C6kYEW6oQfpw%2CUjYXahcriA0%2CeHflKESzSEY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 15:34:08,094 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 15:34:08,100 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 15:34:16,758 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:34:16,759 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:34:18,315 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:34:18,316 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:34:18,317 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:34:18,862 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 15:34:18,879 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 15:34:18,884 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '6kYEW6oQfpw', 'rERCTLp4CK8', '1wC6r7L1RvA']
+2025-12-12 15:34:18,892 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 15:34:19,128 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C6kYEW6oQfpw%2CrERCTLp4CK8%2C1wC6r7L1RvA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 15:34:19,153 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 15:34:19,158 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-12 15:34:19,205 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de las ranas'
+2025-12-12 15:34:19,224 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de las ranas' (Karaoke Mode: False)
+2025-12-12 15:34:20,870 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-12 15:34:20,871 - youtube - INFO - Búsqueda por texto: 'el mayor de las ranas'
+2025-12-12 15:34:20,872 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-12 15:34:21,424 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+las+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-12 15:34:21,429 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-12 15:34:21,430 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'onGJj-JIBZk', 'IRSedFplzCc', '6kYEW6oQfpw', 'rERCTLp4CK8', '1wC6r7L1RvA']
+2025-12-12 15:34:21,433 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-12 15:34:21,593 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2CIRSedFplzCc%2C6kYEW6oQfpw%2CrERCTLp4CK8%2C1wC6r7L1RvA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-12 15:34:21,628 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-12 15:34:21,639 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
