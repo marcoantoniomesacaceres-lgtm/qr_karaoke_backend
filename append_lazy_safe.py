@@ -1,0 +1,202 @@
+"""
+Script para agregar las funciones lazy a crud.py de forma segura
+"""
+
+# Código de las funciones lazy
+lazy_functions = '''
+
+# --- Lazy Approval Queue Functions ---
+
+def get_cola_lazy(db: Session):
+    """
+    Obtiene todas las canciones en estado pendiente_lazy, ordenadas por prioridad.
+    Usa el mismo algoritmo de cola justa que get_cola_priorizada.
+    """
+    from collections import deque
+    
+    # Obtener todas las canciones en estado pendiente_lazy
+    todas_canciones = (
+        db.query(models.Cancion)
+        .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
+        .filter(models.Cancion.estado == "pendiente_lazy")
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
+        .all()
+    )
+    
+    if not todas_canciones:
+        return []
+    
+    # Aplicar el mismo algoritmo de cola justa
+    cola_manual = []
+    cola_pool = []
+    
+    for cancion in todas_canciones:
+        if cancion.orden_manual is not None:
+            cola_manual.append(cancion)
+        else:
+            cola_pool.append(cancion)
+    
+    if not cola_pool:
+        return cola_manual
+    
+    # Agrupar por mesa
+    match_mesa_canciones = {}
+    mesa_arrival_time = {}
+    mesas_involucradas_ids = set()
+    
+    for cancion in cola_pool:
+        mesa_id = cancion.usuario.mesa_id or 0
+        if mesa_id not in match_mesa_canciones:
+            match_mesa_canciones[mesa_id] = deque()
+            mesa_arrival_time[mesa_id] = cancion.id
+            mesas_involucradas_ids.add(mesa_id)
+        match_mesa_canciones[mesa_id].append(cancion)
+    
+    # Calcular quotas
+    UMBRAL_ORO = 150000
+    UMBRAL_PLATA = 50000
+    mesa_quotas = {}
+    
+    if mesas_involucradas_ids:
+        ids_reales = [mid for mid in mesas_involucradas_ids if mid != 0]
+        consumos_mesas = {}
+        
+        if ids_reales:
+            rows = (
+                db.query(
+                    models.Usuario.mesa_id,
+                    func.sum(models.Consumo.valor_total)
+                )
+                .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+                .filter(models.Usuario.mesa_id.in_(ids_reales))
+                .group_by(models.Usuario.mesa_id)
+                .all()
+            )
+            for mid, total in rows:
+                consumos_mesas[mid] = total or 0
+        
+        for mid in mesas_involucradas_ids:
+            total = consumos_mesas.get(mid, 0)
+            if mid == 0:
+                quota = 3
+            elif total >= UMBRAL_ORO:
+                quota = 3
+            elif total >= UMBRAL_PLATA:
+                quota = 2
+            else:
+                quota = 1
+            mesa_quotas[mid] = quota
+    
+    # Round Robin
+    cola_justa = []
+    orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
+    
+    while match_mesa_canciones:
+        for mesa_id in orden_turnos_mesas:
+            if mesa_id not in match_mesa_canciones:
+                continue
+            queue_de_mesa = match_mesa_canciones[mesa_id]
+            cupo = mesa_quotas.get(mesa_id, 1)
+            tomadas = 0
+            while tomadas < cupo and queue_de_mesa:
+                cancion = queue_de_mesa.popleft()
+                cola_justa.append(cancion)
+                tomadas += 1
+            if not queue_de_mesa:
+                del match_mesa_canciones[mesa_id]
+    
+    return cola_manual + cola_justa
+
+def aprobar_siguiente_cancion_lazy(db: Session):
+    """
+    Aprueba la siguiente canción de la cola lazy.
+    Llamada automáticamente cuando la canción actual llega al 50%.
+    """
+    cola_lazy = get_cola_lazy(db)
+    if not cola_lazy:
+        return None
+    
+    siguiente = cola_lazy[0]
+    siguiente.estado = "aprobado"
+    siguiente.approved_at = now_bogota()
+    db.commit()
+    db.refresh(siguiente)
+    
+    create_admin_log_entry(db, action="LAZY_APPROVAL", details=f"Cancion '{siguiente.titulo}' aprobada automaticamente (lazy).")
+    return siguiente
+
+def get_cola_completa_con_lazy(db: Session):
+    """
+    Versión extendida de get_cola_completa que incluye la cola lazy.
+    Retorna:
+    - now_playing: Canción actual
+    - upcoming: Solo la siguiente canción aprobada (máximo 1)
+    - lazy_queue: Canciones en pendiente_lazy
+    - pending: Canciones pendientes de aprobación manual
+    """
+    # Aplicar aprobación automática después de 10 minutos
+    auto_approve_songs_after_10_minutes(db)
+    
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    approved_queue = get_cola_priorizada(db)
+    lazy_queue = get_cola_lazy(db)
+    pending_queue = get_canciones_pendientes_por_aprobar(db)
+    
+    # Si la canción que se está reproduciendo sigue en la lista de upcoming, la quitamos
+    if now_playing:
+        approved_queue = [song for song in approved_queue if song.id != now_playing.id]
+    
+    # Limitar upcoming a máximo 1 canción (la siguiente)
+    upcoming_limited = approved_queue[:1] if approved_queue else []
+    
+    return {
+        "now_playing": now_playing,
+        "upcoming": upcoming_limited,
+        "lazy_queue": lazy_queue,
+        "pending": pending_queue
+    }
+
+def check_and_approve_next_lazy_song(db: Session):
+    """
+    Verifica si la canción actual ha llegado al 50% y aprueba la siguiente lazy.
+    Esta función es llamada por un background task periódicamente.
+    """
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    
+    if not now_playing or not now_playing.started_at:
+        return None
+    
+    # Calcular el progreso
+    tiempo_transcurrido = (now_bogota() - now_playing.started_at).total_seconds()
+    duracion_total = now_playing.duracion_seconds or 0
+    
+    if duracion_total == 0:
+        return None
+    
+    progreso_porcentaje = (tiempo_transcurrido / duracion_total) * 100
+    
+    # Si ha llegado al 50% o más, aprobar la siguiente
+    if progreso_porcentaje >= 50:
+        # Verificar que no haya ya una canción aprobada esperando
+        approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
+        
+        if approved_count == 0:
+            # Aprobar la siguiente canción lazy
+            return aprobar_siguiente_cancion_lazy(db)
+    
+    return None
+'''
+
+# Leer el archivo original con latin-1
+with open('crud.py', 'r', encoding='latin-1') as f:
+    original_content = f.read()
+
+# Agregar las funciones al final
+new_content = original_content + lazy_functions
+
+# Guardar el archivo con UTF-8
+with open('crud.py', 'w', encoding='utf-8') as f:
+    f.write(new_content)
+
+print("Funciones lazy agregadas exitosamente a crud.py")
+print(f"Tamaño final: {len(new_content)} caracteres")

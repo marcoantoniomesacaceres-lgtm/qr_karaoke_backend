@@ -9,7 +9,7 @@ from timezone_utils import now_bogota
 from decimal import Decimal # Importar Decimal
 
 def get_mesa_by_qr(db: Session, qr_code: str):
-    """Busca una mesa por su código QR."""
+    """Busca una mesa por su cÃÂ³digo QR."""
     return db.query(models.Mesa).filter(models.Mesa.qr_code == qr_code).first()
 
 def get_mesas(db: Session):
@@ -45,11 +45,11 @@ def get_total_consumido_por_usuario(db: Session, usuario_id: int):
     return db.query(func.sum(models.Consumo.valor_total)).filter(models.Consumo.usuario_id == usuario_id).scalar() or 0
 
 def get_canciones_por_usuario(db: Session, usuario_id: int):
-    """Busca todas las canciones de un usuario específico."""
+    """Busca todas las canciones de un usuario especÃÂ­fico."""
     return db.query(models.Cancion).filter(models.Cancion.usuario_id == usuario_id).order_by(models.Cancion.created_at.desc()).all()
 
 def create_cancion_para_usuario(db: Session, cancion: schemas.CancionCreate, usuario_id: int):
-    """Crea una nueva canción y la asocia a un usuario."""
+    """Crea una nueva canciÃÂ³n y la asocia a un usuario."""
     db_cancion = models.Cancion(**cancion.dict(), usuario_id=usuario_id)
     db.add(db_cancion)
     db.commit()
@@ -58,7 +58,7 @@ def create_cancion_para_usuario(db: Session, cancion: schemas.CancionCreate, usu
 
 def check_if_song_in_user_list(db: Session, usuario_id: int, youtube_id: str):
     """
-    Verifica si ALGÚN USUARIO DE LA MISMA MESA ya tiene esta canción en la cola.
+    Verifica si ALGÃÂN USUARIO DE LA MISMA MESA ya tiene esta canciÃÂ³n en la cola.
     CAMBIO: Ahora verifica a nivel de mesa para evitar duplicados entre usuarios de la misma mesa.
     """
     # Obtener el usuario y su mesa
@@ -66,7 +66,7 @@ def check_if_song_in_user_list(db: Session, usuario_id: int, youtube_id: str):
     if not usuario or not usuario.mesa_id:
         return None
     
-    # Buscar si algún usuario de la misma mesa ya tiene esta canción en cola
+    # Buscar si algÃÂºn usuario de la misma mesa ya tiene esta canciÃÂ³n en cola
     return db.query(models.Cancion).join(
         models.Usuario, models.Cancion.usuario_id == models.Usuario.id
     ).filter(
@@ -75,12 +75,12 @@ def check_if_song_in_user_list(db: Session, usuario_id: int, youtube_id: str):
         models.Cancion.estado.in_(['pendiente', 'aprobado', 'reproduciendo'])
     ).first()
 def get_cancion_by_id(db: Session, cancion_id: int):
-    """Busca una canción por su ID."""
+    """Busca una canciÃÂ³n por su ID."""
     return db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
 
 def get_cancion_actual(db: Session):
     """
-    Retorna la canción que está actualmente en reproducción,
+    Retorna la canciÃÂ³n que estÃÂ¡ actualmente en reproducciÃÂ³n,
     o None si no hay ninguna activa.
     """
     return db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
@@ -91,12 +91,12 @@ def get_canciones_pendientes(db: Session):
     return db.query(models.Cancion).filter(models.Cancion.estado == 'pendiente').order_by(models.Cancion.id).all()
 
 def get_duracion_total_cola_aprobada(db: Session) -> int:
-    """Calcula la suma de la duración de todas las canciones aprobadas."""
+    """Calcula la suma de la duraciÃÂ³n de todas las canciones aprobadas."""
     total_seconds = db.query(func.sum(models.Cancion.duracion_seconds)).filter(models.Cancion.estado == 'aprobado').scalar()
     return total_seconds or 0
 
 def update_cancion_estado(db: Session, cancion_id: int, nuevo_estado: str):
-    """Actualiza el estado de una canción específica."""
+    """Actualiza el estado de una canciÃÂ³n especÃÂ­fica."""
     db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
     if db_cancion:
         db_cancion.estado = nuevo_estado
@@ -110,13 +110,13 @@ def get_cola_priorizada(db: Session):
     
     Reglas:
     1. Orden Manual: Las canciones con `orden_manual` tienen prioridad absoluta y mantienen su orden relativo.
-    2. Agrupación por Mesa: El resto de canciones se agrupan por su mesa de origen.
-    3. Categorías de Mesa (basado en consumo total de la mesa):
+    2. AgrupaciÃÂ³n por Mesa: El resto de canciones se agrupan por su mesa de origen.
+    3. CategorÃÂ­as de Mesa (basado en consumo total de la mesa):
         - ORO (> $150.000): Cupo de 3 canciones por turno.
         - PLATA (> $50.000): Cupo de 2 canciones por turno.
-        - BRONCE (<= $50.000): Cupo de 1 canción por turno.
-    4. Round Robin: Se iteran las mesas (ordenadas por la hora de llegada de su primera canción pendiente)
-       y se toman N canciones (según su cupo) en cada turno.
+        - BRONCE (<= $50.000): Cupo de 1 canciÃÂ³n por turno.
+    4. Round Robin: Se iteran las mesas (ordenadas por la hora de llegada de su primera canciÃÂ³n pendiente)
+       y se toman N canciones (segÃÂºn su cupo) en cada turno.
     """
     from collections import deque
     
@@ -160,12 +160,12 @@ def get_cola_priorizada(db: Session):
             
         if mesa_id not in match_mesa_canciones:
             match_mesa_canciones[mesa_id] = deque()
-            mesa_arrival_time[mesa_id] = cancion.id # El ID más bajo es el primero que llegó
+            mesa_arrival_time[mesa_id] = cancion.id # El ID mÃÂ¡s bajo es el primero que llegÃÂ³
             mesas_involucradas_ids.add(mesa_id)
             
         match_mesa_canciones[mesa_id].append(cancion)
 
-    # 4. Calcular Categoría (Tier) de cada Mesa
+    # 4. Calcular CategorÃÂ­a (Tier) de cada Mesa
     # Necesitamos el consumo total de cada mesa involucrada
     # Definimos umbrales
     UMBRAL_ORO = 150000
@@ -198,8 +198,8 @@ def get_cola_priorizada(db: Session):
         for mid in mesas_involucradas_ids:
             total = consumos_mesas.get(mid, 0)
             
-            # DJ / Sin Mesa (ID 0) recibe trato Preferencial o Estándar?
-            # Vamos a darle trato de ORO al DJ si se usa para poner música activamente.
+            # DJ / Sin Mesa (ID 0) recibe trato Preferencial o EstÃÂ¡ndar?
+            # Vamos a darle trato de ORO al DJ si se usa para poner mÃÂºsica activamente.
             if mid == 0: 
                 quota = 3 
             elif total >= UMBRAL_ORO:
@@ -214,7 +214,7 @@ def get_cola_priorizada(db: Session):
     # 5. Construir la Cola Round-Robin
     cola_justa = []
     
-    # Ordenamos las mesas por orden de llegada (quién puso canción primero)
+    # Ordenamos las mesas por orden de llegada (quiÃÂ©n puso canciÃÂ³n primero)
     orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
     
     # Bucle Round Robin
@@ -246,16 +246,16 @@ def get_producto_by_nombre(db: Session, nombre: str):
     return db.query(models.Producto).filter(models.Producto.nombre == nombre).first()
 
 def get_productos(db: Session, skip: int = 0, limit: int = 100):
-    """Obtiene una lista de todos los productos del catálogo."""
+    """Obtiene una lista de todos los productos del catÃÂ¡logo."""
     return db.query(models.Producto).offset(skip).limit(limit).all()
 
 def create_producto(db: Session, producto: schemas.ProductoCreate):
-    """Crea un nuevo producto en el catálogo."""
+    """Crea un nuevo producto en el catÃÂ¡logo."""
     # Aseguramos que el producto se cree como activo por defecto.
     producto_data = producto.dict()
     # El schema ProductoCreate ya tiene `is_active` con un valor por defecto.
     # Al pasarlo directamente, evitamos el error de "multiple values for keyword argument".
-    # Si el schema no lo tuviera, podríamos hacer `producto_data.pop('is_active', None)`
+    # Si el schema no lo tuviera, podrÃÂ­amos hacer `producto_data.pop('is_active', None)`
     # antes de pasarlo como argumento extra.
     db_producto = models.Producto(**producto_data)
     db.add(db_producto)
@@ -287,12 +287,12 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
         return None, "Usuario no encontrado."
     
     if not db_usuario.mesa_id:
-        return None, "El usuario no está asociado a ninguna mesa."
+        return None, "El usuario no estÃÂ¡ asociado a ninguna mesa."
 
-    # 2. Obtener el producto del catálogo para saber su precio
+    # 2. Obtener el producto del catÃÂ¡logo para saber su precio
     db_producto = db.query(models.Producto).filter(models.Producto.id == consumo.producto_id).first()
     if not db_producto:
-        return None, "Producto no encontrado en el catálogo."
+        return None, "Producto no encontrado en el catÃÂ¡logo."
 
     if db_producto.stock < consumo.cantidad:
         return None, f"No hay suficiente stock para '{db_producto.nombre}'. Disponible: {db_producto.stock}"
@@ -301,9 +301,9 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
         return None, "La cantidad debe ser mayor que cero."
 
     if not db_producto.is_active:
-        return None, "El producto no está disponible actualmente."
+        return None, "El producto no estÃÂ¡ disponible actualmente."
 
-    # 3. Calcular el valor total de la transacción
+    # 3. Calcular el valor total de la transacciÃÂ³n
     valor_total_transaccion = db_producto.valor * consumo.cantidad
 
     # 4. Crear el registro de consumo ASIGNADO A LA MESA (no al usuario)
@@ -317,7 +317,7 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
         cantidad=consumo.cantidad,
         valor_total=valor_total_transaccion,
         mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
-        usuario_id=usuario_id,  # Mantener referencia al usuario que pidió (tracking)
+        usuario_id=usuario_id,  # Mantener referencia al usuario que pidiÃÂ³ (tracking)
         cuenta_id=active_cuenta.id
     )
 
@@ -350,9 +350,9 @@ def create_consumo_para_usuario(db: Session, consumo: schemas.ConsumoCreate, usu
 
 def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usuario_id: int):
     """
-    Crea múltiples registros de consumo a partir de un carrito de compras.
+    Crea mÃÂºltiples registros de consumo a partir de un carrito de compras.
     CAMBIO: Los consumos se asignan a la MESA, no al usuario individual.
-    Toda la operación se maneja como una única transacción.
+    Toda la operaciÃÂ³n se maneja como una ÃÂºnica transacciÃÂ³n.
     """
     SILVER_THRESHOLD = 50.0
     GOLD_THRESHOLD = 150.0
@@ -362,7 +362,7 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
         return None, "Usuario no encontrado."
     
     if not db_usuario.mesa_id:
-        return None, "El usuario no está asociado a ninguna mesa."
+        return None, "El usuario no estÃÂ¡ asociado a ninguna mesa."
 
     consumos_creados = []
     valor_total_pedido = Decimal(0)
@@ -377,11 +377,11 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
             if not db_producto:
                 raise ValueError(f"Producto con ID {item.producto_id} no encontrado.")
             if not db_producto.is_active:
-                raise ValueError(f"El producto '{db_producto.nombre}' no está disponible.")
+                raise ValueError(f"El producto '{db_producto.nombre}' no estÃÂ¡ disponible.")
             if db_producto.stock < item.cantidad:
                 raise ValueError(f"No hay stock suficiente para '{db_producto.nombre}'. Disponible: {db_producto.stock}.")
 
-            # Calculamos el valor de esta línea del pedido
+            # Calculamos el valor de esta lÃÂ­nea del pedido
             valor_linea = db_producto.valor * item.cantidad
             valor_total_pedido += valor_linea
 
@@ -396,7 +396,7 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
                 cantidad=item.cantidad,
                 valor_total=valor_linea,
                 mesa_id=db_usuario.mesa_id,  # CAMBIO: Asignar a mesa
-                usuario_id=usuario_id,  # Mantener referencia al usuario que pidió
+                usuario_id=usuario_id,  # Mantener referencia al usuario que pidiÃÂ³
                 cuenta_id=active_cuenta.id
             )
             db.add(db_consumo)
@@ -421,41 +421,41 @@ def create_pedido_from_carrito(db: Session, carrito: schemas.CarritoCreate, usua
             db.refresh(consumo)
         return consumos_creados, None
     except ValueError as e:
-        db.rollback() # Si algo falla, revertimos TODOS los cambios de esta transacción
+        db.rollback() # Si algo falla, revertimos TODOS los cambios de esta transacciÃÂ³n
         return None, str(e)
 
 def marcar_cancion_actual_como_cantada(db: Session):
     """
-    Busca la canción que se está reproduciendo, la marca como 'cantada' y le da puntos al usuario.
-    Simula una puntuación de IA.
+    Busca la canciÃÂ³n que se estÃÂ¡ reproduciendo, la marca como 'cantada' y le da puntos al usuario.
+    Simula una puntuaciÃÂ³n de IA.
     """
     import os
-    import ia_scorer # Importamos nuestro nuevo módulo de IA
+    import ia_scorer # Importamos nuestro nuevo mÃÂ³dulo de IA
 
-    # 1. Buscar la canción que está actualmente en estado 'reproduciendo'
+    # 1. Buscar la canciÃÂ³n que estÃÂ¡ actualmente en estado 'reproduciendo'
     cancion_actual = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     
     if not cancion_actual:
-        return None  # No hay ninguna canción reproduciéndose
+        return None  # No hay ninguna canciÃÂ³n reproduciÃÂ©ndose
     
-    # --- INICIO DE LA INTEGRACIÓN CON IA ---
-    # 2. Calcular el puntaje usando el módulo de IA.
-    #    Asumimos que el audio del usuario se sube a una carpeta temporal con el ID de la canción.
-    #    Este es un paso que el frontend deberá implementar en el futuro.
+    # --- INICIO DE LA INTEGRACIÃÂN CON IA ---
+    # 2. Calcular el puntaje usando el mÃÂ³dulo de IA.
+    #    Asumimos que el audio del usuario se sube a una carpeta temporal con el ID de la canciÃÂ³n.
+    #    Este es un paso que el frontend deberÃÂ¡ implementar en el futuro.
     user_audio_path = os.path.join(ia_scorer.TEMP_DIR, f"user_recording_{cancion_actual.id}.wav")
     
     if os.path.exists(user_audio_path):
         puntuacion = ia_scorer.calculate_score(cancion_actual.youtube_id, user_audio_path)
-        # Opcional: eliminar el audio del usuario después de procesarlo
+        # Opcional: eliminar el audio del usuario despuÃÂ©s de procesarlo
         # os.remove(user_audio_path)
     else:
-        # Si no se subió audio, la puntuación es 0.
+        # Si no se subiÃÂ³ audio, la puntuaciÃÂ³n es 0.
         puntuacion = 0
-    # --- FIN DE LA INTEGRACIÓN CON IA ---
+    # --- FIN DE LA INTEGRACIÃÂN CON IA ---
     
     cancion_actual.puntuacion_ia = puntuacion
 
-    # 3. Actualizar el estado de la canción a 'cantada'
+    # 3. Actualizar el estado de la canciÃÂ³n a 'cantada'
     cancion_actual.estado = "cantada"
     cancion_actual.finished_at = now_bogota()
 
@@ -468,7 +468,7 @@ def marcar_cancion_actual_como_cantada(db: Session):
     return cancion_actual
 
 def marcar_siguiente_como_reproduciendo(db: Session):
-    """Busca la siguiente canción en la cola y la marca como 'reproduciendo'."""
+    """Busca la siguiente canciÃÂ³n en la cola y la marca como 'reproduciendo'."""
     siguiente_cancion = get_cola_priorizada(db)
     if not siguiente_cancion:
         return None
@@ -481,9 +481,9 @@ def marcar_siguiente_como_reproduciendo(db: Session):
 
 def get_tiempo_espera_para_cancion(db: Session, cancion_id: int) -> int:
     """
-    Calcula el tiempo de espera estimado en segundos para una canción específica.
+    Calcula el tiempo de espera estimado en segundos para una canciÃÂ³n especÃÂ­fica.
     """
-    # 1. Obtener la canción que se está reproduciendo
+    # 1. Obtener la canciÃÂ³n que se estÃÂ¡ reproduciendo
     cancion_actual = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     
     tiempo_espera_total = 0
@@ -495,14 +495,14 @@ def get_tiempo_espera_para_cancion(db: Session, cancion_id: int) -> int:
     # 2. Obtener la cola de canciones aprobadas
     cola_aprobada = get_cola_priorizada(db)
 
-    # 3. Sumar la duración de las canciones que están antes de la nuestra
+    # 3. Sumar la duraciÃÂ³n de las canciones que estÃÂ¡n antes de la nuestra
     for cancion_en_cola in cola_aprobada:
         if cancion_en_cola.id == cancion_id:
-            # Llegamos a nuestra canción, dejamos de sumar
+            # Llegamos a nuestra canciÃÂ³n, dejamos de sumar
             break
         tiempo_espera_total += cancion_en_cola.duracion_seconds
     else:
-        # Si la canción no se encuentra en la cola (ya se cantó, fue rechazada, etc.)
+        # Si la canciÃÂ³n no se encuentra en la cola (ya se cantÃÂ³, fue rechazada, etc.)
         # devolvemos -1 para indicar que no hay tiempo de espera.
         return -1
 
@@ -529,9 +529,9 @@ def get_ranking_usuarios(db: Session):
 def reset_database_for_new_night(db: Session):
     """
     Borra todos los datos de las tablas transaccionales para empezar una nueva noche.
-    El orden es importante para respetar las restricciones de clave foránea.
+    El orden es importante para respetar las restricciones de clave forÃÂ¡nea.
     """
-    # El orden de borrado es inverso al de creación de dependencias
+    # El orden de borrado es inverso al de creaciÃÂ³n de dependencias
     db.query(models.Consumo).delete()
     db.query(models.Cancion).delete()
     db.query(models.Usuario).delete()
@@ -541,7 +541,7 @@ def reset_database_for_new_night(db: Session):
 
 def get_canciones_mas_cantadas(db: Session, limit: int = 10):
     """
-    Obtiene un reporte de las canciones más cantadas, agrupadas y contadas.
+    Obtiene un reporte de las canciones mÃÂ¡s cantadas, agrupadas y contadas.
     """
     return (
         db.query(
@@ -557,7 +557,7 @@ def get_canciones_mas_cantadas(db: Session, limit: int = 10):
     )
 
 def delete_cancion(db: Session, cancion_id: int):
-    """Elimina una canción de la base de datos por su ID."""
+    """Elimina una canciÃÂ³n de la base de datos por su ID."""
     db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
     if db_cancion:
         db.delete(db_cancion)
@@ -565,7 +565,7 @@ def delete_cancion(db: Session, cancion_id: int):
 
 def get_productos_mas_consumidos(db: Session, limit: int = 10):
     """
-    Obtiene un reporte de los productos más consumidos, agrupados y sumada su cantidad.
+    Obtiene un reporte de los productos mÃÂ¡s consumidos, agrupados y sumada su cantidad.
     """
     return (
         db.query(
@@ -664,7 +664,7 @@ def reordenar_cola_manual(db: Session, canciones_ids: List[int]):
 
 def get_usuarios_sin_consumo(db: Session):
     """
-    Obtiene una lista de todos los usuarios que no han realizado ningún consumo.
+    Obtiene una lista de todos los usuarios que no han realizado ningÃÂºn consumo.
     """
     return (
         db.query(models.Usuario)
@@ -687,9 +687,9 @@ def delete_mesa(db: Session, mesa_id: int):
 
 def move_song_to_top(db: Session, cancion_id: int):
     """
-    Mueve una canción específica al principio de la cola manual.
+    Mueve una canciÃÂ³n especÃÂ­fica al principio de la cola manual.
     """
-    # 1. Validar que la canción existe y está aprobada
+    # 1. Validar que la canciÃÂ³n existe y estÃÂ¡ aprobada
     cancion_a_mover = db.query(models.Cancion).filter(
         models.Cancion.id == cancion_id,
         models.Cancion.estado == 'aprobado'
@@ -698,14 +698,14 @@ def move_song_to_top(db: Session, cancion_id: int):
     if not cancion_a_mover:
         return None
 
-    # 2. Encontrar el valor de orden manual más bajo actual
+    # 2. Encontrar el valor de orden manual mÃÂ¡s bajo actual
     min_orden = db.query(func.min(models.Cancion.orden_manual)).scalar()
 
     nuevo_orden = 1
     if min_orden is not None:
         nuevo_orden = min_orden - 1
     
-    # 3. Asignar el nuevo orden a la canción
+    # 3. Asignar el nuevo orden a la canciÃÂ³n
     cancion_a_mover.orden_manual = nuevo_orden
     db.commit()
     db.refresh(cancion_a_mover)
@@ -729,7 +729,7 @@ def get_canciones_cantadas_por_usuario(db: Session):
 
 def update_usuario_nick(db: Session, usuario_id: int, nuevo_nick: str):
     """
-    Actualiza el nick de un usuario específico.
+    Actualiza el nick de un usuario especÃÂ­fico.
     """
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if db_usuario:
@@ -745,7 +745,7 @@ def get_ingresos_promedio_por_usuario(db: Session):
     # Calcular ingresos totales
     total_ingresos = db.query(func.sum(models.Consumo.valor_total)).scalar() or 0
 
-    # Contar el número de usuarios únicos con consumo
+    # Contar el nÃÂºmero de usuarios ÃÂºnicos con consumo
     usuarios_con_consumo = db.query(models.Consumo.usuario_id).distinct().count()
 
     if usuarios_con_consumo == 0:
@@ -755,7 +755,7 @@ def get_ingresos_promedio_por_usuario(db: Session):
 
 def update_usuario_mesa(db: Session, usuario_id: int, nueva_mesa_id: int):
     """
-    Actualiza la mesa de un usuario específico.
+    Actualiza la mesa de un usuario especÃÂ­fico.
     """
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if db_usuario:
@@ -766,7 +766,7 @@ def update_usuario_mesa(db: Session, usuario_id: int, nueva_mesa_id: int):
 
 def get_usuarios_una_cancion(db: Session):
     """
-    Obtiene una lista de usuarios que han cantado exactamente una canción.
+    Obtiene una lista de usuarios que han cantado exactamente una canciÃÂ³n.
     """
     return (
         db.query(models.Usuario)
@@ -779,7 +779,7 @@ def get_usuarios_una_cancion(db: Session):
 
 def add_puntos_a_usuario(db: Session, usuario_id: int, puntos_a_anadir: int):
     """
-    Añade una cantidad de puntos a un usuario específico.
+    AÃÂ±ade una cantidad de puntos a un usuario especÃÂ­fico.
     """
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if db_usuario:
@@ -808,7 +808,7 @@ def delete_usuario(db: Session, usuario_id: int):
     if not db_usuario:
         return None
 
-    # Borrar datos dependientes primero para evitar errores de clave foránea
+    # Borrar datos dependientes primero para evitar errores de clave forÃÂ¡nea
     db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).delete(synchronize_session=False)
     db.query(models.Cancion).filter(models.Cancion.usuario_id == usuario_id).delete(synchronize_session=False)
 
@@ -821,7 +821,7 @@ def get_ingresos_promedio_por_usuario_por_mesa(db: Session):
     """
     Calcula los ingresos promedio por usuario para cada mesa.
     """
-    # Consulta que calcula el total consumido y el número de usuarios únicos por mesa
+    # Consulta que calcula el total consumido y el nÃÂºmero de usuarios ÃÂºnicos por mesa
     return (
         db.query(
             models.Mesa.nombre,
@@ -839,18 +839,18 @@ def get_ingresos_promedio_por_usuario_por_mesa(db: Session):
     )
 
 def is_nick_banned(db: Session, nick: str):
-    """Verifica si un nick está en la lista de baneados (case-insensitive)."""
+    """Verifica si un nick estÃÂ¡ en la lista de baneados (case-insensitive)."""
     return db.query(models.BannedNick).filter(models.BannedNick.nick.ilike(nick)).first() is not None
 
 def ban_usuario(db: Session, usuario_id: int):
     """
-    Banea a un usuario: añade su nick a la lista de baneados y luego lo elimina.
+    Banea a un usuario: aÃÂ±ade su nick a la lista de baneados y luego lo elimina.
     """
     db_usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
     if not db_usuario:
         return None
 
-    # 1. Añadir el nick a la lista de baneados si no existe
+    # 1. AÃÂ±adir el nick a la lista de baneados si no existe
     nick_baneado_existente = db.query(models.BannedNick).filter(models.BannedNick.nick.ilike(db_usuario.nick)).first()
     if not nick_baneado_existente:
         banned_nick_entry = models.BannedNick(nick=db_usuario.nick)
@@ -859,17 +859,17 @@ def ban_usuario(db: Session, usuario_id: int):
         # antes de proceder con el borrado del usuario.
         db.commit()
 
-    # 2. Eliminar al usuario y sus datos asociados (reutilizamos la función existente)
+    # 2. Eliminar al usuario y sus datos asociados (reutilizamos la funciÃÂ³n existente)
     delete_usuario(db, usuario_id=usuario_id)
 
     return db_usuario
 
 def get_tiempo_promedio_espera(db: Session):
     """
-    Calcula el tiempo promedio en segundos desde que una canción se añade hasta que se canta.
+    Calcula el tiempo promedio en segundos desde que una canciÃÂ³n se aÃÂ±ade hasta que se canta.
     """
-    # Para SQLite, usamos julianday para calcular la diferencia en días y luego convertimos a segundos.
-    # Para PostgreSQL, sería: func.avg(func.extract('epoch', models.Cancion.finished_at - models.Cancion.created_at))
+    # Para SQLite, usamos julianday para calcular la diferencia en dÃÂ­as y luego convertimos a segundos.
+    # Para PostgreSQL, serÃÂ­a: func.avg(func.extract('epoch', models.Cancion.finished_at - models.Cancion.created_at))
     avg_seconds = db.query(func.avg((func.julianday(models.Cancion.finished_at) - func.julianday(models.Cancion.created_at)) * 86400)).filter(
         models.Cancion.estado == "cantada",
         models.Cancion.finished_at.isnot(None)
@@ -878,12 +878,12 @@ def get_tiempo_promedio_espera(db: Session):
 
 def get_actividad_por_hora(db: Session):
     """
-    Obtiene un reporte de la cantidad de canciones cantadas por cada hora del día.
+    Obtiene un reporte de la cantidad de canciones cantadas por cada hora del dÃÂ­a.
     """
     return (
         db.query(
             # Usamos strftime para SQLite para extraer la hora.
-            # Para PostgreSQL sería: extract('hour', models.Cancion.started_at)
+            # Para PostgreSQL serÃÂ­a: extract('hour', models.Cancion.started_at)
             func.strftime('%H', models.Cancion.started_at).label("hora"),
             func.count(models.Cancion.id).label("canciones_cantadas"),
         )
@@ -939,7 +939,7 @@ def get_banned_nicks(db: Session):
 
 def get_canciones_mas_rechazadas(db: Session, limit: int = 10):
     """
-    Obtiene un reporte de las canciones más rechazadas, agrupadas y contadas.
+    Obtiene un reporte de las canciones mÃÂ¡s rechazadas, agrupadas y contadas.
     """
     return (
         db.query(
@@ -956,7 +956,7 @@ def get_canciones_mas_rechazadas(db: Session, limit: int = 10):
 
 def get_usuarios_mas_rechazados(db: Session, limit: int = 10):
     """
-    Obtiene un reporte de los usuarios a los que más se les han rechazado canciones.
+    Obtiene un reporte de los usuarios a los que mÃÂ¡s se les han rechazado canciones.
     """
     return (
         db.query(
@@ -973,7 +973,7 @@ def get_usuarios_mas_rechazados(db: Session, limit: int = 10):
 
 def get_ingresos_por_categoria(db: Session):
     """
-    Calcula los ingresos totales agrupados por cada categoría de producto.
+    Calcula los ingresos totales agrupados por cada categorÃÂ­a de producto.
     """
     return (
         db.query(
@@ -987,14 +987,14 @@ def get_ingresos_por_categoria(db: Session):
     )
 
 def create_admin_log_entry(db: Session, action: str, details: Optional[str] = None):
-    """Crea una nueva entrada en el log de administración."""
+    """Crea una nueva entrada en el log de administraciÃÂ³n."""
     log_entry = models.AdminLog(action=action, details=details)
     db.add(log_entry)
     db.commit()
     return log_entry
 
 def get_admin_logs(db: Session, limit: int = 100):
-    """Obtiene las últimas entradas del log de administración."""
+    """Obtiene las ÃÂºltimas entradas del log de administraciÃÂ³n."""
     return db.query(models.AdminLog).order_by(models.AdminLog.timestamp.desc()).limit(limit).all()
 
 def get_productos_menos_consumidos(db: Session, limit: int = 5):
@@ -1015,7 +1015,7 @@ def get_productos_menos_consumidos(db: Session, limit: int = 5):
 
 def get_productos_no_consumidos(db: Session):
     """
-    Obtiene una lista de productos del catálogo que nunca han sido consumidos.
+    Obtiene una lista de productos del catÃÂ¡logo que nunca han sido consumidos.
     """
     return (
         db.query(models.Producto)
@@ -1027,7 +1027,7 @@ def get_productos_no_consumidos(db: Session):
 
 def update_producto(db: Session, producto_id: int, producto_update: schemas.ProductoCreate):
     """
-    Actualiza los datos de un producto específico.
+    Actualiza los datos de un producto especÃÂ­fico.
     """
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
@@ -1039,7 +1039,7 @@ def update_producto(db: Session, producto_id: int, producto_update: schemas.Prod
 
 def update_producto_valor(db: Session, producto_id: int, nuevo_valor: Decimal):
     """
-    Actualiza el valor de un producto específico en el catálogo.
+    Actualiza el valor de un producto especÃÂ­fico en el catÃÂ¡logo.
     """
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
@@ -1050,7 +1050,7 @@ def update_producto_valor(db: Session, producto_id: int, nuevo_valor: Decimal):
 
 def update_producto_active_status(db: Session, producto_id: int, is_active: bool):
     """
-    Actualiza el estado de activación de un producto.
+    Actualiza el estado de activaciÃÂ³n de un producto.
     """
     db_producto = db.query(models.Producto).filter(models.Producto.id == producto_id).first()
     if db_producto:
@@ -1061,13 +1061,13 @@ def update_producto_active_status(db: Session, producto_id: int, is_active: bool
 
 def get_usuarios_por_nivel(db: Session, nivel: str):
     """
-    Obtiene una lista de todos los usuarios que tienen un nivel específico.
+    Obtiene una lista de todos los usuarios que tienen un nivel especÃÂ­fico.
     """
     return db.query(models.Usuario).filter(models.Usuario.nivel == nivel).all()
 
 def get_resumen_noche(db: Session):
     """
-    Obtiene un resumen de las métricas clave de la noche.
+    Obtiene un resumen de las mÃÂ©tricas clave de la noche.
     """
     ingresos_totales = db.query(func.sum(models.Consumo.valor_total)).scalar() or 0
     canciones_cantadas = db.query(func.count(models.Cancion.id)).filter(models.Cancion.estado == "cantada").scalar() or 0
@@ -1080,8 +1080,8 @@ def get_resumen_noche(db: Session):
 
 def get_resumen_mesa(db: Session, mesa_id: int):
     """
-    Obtiene un resumen detallado de una mesa específica, incluyendo usuarios,
-    consumo total y canciones pendientes/reproduciéndose.
+    Obtiene un resumen detallado de una mesa especÃÂ­fica, incluyendo usuarios,
+    consumo total y canciones pendientes/reproduciÃÂ©ndose.
     """
     db_mesa = db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
     if not db_mesa:
@@ -1118,18 +1118,18 @@ def get_resumen_mesa(db: Session, mesa_id: int):
 
 def get_usuarios_sin_canciones_cantadas(db: Session):
     """
-    Obtiene una lista de usuarios que no han cantado ninguna canción.
+    Obtiene una lista de usuarios que no han cantado ninguna canciÃÂ³n.
     """
-    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    # Subconsulta para obtener los IDs de los usuarios que SÃÂ han cantado.
     subquery = db.query(models.Usuario.id).join(models.Cancion).filter(models.Cancion.estado == 'cantada').distinct()
 
-    # Consulta principal para obtener los usuarios cuyo ID NO ESTÁ en la subconsulta.
+    # Consulta principal para obtener los usuarios cuyo ID NO ESTÃÂ en la subconsulta.
     return db.query(models.Usuario).filter(models.Usuario.id.notin_(subquery)).all()
 
 def get_estado_mesas(db: Session):
     """
-    Obtiene un listado de todas las mesas con su estado (ocupada/vacía),
-    número de usuarios y consumo total.
+    Obtiene un listado de todas las mesas con su estado (ocupada/vacÃÂ­a),
+    nÃÂºmero de usuarios y consumo total.
     """
     # Subconsulta para el conteo de usuarios por mesa
     user_count_subq = (
@@ -1173,16 +1173,16 @@ def get_ranking_puntos_usuarios(db: Session, limit: int = 10):
 
 def get_usuarios_cantan_pero_no_consumen(db: Session):
     """
-    Obtiene una lista de usuarios que han cantado al menos una canción
-    pero no han realizado ningún consumo.
+    Obtiene una lista de usuarios que han cantado al menos una canciÃÂ³n
+    pero no han realizado ningÃÂºn consumo.
     """
-    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    # Subconsulta para obtener los IDs de los usuarios que SÃÂ han cantado.
     subquery_cantan = db.query(models.Cancion.usuario_id).filter(models.Cancion.estado == 'cantada').distinct()
 
-    # Subconsulta para obtener los IDs de los usuarios que SÍ han consumido.
+    # Subconsulta para obtener los IDs de los usuarios que SÃÂ han consumido.
     subquery_consumen = db.query(models.Consumo.usuario_id).distinct()
 
-    # Consulta principal para obtener los usuarios que están en la primera subconsulta pero NO en la segunda.
+    # Consulta principal para obtener los usuarios que estÃÂ¡n en la primera subconsulta pero NO en la segunda.
     return db.query(models.Usuario).filter(
         models.Usuario.id.in_(subquery_cantan),
         models.Usuario.id.notin_(subquery_consumen)
@@ -1190,14 +1190,14 @@ def get_usuarios_cantan_pero_no_consumen(db: Session):
 
 def get_consumos_por_usuario(db: Session, usuario_id: int):
     """
-    Obtiene el historial de consumo de un usuario específico.
+    Obtiene el historial de consumo de un usuario especÃÂ­fico.
     """
     return db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).order_by(models.Consumo.created_at.desc()).all()
 
 
 def get_recent_consumos(db: Session, limit: int = 10):
     """
-    Devuelve los consumos más recientes junto con el nombre del producto,
+    Devuelve los consumos mÃÂ¡s recientes junto con el nombre del producto,
     nick del usuario y nombre de la mesa (si existe).
     """
     # Hacemos las uniones necesarias para obtener la info deseada
@@ -1219,7 +1219,7 @@ def get_recent_consumos(db: Session, limit: int = 10):
         .all()
     )
 
-    # Mapear a diccionarios/objetos que Pydantic pueda serializar fácilmente
+    # Mapear a diccionarios/objetos que Pydantic pueda serializar fÃÂ¡cilmente
     result = []
     for r in rows:
         result.append({
@@ -1235,7 +1235,7 @@ def get_recent_consumos(db: Session, limit: int = 10):
 
 def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: int = 10):
     """
-    Obtiene un reporte de los usuarios que más han gastado en una categoría de producto específica.
+    Obtiene un reporte de los usuarios que mÃÂ¡s han gastado en una categorÃÂ­a de producto especÃÂ­fica.
     """
     return (
         db.query(
@@ -1273,7 +1273,7 @@ def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
 
 def get_productos_mas_consumidos_por_mesa(db: Session, mesa_id: int, limit: int = 5):
     """
-    Obtiene un reporte de los productos más consumidos en una mesa específica.
+    Obtiene un reporte de los productos mÃÂ¡s consumidos en una mesa especÃÂ­fica.
     """
     return (
         db.query(
@@ -1291,7 +1291,7 @@ def get_productos_mas_consumidos_por_mesa(db: Session, mesa_id: int, limit: int 
 
 def get_usuarios_oro_activos(db: Session):
     """
-    Obtiene una lista de usuarios de nivel "Oro" que han cantado más de 5 canciones.
+    Obtiene una lista de usuarios de nivel "Oro" que han cantado mÃÂ¡s de 5 canciones.
     """
     return (
         db.query(models.Usuario)
@@ -1307,7 +1307,7 @@ def get_usuarios_oro_activos(db: Session):
 
 def get_canciones_mas_pedidas_por_mesa(db: Session, mesa_id: int, limit: int = 5):
     """
-    Obtiene un reporte de las canciones más pedidas en una mesa específica.
+    Obtiene un reporte de las canciones mÃÂ¡s pedidas en una mesa especÃÂ­fica.
     """
     return (
         db.query(
@@ -1325,16 +1325,16 @@ def get_canciones_mas_pedidas_por_mesa(db: Session, mesa_id: int, limit: int = 5
 
 def get_usuarios_consumen_pero_no_cantan(db: Session, umbral_consumo: float = 100.0):
     """
-    Obtiene una lista de usuarios que han consumido más de un umbral
-    pero no han cantado ninguna canción.
+    Obtiene una lista de usuarios que han consumido mÃÂ¡s de un umbral
+    pero no han cantado ninguna canciÃÂ³n.
     """
-    # Subconsulta para obtener los IDs de los usuarios que SÍ han cantado.
+    # Subconsulta para obtener los IDs de los usuarios que SÃÂ han cantado.
     subquery_cantan = db.query(models.Cancion.usuario_id).filter(models.Cancion.estado == 'cantada').distinct()
 
-    # Subconsulta para obtener los IDs de los usuarios que han consumido más del umbral.
+    # Subconsulta para obtener los IDs de los usuarios que han consumido mÃÂ¡s del umbral.
     subquery_consumen_mas_de = db.query(models.Usuario.id).join(models.Consumo).group_by(models.Usuario.id).having(func.sum(models.Consumo.valor_total) > umbral_consumo).subquery()
 
-    # Consulta principal para obtener los usuarios que están en la segunda subconsulta pero NO en la primera.
+    # Consulta principal para obtener los usuarios que estÃÂ¡n en la segunda subconsulta pero NO en la primera.
     return db.query(models.Usuario).filter(
         models.Usuario.id.in_(subquery_consumen_mas_de),
         models.Usuario.id.notin_(subquery_cantan)
@@ -1342,7 +1342,7 @@ def get_usuarios_consumen_pero_no_cantan(db: Session, umbral_consumo: float = 10
 
 def get_categorias_mas_consumidas_por_mesa(db: Session, mesa_id: int, limit: int = 5):
     """
-    Obtiene un reporte de las categorías de productos más consumidas en una mesa específica.
+    Obtiene un reporte de las categorÃÂ­as de productos mÃÂ¡s consumidas en una mesa especÃÂ­fica.
     """
     return (
         db.query(
@@ -1360,9 +1360,9 @@ def get_categorias_mas_consumidas_por_mesa(db: Session, mesa_id: int, limit: int
 
 def get_top_consumers_one_song(db: Session, limit: int = 10):
     """
-    Obtiene un reporte de los usuarios que más han consumido pero que solo han cantado una canción.
+    Obtiene un reporte de los usuarios que mÃÂ¡s han consumido pero que solo han cantado una canciÃÂ³n.
     """
-    # Subconsulta para obtener los IDs de los usuarios que han cantado exactamente una canción.
+    # Subconsulta para obtener los IDs de los usuarios que han cantado exactamente una canciÃÂ³n.
     subquery_una_cancion = (
         db.query(models.Cancion.usuario_id)
         .filter(models.Cancion.estado == 'cantada')
@@ -1384,12 +1384,12 @@ def get_top_consumers_one_song(db: Session, limit: int = 10):
 
 def get_usuarios_inactivos_consumo(db: Session, horas: int = 2):
     """
-    Obtiene una lista de usuarios cuyo último consumo fue hace más de X horas,
+    Obtiene una lista de usuarios cuyo ÃÂºltimo consumo fue hace mÃÂ¡s de X horas,
     o que no han consumido nada.
     """
     hora_limite = datetime.datetime.utcnow() - datetime.timedelta(hours=horas)
 
-    # Subconsulta para obtener el último consumo de cada usuario
+    # Subconsulta para obtener el ÃÂºltimo consumo de cada usuario
     ultimo_consumo_subq = (
         db.query(
             models.Consumo.usuario_id.label("usuario_id"),
@@ -1399,7 +1399,7 @@ def get_usuarios_inactivos_consumo(db: Session, horas: int = 2):
         .subquery()
     )
 
-    # Consulta principal que une usuarios con su último consumo
+    # Consulta principal que une usuarios con su ÃÂºltimo consumo
     return db.query(models.Usuario).outerjoin(ultimo_consumo_subq, models.Usuario.id == ultimo_consumo_subq.c.usuario_id).filter(
         (ultimo_consumo_subq.c.ultimo_consumo_ts < hora_limite) |
         (ultimo_consumo_subq.c.ultimo_consumo_ts == None)
@@ -1409,7 +1409,7 @@ def get_usuarios_inactivos_consumo(db: Session, horas: int = 2):
 def get_admin_api_key(db: Session, key: str) -> Optional[models.AdminApiKey]:
     """
     Busca una clave de API de administrador en la base de datos,
-    verifica que esté activa y actualiza su último uso.
+    verifica que estÃÂ© activa y actualiza su ÃÂºltimo uso.
     """
     db_key = db.query(models.AdminApiKey).filter(
         models.AdminApiKey.key == key,
@@ -1446,7 +1446,7 @@ def delete_admin_api_key(db: Session, key_id: int) -> Optional[models.AdminApiKe
 
 def get_consumo_por_mesa(db: Session, mesa_id: int):
     """
-    Obtiene el historial de consumo de una mesa específica.
+    Obtiene el historial de consumo de una mesa especÃÂ­fica.
     """
     return (
         db.query(models.Consumo)
@@ -1461,7 +1461,7 @@ def delete_consumo(db: Session, consumo_id: int):
     """
     Elimina un consumo, restaura el stock del producto asociado y recalcula
     los puntos y nivel del usuario correspondiente.
-    Devuelve True si se eliminó, o None si no se encontró.
+    Devuelve True si se eliminÃÂ³, o None si no se encontrÃÂ³.
     """
     SILVER_THRESHOLD = 50.0
     GOLD_THRESHOLD = 150.0
@@ -1499,11 +1499,11 @@ def delete_consumo(db: Session, consumo_id: int):
     return True
 
 def get_config(db: Session, key: str):
-    """Obtiene un valor de configuración por su clave (clave)."""
+    """Obtiene un valor de configuraciÃÂ³n por su clave (clave)."""
     return db.query(models.ConfiguracionGlobal).filter(models.ConfiguracionGlobal.clave == key).first()
 
 def update_config(db: Session, key: str, value: str):
-    """Establece o actualiza un valor de configuración (clave)."""
+    """Establece o actualiza un valor de configuraciÃÂ³n (clave)."""
     db_config = db.query(models.ConfiguracionGlobal).filter(models.ConfiguracionGlobal.clave == key).first()
     if db_config:
         db_config.value = value
@@ -1517,7 +1517,7 @@ def update_config(db: Session, key: str, value: str):
 def get_or_create_dj_user(db: Session) -> models.Usuario:
     """
     Busca al usuario 'DJ'. Si no existe, lo crea sin asociarlo a una mesa.
-    Este usuario se usa para las canciones añadidas por el administrador.
+    Este usuario se usa para las canciones aÃÂ±adidas por el administrador.
     """
     dj_user = db.query(models.Usuario).filter(models.Usuario.nick == "DJ").first()
     if not dj_user:
@@ -1529,9 +1529,9 @@ def get_or_create_dj_user(db: Session) -> models.Usuario:
 
 def get_o_crear_usuario_admin_para_mesa(db: Session, mesa_id: int) -> models.Usuario:
     """
-    Busca o crea un usuario administrador para una mesa específica.
-    Este usuario se utiliza para las canciones añadidas por el admin a través del dashboard.
-    El nick será "ADMIN_Mesa_{mesa_id}".
+    Busca o crea un usuario administrador para una mesa especÃÂ­fica.
+    Este usuario se utiliza para las canciones aÃÂ±adidas por el admin a travÃÂ©s del dashboard.
+    El nick serÃÂ¡ "ADMIN_Mesa_{mesa_id}".
     """
     admin_nick = f"ADMIN_Mesa_{mesa_id}"
     admin_user = db.query(models.Usuario).filter(models.Usuario.nick == admin_nick).first()
@@ -1546,8 +1546,8 @@ def get_o_crear_usuario_admin_para_mesa(db: Session, mesa_id: int) -> models.Usu
 
 def get_canciones_pendientes_por_aprobar(db: Session):
     """
-    Obtiene las canciones que están en estado 'pendiente' (no aprobadas aún).
-    Ordenadas por fecha de creación.
+    Obtiene las canciones que estÃÂ¡n en estado 'pendiente' (no aprobadas aÃÂºn).
+    Ordenadas por fecha de creaciÃÂ³n.
     """
     return db.query(models.Cancion).filter(
         models.Cancion.estado == 'pendiente'
@@ -1555,12 +1555,12 @@ def get_canciones_pendientes_por_aprobar(db: Session):
 
 def auto_approve_songs_after_10_minutes(db: Session):
     """
-    Aprueba automáticamente las primeras 2 canciones pendientes que ya han pasado 10 minutos desde su creación.
-    Las demás canciones permanecen en estado 'pendiente' esperando aprobación manual.
+    Aprueba automÃÂ¡ticamente las primeras 2 canciones pendientes que ya han pasado 10 minutos desde su creaciÃÂ³n.
+    Las demÃÂ¡s canciones permanecen en estado 'pendiente' esperando aprobaciÃÂ³n manual.
     """
     from datetime import timedelta
     
-    # Obtener canciones pendientes que tienen más de 10 minutos
+    # Obtener canciones pendientes que tienen mÃÂ¡s de 10 minutos
     time_threshold = now_bogota() - timedelta(minutes=10)
     
     songs_to_auto_approve = db.query(models.Cancion).filter(
@@ -1581,7 +1581,7 @@ def auto_approve_songs_after_10_minutes(db: Session):
 
 def approve_song_by_admin(db: Session, cancion_id: int):
     """
-    Aprueba una canción manualmente desde el admin.
+    Aprueba una canciÃÂ³n manualmente desde el admin.
     Cambia el estado de 'pendiente' a 'aprobado'.
     """
     db_cancion = db.query(models.Cancion).filter(
@@ -1600,18 +1600,18 @@ def approve_song_by_admin(db: Session, cancion_id: int):
 def get_cola_completa(db: Session):
     """
     Obtiene la cola completa, incluyendo:
-    - Canción actualmente reproduciendo
+    - CanciÃÂ³n actualmente reproduciendo
     - Cola aprobada (upcoming)
     - Cola pendiente por aprobar
     """
-    # Aplicar aprobación automática después de 10 minutos
+    # Aplicar aprobaciÃÂ³n automÃÂ¡tica despuÃÂ©s de 10 minutos
     auto_approve_songs_after_10_minutes(db)
     
     now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     approved_queue = get_cola_priorizada(db)
     pending_queue = get_canciones_pendientes_por_aprobar(db)
 
-    # Si la canción que se está reproduciendo sigue en la lista de 'upcoming', la quitamos.
+    # Si la canciÃÂ³n que se estÃÂ¡ reproduciendo sigue en la lista de 'upcoming', la quitamos.
     if now_playing:
         approved_queue = [song for song in approved_queue if song.id != now_playing.id]
 
@@ -1623,7 +1623,7 @@ def get_cola_completa(db: Session):
 
 def set_mesa_active_status(db: Session, mesa_id: int, is_active: bool) -> Optional[models.Mesa]:
     """
-    Actualiza el estado de activación de una mesa.
+    Actualiza el estado de activaciÃÂ³n de una mesa.
     """
     db_mesa = db.query(models.Mesa).filter(models.Mesa.id == mesa_id).first()
     if db_mesa:
@@ -1679,7 +1679,7 @@ def get_all_tables_consumption_summaries(db: Session) -> List[dict]:
 
 def create_pago_for_mesa(db: Session, pago: schemas.PagoCreate) -> models.Pago:
     """
-    Registra un nuevo pago para una mesa específica.
+    Registra un nuevo pago para una mesa especÃÂ­fica.
     """
     db_mesa = get_mesa_by_id(db, mesa_id=pago.mesa_id)
     if not db_mesa:
@@ -1756,19 +1756,19 @@ def get_all_tables_payment_status(db: Session) -> List[dict]:
 
 def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
     """
-    Obtiene un estado de cuenta detallado para una mesa específica.
+    Obtiene un estado de cuenta detallado para una mesa especÃÂ­fica.
     CAMBIO: Se obtiene el estado de la CUENTA ACTIVA de la mesa.
     """
     # 1. Obtener la cuenta activa
-    # Nota: Usamos la función helper definida abajo. Como Python permite referencias forward en runtime,
-    # esto funcionará siempre que se llame después de definir get_active_cuenta.
-    # Pero para estar seguros, la importaremos o asumiremos que está en el scope global del módulo.
-    # Dado que get_active_cuenta está en este mismo archivo, está bien.
+    # Nota: Usamos la funciÃÂ³n helper definida abajo. Como Python permite referencias forward en runtime,
+    # esto funcionarÃÂ¡ siempre que se llame despuÃÂ©s de definir get_active_cuenta.
+    # Pero para estar seguros, la importaremos o asumiremos que estÃÂ¡ en el scope global del mÃÂ³dulo.
+    # Dado que get_active_cuenta estÃÂ¡ en este mismo archivo, estÃÂ¡ bien.
     
     active_cuenta = get_active_cuenta(db, mesa_id)
     
     if not active_cuenta:
-         # Si no hay cuenta activa, devolvemos un estado vacío pero válido
+         # Si no hay cuenta activa, devolvemos un estado vacÃÂ­o pero vÃÂ¡lido
          mesa = get_mesa_by_id(db, mesa_id)
          if not mesa: return None
          return schemas.MesaEstadoPago(
@@ -1781,11 +1781,11 @@ def get_table_payment_status(db: Session, mesa_id: int) -> Optional[dict]:
 async def start_next_song_if_autoplay_and_idle(db: Session):
     """
     Verifica si no hay nada sonando y si hay canciones en la cola.
-    Si se cumplen las condiciones, inicia la siguiente canción automáticamente.
+    Si se cumplen las condiciones, inicia la siguiente canciÃÂ³n automÃÂ¡ticamente.
     """
     import websocket_manager
 
-    # Verificamos si ya hay una canción en estado 'reproduciendo'
+    # Verificamos si ya hay una canciÃÂ³n en estado 'reproduciendo'
     is_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     if is_playing:
         return
@@ -1794,42 +1794,42 @@ async def start_next_song_if_autoplay_and_idle(db: Session):
     next_song = marcar_siguiente_como_reproduciendo(db)
 
     if next_song:
-        # Si se encontró una siguiente canción, notificamos a todos los clientes
+        # Si se encontrÃÂ³ una siguiente canciÃÂ³n, notificamos a todos los clientes
         # para que la cola se actualice y el reproductor comience a reproducir.
         await websocket_manager.manager.broadcast_queue_update()
         await websocket_manager.manager.broadcast_play_song(next_song.youtube_id)
-        create_admin_log_entry(db, action="AUTO_START", details=f"Iniciada automáticamente la canción '{next_song.titulo}'.")
+        create_admin_log_entry(db, action="AUTO_START", details=f"Iniciada automÃÂ¡ticamente la canciÃÂ³n '{next_song.titulo}'.")
 
 async def avanzar_cola_automaticamente(db: Session):
     """
-    Función central para avanzar la cola: marca la canción actual como cantada,
+    FunciÃÂ³n central para avanzar la cola: marca la canciÃÂ³n actual como cantada,
     inicia la siguiente y notifica a todos los clientes.
-    Esta función es llamada tanto por el autoplay como por el botón manual.
+    Esta funciÃÂ³n es llamada tanto por el autoplay como por el botÃÂ³n manual.
     """
     import websocket_manager
 
-    # 1. Marcar la canción actual como 'cantada' y obtener sus datos
+    # 1. Marcar la canciÃÂ³n actual como 'cantada' y obtener sus datos
     cancion_cantada = marcar_cancion_actual_como_cantada(db)
     if cancion_cantada:
-        # Notificar a todos que la canción terminó (para mostrar puntajes, etc.)
+        # Notificar a todos que la canciÃÂ³n terminÃÂ³ (para mostrar puntajes, etc.)
         await websocket_manager.manager.broadcast_song_finished(cancion_cantada)
 
-    # 2. Marcar la siguiente canción como 'reproduciendo'
+    # 2. Marcar la siguiente canciÃÂ³n como 'reproduciendo'
     siguiente_cancion = marcar_siguiente_como_reproduciendo(db)
 
-    # 3. Notificar a todos los clientes sobre la actualización de la cola
+    # 3. Notificar a todos los clientes sobre la actualizaciÃÂ³n de la cola
     await websocket_manager.manager.broadcast_queue_update()
 
-    # 4. Si hay una nueva canción, enviar la orden de reproducción al player
+    # 4. Si hay una nueva canciÃÂ³n, enviar la orden de reproducciÃÂ³n al player
     if siguiente_cancion:
         await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
 
 
-    # 5. Aprobar la siguiente canci�n lazy si es necesario
+    # 5. Aprobar la siguiente canciÃ³n lazy si es necesario
     check_and_approve_next_lazy_song(db)
 
 
-    # 5. Aprobar la siguiente canci�n lazy si es necesario
+    # 5. Aprobar la siguiente canciÃ³n lazy si es necesario
     check_and_approve_next_lazy_song(db)
 
     return siguiente_cancion
@@ -1856,14 +1856,14 @@ def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
 
 def get_consumos_por_usuario(db: Session, usuario_id: int):
     """
-    Obtiene el historial de consumo de un usuario específico.
+    Obtiene el historial de consumo de un usuario especÃÂ­fico.
     """
     return db.query(models.Consumo).filter(models.Consumo.usuario_id == usuario_id).order_by(models.Consumo.created_at.desc()).all()
 
 
 def get_recent_consumos(db: Session, limit: int = 10):
     """
-    Devuelve los consumos más recientes junto con el nombre del producto,
+    Devuelve los consumos mÃÂ¡s recientes junto con el nombre del producto,
     nick del usuario y nombre de la mesa (si existe).
     Filtra los consumos que ya han sido despachados.
     """
@@ -1887,7 +1887,7 @@ def get_recent_consumos(db: Session, limit: int = 10):
         .all()
     )
 
-    # Mapear a diccionarios/objetos que Pydantic pueda serializar fácilmente
+    # Mapear a diccionarios/objetos que Pydantic pueda serializar fÃÂ¡cilmente
     result = []
     for r in rows:
         result.append({
@@ -1903,7 +1903,7 @@ def get_recent_consumos(db: Session, limit: int = 10):
 
 def get_usuarios_mayor_gasto_por_categoria(db: Session, categoria: str, limit: int = 10):
     """
-    Obtiene un reporte de los usuarios que más han gastado en una categoría de producto específica.
+    Obtiene un reporte de los usuarios que mÃÂ¡s han gastado en una categorÃÂ­a de producto especÃÂ­fica.
     """
     return (
         db.query(
@@ -2006,7 +2006,7 @@ def get_cuenta_by_id(db: Session, cuenta_id: int):
 
 def get_cuenta_payment_status(db: Session, cuenta_id: int) -> Optional[dict]:
     """
-    Obtiene el estado de pago de una CUENTA específica (activa o cerrada).
+    Obtiene el estado de pago de una CUENTA especÃÂ­fica (activa o cerrada).
     """
     cuenta = get_cuenta_by_id(db, cuenta_id)
     if not cuenta:
@@ -2055,371 +2055,371 @@ def get_cuenta_payment_status(db: Session, cuenta_id: int) -> Optional[dict]:
         saldo_pendiente=saldo_pendiente, 
         consumos=consumos_items, 
         pagos=pagos_detalle
-    ).dict()#   C � � d i g o   p a r a   a g r e g a r   a l   f i n a l   d e   c r u d . p y 
- 
- 
- 
- #   - - -   L a z y   A p p r o v a l   Q u e u e   F u n c t i o n s   - - - 
- 
- 
- 
- d e f   g e t _ c o l a _ l a z y ( d b :   S e s s i o n ) : 
- 
-         " " " 
- 
-         O b t i e n e   t o d a s   l a s   c a n c i o n e s   e n   e s t a d o   p e n d i e n t e _ l a z y ,   o r d e n a d a s   p o r   p r i o r i d a d . 
- 
-         U s a   e l   m i s m o   a l g o r i t m o   d e   c o l a   j u s t a   q u e   g e t _ c o l a _ p r i o r i z a d a . 
- 
-         " " " 
- 
-         f r o m   c o l l e c t i o n s   i m p o r t   d e q u e 
- 
-         
- 
-         #   O b t e n e r   t o d a s   l a s   c a n c i o n e s   e n   e s t a d o   p e n d i e n t e _ l a z y 
- 
-         t o d a s _ c a n c i o n e s   =   ( 
- 
-                 d b . q u e r y ( m o d e l s . C a n c i o n ) 
- 
-                 . j o i n ( m o d e l s . U s u a r i o ,   m o d e l s . C a n c i o n . u s u a r i o _ i d   = =   m o d e l s . U s u a r i o . i d ) 
- 
-                 . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " p e n d i e n t e _ l a z y " ) 
- 
-                 . o r d e r _ b y ( m o d e l s . C a n c i o n . o r d e n _ m a n u a l . a s c ( ) . n u l l s _ l a s t ( ) ,   m o d e l s . C a n c i o n . i d . a s c ( ) ) 
- 
-                 . a l l ( ) 
- 
-         ) 
- 
-         
- 
-         i f   n o t   t o d a s _ c a n c i o n e s : 
- 
-                 r e t u r n   [ ] 
- 
-         
- 
-         #   A p l i c a r   e l   m i s m o   a l g o r i t m o   d e   c o l a   j u s t a 
- 
-         c o l a _ m a n u a l   =   [ ] 
- 
-         c o l a _ p o o l   =   [ ] 
- 
-         
- 
-         f o r   c a n c i o n   i n   t o d a s _ c a n c i o n e s : 
- 
-                 i f   c a n c i o n . o r d e n _ m a n u a l   i s   n o t   N o n e : 
- 
-                         c o l a _ m a n u a l . a p p e n d ( c a n c i o n ) 
- 
-                 e l s e : 
- 
-                         c o l a _ p o o l . a p p e n d ( c a n c i o n ) 
- 
-         
- 
-         i f   n o t   c o l a _ p o o l : 
- 
-                 r e t u r n   c o l a _ m a n u a l 
- 
-         
- 
-         #   A g r u p a r   p o r   m e s a 
- 
-         m a t c h _ m e s a _ c a n c i o n e s   =   { } 
- 
-         m e s a _ a r r i v a l _ t i m e   =   { } 
- 
-         m e s a s _ i n v o l u c r a d a s _ i d s   =   s e t ( ) 
- 
-         
- 
-         f o r   c a n c i o n   i n   c o l a _ p o o l : 
- 
-                 m e s a _ i d   =   c a n c i o n . u s u a r i o . m e s a _ i d   o r   0 
- 
-                 i f   m e s a _ i d   n o t   i n   m a t c h _ m e s a _ c a n c i o n e s : 
- 
-                         m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ]   =   d e q u e ( ) 
- 
-                         m e s a _ a r r i v a l _ t i m e [ m e s a _ i d ]   =   c a n c i o n . i d 
- 
-                         m e s a s _ i n v o l u c r a d a s _ i d s . a d d ( m e s a _ i d ) 
- 
-                 m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] . a p p e n d ( c a n c i o n ) 
- 
-         
- 
-         #   C a l c u l a r   q u o t a s 
- 
-         U M B R A L _ O R O   =   1 5 0 0 0 0 
- 
-         U M B R A L _ P L A T A   =   5 0 0 0 0 
- 
-         m e s a _ q u o t a s   =   { } 
- 
-         
- 
-         i f   m e s a s _ i n v o l u c r a d a s _ i d s : 
- 
-                 i d s _ r e a l e s   =   [ m i d   f o r   m i d   i n   m e s a s _ i n v o l u c r a d a s _ i d s   i f   m i d   ! =   0 ] 
- 
-                 c o n s u m o s _ m e s a s   =   { } 
- 
-                 
- 
-                 i f   i d s _ r e a l e s : 
- 
-                         r o w s   =   ( 
- 
-                                 d b . q u e r y ( 
- 
-                                         m o d e l s . U s u a r i o . m e s a _ i d , 
- 
-                                         f u n c . s u m ( m o d e l s . C o n s u m o . v a l o r _ t o t a l ) 
- 
-                                 ) 
- 
-                                 . j o i n ( m o d e l s . C o n s u m o ,   m o d e l s . U s u a r i o . i d   = =   m o d e l s . C o n s u m o . u s u a r i o _ i d ) 
- 
-                                 . f i l t e r ( m o d e l s . U s u a r i o . m e s a _ i d . i n _ ( i d s _ r e a l e s ) ) 
- 
-                                 . g r o u p _ b y ( m o d e l s . U s u a r i o . m e s a _ i d ) 
- 
-                                 . a l l ( ) 
- 
-                         ) 
- 
-                         f o r   m i d ,   t o t a l   i n   r o w s : 
- 
-                                 c o n s u m o s _ m e s a s [ m i d ]   =   t o t a l   o r   0 
- 
-                 
- 
-                 f o r   m i d   i n   m e s a s _ i n v o l u c r a d a s _ i d s : 
- 
-                         t o t a l   =   c o n s u m o s _ m e s a s . g e t ( m i d ,   0 ) 
- 
-                         i f   m i d   = =   0 : 
- 
-                                 q u o t a   =   3 
- 
-                         e l i f   t o t a l   > =   U M B R A L _ O R O : 
- 
-                                 q u o t a   =   3 
- 
-                         e l i f   t o t a l   > =   U M B R A L _ P L A T A : 
- 
-                                 q u o t a   =   2 
- 
-                         e l s e : 
- 
-                                 q u o t a   =   1 
- 
-                         m e s a _ q u o t a s [ m i d ]   =   q u o t a 
- 
-         
- 
-         #   R o u n d   R o b i n 
- 
-         c o l a _ j u s t a   =   [ ] 
- 
-         o r d e n _ t u r n o s _ m e s a s   =   s o r t e d ( m e s a s _ i n v o l u c r a d a s _ i d s ,   k e y = l a m b d a   m i d :   m e s a _ a r r i v a l _ t i m e [ m i d ] ) 
- 
-         
- 
-         w h i l e   m a t c h _ m e s a _ c a n c i o n e s : 
- 
-                 f o r   m e s a _ i d   i n   o r d e n _ t u r n o s _ m e s a s : 
- 
-                         i f   m e s a _ i d   n o t   i n   m a t c h _ m e s a _ c a n c i o n e s : 
- 
-                                 c o n t i n u e 
- 
-                         q u e u e _ d e _ m e s a   =   m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] 
- 
-                         c u p o   =   m e s a _ q u o t a s . g e t ( m e s a _ i d ,   1 ) 
- 
-                         t o m a d a s   =   0 
- 
-                         w h i l e   t o m a d a s   <   c u p o   a n d   q u e u e _ d e _ m e s a : 
- 
-                                 c a n c i o n   =   q u e u e _ d e _ m e s a . p o p l e f t ( ) 
- 
-                                 c o l a _ j u s t a . a p p e n d ( c a n c i o n ) 
- 
-                                 t o m a d a s   + =   1 
- 
-                         i f   n o t   q u e u e _ d e _ m e s a : 
- 
-                                 d e l   m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] 
- 
-         
- 
-         r e t u r n   c o l a _ m a n u a l   +   c o l a _ j u s t a 
- 
- 
- 
- d e f   a p r o b a r _ s i g u i e n t e _ c a n c i o n _ l a z y ( d b :   S e s s i o n ) : 
- 
-         " " " 
- 
-         A p r u e b a   l a   s i g u i e n t e   c a n c i � � n   d e   l a   c o l a   l a z y . 
- 
-         L l a m a d a   a u t o m � � t i c a m e n t e   c u a n d o   l a   c a n c i � � n   a c t u a l   l l e g a   a l   5 0 % . 
- 
-         " " " 
- 
-         c o l a _ l a z y   =   g e t _ c o l a _ l a z y ( d b ) 
- 
-         i f   n o t   c o l a _ l a z y : 
- 
-                 r e t u r n   N o n e 
- 
-         
- 
-         s i g u i e n t e   =   c o l a _ l a z y [ 0 ] 
- 
-         s i g u i e n t e . e s t a d o   =   " a p r o b a d o " 
- 
-         s i g u i e n t e . a p p r o v e d _ a t   =   n o w _ b o g o t a ( ) 
- 
-         d b . c o m m i t ( ) 
- 
-         d b . r e f r e s h ( s i g u i e n t e ) 
- 
-         
- 
-         c r e a t e _ a d m i n _ l o g _ e n t r y ( d b ,   a c t i o n = " L A Z Y _ A P P R O V A L " ,   d e t a i l s = f " C a n c i � � n   ' { s i g u i e n t e . t i t u l o } '   a p r o b a d a   a u t o m � � t i c a m e n t e   ( l a z y ) . " ) 
- 
-         r e t u r n   s i g u i e n t e 
- 
- 
- 
- d e f   g e t _ c o l a _ c o m p l e t a _ c o n _ l a z y ( d b :   S e s s i o n ) : 
- 
-         " " " 
- 
-         V e r s i � � n   e x t e n d i d a   d e   g e t _ c o l a _ c o m p l e t a   q u e   i n c l u y e   l a   c o l a   l a z y . 
- 
-         R e t o r n a : 
- 
-         -   n o w _ p l a y i n g :   C a n c i � � n   a c t u a l 
- 
-         -   u p c o m i n g :   S o l o   l a   s i g u i e n t e   c a n c i � � n   a p r o b a d a   ( m � � x i m o   1 ) 
- 
-         -   l a z y _ q u e u e :   C a n c i o n e s   e n   p e n d i e n t e _ l a z y 
- 
-         -   p e n d i n g :   C a n c i o n e s   p e n d i e n t e s   d e   a p r o b a c i � � n   m a n u a l 
- 
-         " " " 
- 
-         #   A p l i c a r   a p r o b a c i � � n   a u t o m � � t i c a   d e s p u � � s   d e   1 0   m i n u t o s 
- 
-         a u t o _ a p p r o v e _ s o n g s _ a f t e r _ 1 0 _ m i n u t e s ( d b ) 
- 
-         
- 
-         n o w _ p l a y i n g   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " r e p r o d u c i e n d o " ) . f i r s t ( ) 
- 
-         a p p r o v e d _ q u e u e   =   g e t _ c o l a _ p r i o r i z a d a ( d b ) 
- 
-         l a z y _ q u e u e   =   g e t _ c o l a _ l a z y ( d b ) 
- 
-         p e n d i n g _ q u e u e   =   g e t _ c a n c i o n e s _ p e n d i e n t e s _ p o r _ a p r o b a r ( d b ) 
- 
-         
- 
-         #   S i   l a   c a n c i � � n   q u e   s e   e s t � �   r e p r o d u c i e n d o   s i g u e   e n   l a   l i s t a   d e   u p c o m i n g ,   l a   q u i t a m o s 
- 
-         i f   n o w _ p l a y i n g : 
- 
-                 a p p r o v e d _ q u e u e   =   [ s o n g   f o r   s o n g   i n   a p p r o v e d _ q u e u e   i f   s o n g . i d   ! =   n o w _ p l a y i n g . i d ] 
- 
-         
- 
-         #   L i m i t a r   u p c o m i n g   a   m � � x i m o   1   c a n c i � � n   ( l a   s i g u i e n t e ) 
- 
-         u p c o m i n g _ l i m i t e d   =   a p p r o v e d _ q u e u e [ : 1 ]   i f   a p p r o v e d _ q u e u e   e l s e   [ ] 
- 
-         
- 
-         r e t u r n   { 
- 
-                 " n o w _ p l a y i n g " :   n o w _ p l a y i n g , 
- 
-                 " u p c o m i n g " :   u p c o m i n g _ l i m i t e d , 
- 
-                 " l a z y _ q u e u e " :   l a z y _ q u e u e , 
- 
-                 " p e n d i n g " :   p e n d i n g _ q u e u e 
- 
-         } 
- 
- 
- 
- d e f   c h e c k _ a n d _ a p p r o v e _ n e x t _ l a z y _ s o n g ( d b :   S e s s i o n ) : 
- 
-         " " " 
- 
-         V e r i f i c a   s i   l a   c a n c i � � n   a c t u a l   h a   l l e g a d o   a l   5 0 %   y   a p r u e b a   l a   s i g u i e n t e   l a z y . 
- 
-         E s t a   f u n c i � � n   e s   l l a m a d a   p o r   u n   b a c k g r o u n d   t a s k   p e r i � � d i c a m e n t e . 
- 
-         " " " 
- 
-         n o w _ p l a y i n g   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " r e p r o d u c i e n d o " ) . f i r s t ( ) 
- 
-         
- 
-         i f   n o t   n o w _ p l a y i n g   o r   n o t   n o w _ p l a y i n g . s t a r t e d _ a t : 
- 
-                 r e t u r n   N o n e 
- 
-         
- 
-         #   C a l c u l a r   e l   p r o g r e s o 
- 
-         t i e m p o _ t r a n s c u r r i d o   =   ( n o w _ b o g o t a ( )   -   n o w _ p l a y i n g . s t a r t e d _ a t ) . t o t a l _ s e c o n d s ( ) 
- 
-         d u r a c i o n _ t o t a l   =   n o w _ p l a y i n g . d u r a c i o n _ s e c o n d s   o r   0 
- 
-         
- 
-         i f   d u r a c i o n _ t o t a l   = =   0 : 
- 
-                 r e t u r n   N o n e 
- 
-         
- 
-         p r o g r e s o _ p o r c e n t a j e   =   ( t i e m p o _ t r a n s c u r r i d o   /   d u r a c i o n _ t o t a l )   *   1 0 0 
- 
-         
- 
-         #   S i   h a   l l e g a d o   a l   5 0 %   o   m � � s ,   a p r o b a r   l a   s i g u i e n t e 
- 
-         i f   p r o g r e s o _ p o r c e n t a j e   > =   5 0 : 
- 
-                 #   V e r i f i c a r   q u e   n o   h a y a   y a   u n a   c a n c i � � n   a p r o b a d a   e s p e r a n d o 
- 
-                 a p p r o v e d _ c o u n t   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " a p r o b a d o " ) . c o u n t ( ) 
- 
-                 
- 
-                 i f   a p p r o v e d _ c o u n t   = =   0 : 
- 
-                         #   A p r o b a r   l a   s i g u i e n t e   c a n c i � � n   l a z y 
- 
-                         r e t u r n   a p r o b a r _ s i g u i e n t e _ c a n c i o n _ l a z y ( d b ) 
- 
-         
- 
-         r e t u r n   N o n e 
- 
- 
+    ).dict()# CÃÂ³digo para agregar al final de crud.py
+
+
+
+# --- Lazy Approval Queue Functions ---
+
+
+
+def get_cola_lazy(db: Session):
+
+    """
+
+    Obtiene todas las canciones en estado pendiente_lazy, ordenadas por prioridad.
+
+    Usa el mismo algoritmo de cola justa que get_cola_priorizada.
+
+    """
+
+    from collections import deque
+
+    
+
+    # Obtener todas las canciones en estado pendiente_lazy
+
+    todas_canciones = (
+
+        db.query(models.Cancion)
+
+        .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
+
+        .filter(models.Cancion.estado == "pendiente_lazy")
+
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
+
+        .all()
+
+    )
+
+    
+
+    if not todas_canciones:
+
+        return []
+
+    
+
+    # Aplicar el mismo algoritmo de cola justa
+
+    cola_manual = []
+
+    cola_pool = []
+
+    
+
+    for cancion in todas_canciones:
+
+        if cancion.orden_manual is not None:
+
+            cola_manual.append(cancion)
+
+        else:
+
+            cola_pool.append(cancion)
+
+    
+
+    if not cola_pool:
+
+        return cola_manual
+
+    
+
+    # Agrupar por mesa
+
+    match_mesa_canciones = {}
+
+    mesa_arrival_time = {}
+
+    mesas_involucradas_ids = set()
+
+    
+
+    for cancion in cola_pool:
+
+        mesa_id = cancion.usuario.mesa_id or 0
+
+        if mesa_id not in match_mesa_canciones:
+
+            match_mesa_canciones[mesa_id] = deque()
+
+            mesa_arrival_time[mesa_id] = cancion.id
+
+            mesas_involucradas_ids.add(mesa_id)
+
+        match_mesa_canciones[mesa_id].append(cancion)
+
+    
+
+    # Calcular quotas
+
+    UMBRAL_ORO = 150000
+
+    UMBRAL_PLATA = 50000
+
+    mesa_quotas = {}
+
+    
+
+    if mesas_involucradas_ids:
+
+        ids_reales = [mid for mid in mesas_involucradas_ids if mid != 0]
+
+        consumos_mesas = {}
+
+        
+
+        if ids_reales:
+
+            rows = (
+
+                db.query(
+
+                    models.Usuario.mesa_id,
+
+                    func.sum(models.Consumo.valor_total)
+
+                )
+
+                .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+
+                .filter(models.Usuario.mesa_id.in_(ids_reales))
+
+                .group_by(models.Usuario.mesa_id)
+
+                .all()
+
+            )
+
+            for mid, total in rows:
+
+                consumos_mesas[mid] = total or 0
+
+        
+
+        for mid in mesas_involucradas_ids:
+
+            total = consumos_mesas.get(mid, 0)
+
+            if mid == 0:
+
+                quota = 3
+
+            elif total >= UMBRAL_ORO:
+
+                quota = 3
+
+            elif total >= UMBRAL_PLATA:
+
+                quota = 2
+
+            else:
+
+                quota = 1
+
+            mesa_quotas[mid] = quota
+
+    
+
+    # Round Robin
+
+    cola_justa = []
+
+    orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
+
+    
+
+    while match_mesa_canciones:
+
+        for mesa_id in orden_turnos_mesas:
+
+            if mesa_id not in match_mesa_canciones:
+
+                continue
+
+            queue_de_mesa = match_mesa_canciones[mesa_id]
+
+            cupo = mesa_quotas.get(mesa_id, 1)
+
+            tomadas = 0
+
+            while tomadas < cupo and queue_de_mesa:
+
+                cancion = queue_de_mesa.popleft()
+
+                cola_justa.append(cancion)
+
+                tomadas += 1
+
+            if not queue_de_mesa:
+
+                del match_mesa_canciones[mesa_id]
+
+    
+
+    return cola_manual + cola_justa
+
+
+
+def aprobar_siguiente_cancion_lazy(db: Session):
+
+    """
+
+    Aprueba la siguiente canciÃÂ³n de la cola lazy.
+
+    Llamada automÃÂ¡ticamente cuando la canciÃÂ³n actual llega al 50%.
+
+    """
+
+    cola_lazy = get_cola_lazy(db)
+
+    if not cola_lazy:
+
+        return None
+
+    
+
+    siguiente = cola_lazy[0]
+
+    siguiente.estado = "aprobado"
+
+    siguiente.approved_at = now_bogota()
+
+    db.commit()
+
+    db.refresh(siguiente)
+
+    
+
+    create_admin_log_entry(db, action="LAZY_APPROVAL", details=f"CanciÃÂ³n '{siguiente.titulo}' aprobada automÃÂ¡ticamente (lazy).")
+
+    return siguiente
+
+
+
+def get_cola_completa_con_lazy(db: Session):
+
+    """
+
+    VersiÃÂ³n extendida de get_cola_completa que incluye la cola lazy.
+
+    Retorna:
+
+    - now_playing: CanciÃÂ³n actual
+
+    - upcoming: Solo la siguiente canciÃÂ³n aprobada (mÃÂ¡ximo 1)
+
+    - lazy_queue: Canciones en pendiente_lazy
+
+    - pending: Canciones pendientes de aprobaciÃÂ³n manual
+
+    """
+
+    # Aplicar aprobaciÃÂ³n automÃÂ¡tica despuÃÂ©s de 10 minutos
+
+    auto_approve_songs_after_10_minutes(db)
+
+    
+
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+
+    approved_queue = get_cola_priorizada(db)
+
+    lazy_queue = get_cola_lazy(db)
+
+    pending_queue = get_canciones_pendientes_por_aprobar(db)
+
+    
+
+    # Si la canciÃÂ³n que se estÃÂ¡ reproduciendo sigue en la lista de upcoming, la quitamos
+
+    if now_playing:
+
+        approved_queue = [song for song in approved_queue if song.id != now_playing.id]
+
+    
+
+    # Limitar upcoming a mÃÂ¡ximo 1 canciÃÂ³n (la siguiente)
+
+    upcoming_limited = approved_queue[:1] if approved_queue else []
+
+    
+
+    return {
+
+        "now_playing": now_playing,
+
+        "upcoming": upcoming_limited,
+
+        "lazy_queue": lazy_queue,
+
+        "pending": pending_queue
+
+    }
+
+
+
+def check_and_approve_next_lazy_song(db: Session):
+
+    """
+
+    Verifica si la canciÃÂ³n actual ha llegado al 50% y aprueba la siguiente lazy.
+
+    Esta funciÃÂ³n es llamada por un background task periÃÂ³dicamente.
+
+    """
+
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+
+    
+
+    if not now_playing or not now_playing.started_at:
+
+        return None
+
+    
+
+    # Calcular el progreso
+
+    tiempo_transcurrido = (now_bogota() - now_playing.started_at).total_seconds()
+
+    duracion_total = now_playing.duracion_seconds or 0
+
+    
+
+    if duracion_total == 0:
+
+        return None
+
+    
+
+    progreso_porcentaje = (tiempo_transcurrido / duracion_total) * 100
+
+    
+
+    # Si ha llegado al 50% o mÃÂ¡s, aprobar la siguiente
+
+    if progreso_porcentaje >= 50:
+
+        # Verificar que no haya ya una canciÃÂ³n aprobada esperando
+
+        approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
+
+        
+
+        if approved_count == 0:
+
+            # Aprobar la siguiente canciÃÂ³n lazy
+
+            return aprobar_siguiente_cancion_lazy(db)
+
+    
+
+    return None
+
+
 
 # --- Lazy Approval Queue Functions ---
 
@@ -2525,8 +2525,8 @@ def get_cola_lazy(db: Session):
 
 def aprobar_siguiente_cancion_lazy(db: Session):
     """
-    Aprueba la siguiente canción de la cola lazy.
-    Llamada automáticamente cuando la canción actual llega al 50%.
+    Aprueba la siguiente canciÃÂ³n de la cola lazy.
+    Llamada automÃÂ¡ticamente cuando la canciÃÂ³n actual llega al 50%.
     """
     cola_lazy = get_cola_lazy(db)
     if not cola_lazy:
@@ -2543,14 +2543,14 @@ def aprobar_siguiente_cancion_lazy(db: Session):
 
 def get_cola_completa_con_lazy(db: Session):
     """
-    Versión extendida de get_cola_completa que incluye la cola lazy.
+    VersiÃÂ³n extendida de get_cola_completa que incluye la cola lazy.
     Retorna:
-    - now_playing: Canción actual
-    - upcoming: Solo la siguiente canción aprobada (máximo 1)
+    - now_playing: CanciÃÂ³n actual
+    - upcoming: Solo la siguiente canciÃÂ³n aprobada (mÃÂ¡ximo 1)
     - lazy_queue: Canciones en pendiente_lazy
-    - pending: Canciones pendientes de aprobación manual
+    - pending: Canciones pendientes de aprobaciÃÂ³n manual
     """
-    # Aplicar aprobación automática después de 10 minutos
+    # Aplicar aprobaciÃÂ³n automÃÂ¡tica despuÃÂ©s de 10 minutos
     auto_approve_songs_after_10_minutes(db)
     
     now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
@@ -2558,11 +2558,11 @@ def get_cola_completa_con_lazy(db: Session):
     lazy_queue = get_cola_lazy(db)
     pending_queue = get_canciones_pendientes_por_aprobar(db)
     
-    # Si la canción que se está reproduciendo sigue en la lista de upcoming, la quitamos
+    # Si la canciÃÂ³n que se estÃÂ¡ reproduciendo sigue en la lista de upcoming, la quitamos
     if now_playing:
         approved_queue = [song for song in approved_queue if song.id != now_playing.id]
     
-    # Limitar upcoming a máximo 1 canción (la siguiente)
+    # Limitar upcoming a mÃÂ¡ximo 1 canciÃÂ³n (la siguiente)
     upcoming_limited = approved_queue[:1] if approved_queue else []
     
     return {
@@ -2574,8 +2574,8 @@ def get_cola_completa_con_lazy(db: Session):
 
 def check_and_approve_next_lazy_song(db: Session):
     """
-    Verifica si la canción actual ha llegado al 50% y aprueba la siguiente lazy.
-    Esta función es llamada por un background task periódicamente.
+    Verifica si la canciÃÂ³n actual ha llegado al 50% y aprueba la siguiente lazy.
+    Esta funciÃÂ³n es llamada por un background task periÃÂ³dicamente.
     """
     now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
     
@@ -2591,13 +2591,195 @@ def check_and_approve_next_lazy_song(db: Session):
     
     progreso_porcentaje = (tiempo_transcurrido / duracion_total) * 100
     
-    # Si ha llegado al 50% o más, aprobar la siguiente
+    # Si ha llegado al 50% o mÃÂ¡s, aprobar la siguiente
     if progreso_porcentaje >= 50:
-        # Verificar que no haya ya una canción aprobada esperando
+        # Verificar que no haya ya una canciÃÂ³n aprobada esperando
         approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
         
         if approved_count == 0:
-            # Aprobar la siguiente canción lazy
+            # Aprobar la siguiente canciÃÂ³n lazy
+            return aprobar_siguiente_cancion_lazy(db)
+    
+    return None
+
+
+# --- Lazy Approval Queue Functions ---
+
+def get_cola_lazy(db: Session):
+    """
+    Obtiene todas las canciones en estado pendiente_lazy, ordenadas por prioridad.
+    Usa el mismo algoritmo de cola justa que get_cola_priorizada.
+    """
+    from collections import deque
+    
+    # Obtener todas las canciones en estado pendiente_lazy
+    todas_canciones = (
+        db.query(models.Cancion)
+        .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
+        .filter(models.Cancion.estado == "pendiente_lazy")
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
+        .all()
+    )
+    
+    if not todas_canciones:
+        return []
+    
+    # Aplicar el mismo algoritmo de cola justa
+    cola_manual = []
+    cola_pool = []
+    
+    for cancion in todas_canciones:
+        if cancion.orden_manual is not None:
+            cola_manual.append(cancion)
+        else:
+            cola_pool.append(cancion)
+    
+    if not cola_pool:
+        return cola_manual
+    
+    # Agrupar por mesa
+    match_mesa_canciones = {}
+    mesa_arrival_time = {}
+    mesas_involucradas_ids = set()
+    
+    for cancion in cola_pool:
+        mesa_id = cancion.usuario.mesa_id or 0
+        if mesa_id not in match_mesa_canciones:
+            match_mesa_canciones[mesa_id] = deque()
+            mesa_arrival_time[mesa_id] = cancion.id
+            mesas_involucradas_ids.add(mesa_id)
+        match_mesa_canciones[mesa_id].append(cancion)
+    
+    # Calcular quotas
+    UMBRAL_ORO = 150000
+    UMBRAL_PLATA = 50000
+    mesa_quotas = {}
+    
+    if mesas_involucradas_ids:
+        ids_reales = [mid for mid in mesas_involucradas_ids if mid != 0]
+        consumos_mesas = {}
+        
+        if ids_reales:
+            rows = (
+                db.query(
+                    models.Usuario.mesa_id,
+                    func.sum(models.Consumo.valor_total)
+                )
+                .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+                .filter(models.Usuario.mesa_id.in_(ids_reales))
+                .group_by(models.Usuario.mesa_id)
+                .all()
+            )
+            for mid, total in rows:
+                consumos_mesas[mid] = total or 0
+        
+        for mid in mesas_involucradas_ids:
+            total = consumos_mesas.get(mid, 0)
+            if mid == 0:
+                quota = 3
+            elif total >= UMBRAL_ORO:
+                quota = 3
+            elif total >= UMBRAL_PLATA:
+                quota = 2
+            else:
+                quota = 1
+            mesa_quotas[mid] = quota
+    
+    # Round Robin
+    cola_justa = []
+    orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
+    
+    while match_mesa_canciones:
+        for mesa_id in orden_turnos_mesas:
+            if mesa_id not in match_mesa_canciones:
+                continue
+            queue_de_mesa = match_mesa_canciones[mesa_id]
+            cupo = mesa_quotas.get(mesa_id, 1)
+            tomadas = 0
+            while tomadas < cupo and queue_de_mesa:
+                cancion = queue_de_mesa.popleft()
+                cola_justa.append(cancion)
+                tomadas += 1
+            if not queue_de_mesa:
+                del match_mesa_canciones[mesa_id]
+    
+    return cola_manual + cola_justa
+
+def aprobar_siguiente_cancion_lazy(db: Session):
+    """
+    Aprueba la siguiente canciÃ³n de la cola lazy.
+    Llamada automÃ¡ticamente cuando la canciÃ³n actual llega al 50%.
+    """
+    cola_lazy = get_cola_lazy(db)
+    if not cola_lazy:
+        return None
+    
+    siguiente = cola_lazy[0]
+    siguiente.estado = "aprobado"
+    siguiente.approved_at = now_bogota()
+    db.commit()
+    db.refresh(siguiente)
+    
+    create_admin_log_entry(db, action="LAZY_APPROVAL", details=f"Cancion '{siguiente.titulo}' aprobada automaticamente (lazy).")
+    return siguiente
+
+def get_cola_completa_con_lazy(db: Session):
+    """
+    VersiÃ³n extendida de get_cola_completa que incluye la cola lazy.
+    Retorna:
+    - now_playing: CanciÃ³n actual
+    - upcoming: Solo la siguiente canciÃ³n aprobada (mÃ¡ximo 1)
+    - lazy_queue: Canciones en pendiente_lazy
+    - pending: Canciones pendientes de aprobaciÃ³n manual
+    """
+    # Aplicar aprobaciÃ³n automÃ¡tica despuÃ©s de 10 minutos
+    auto_approve_songs_after_10_minutes(db)
+    
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    approved_queue = get_cola_priorizada(db)
+    lazy_queue = get_cola_lazy(db)
+    pending_queue = get_canciones_pendientes_por_aprobar(db)
+    
+    # Si la canciÃ³n que se estÃ¡ reproduciendo sigue en la lista de upcoming, la quitamos
+    if now_playing:
+        approved_queue = [song for song in approved_queue if song.id != now_playing.id]
+    
+    # Limitar upcoming a mÃ¡ximo 1 canciÃ³n (la siguiente)
+    upcoming_limited = approved_queue[:1] if approved_queue else []
+    
+    return {
+        "now_playing": now_playing,
+        "upcoming": upcoming_limited,
+        "lazy_queue": lazy_queue,
+        "pending": pending_queue
+    }
+
+def check_and_approve_next_lazy_song(db: Session):
+    """
+    Verifica si la canciÃ³n actual ha llegado al 50% y aprueba la siguiente lazy.
+    Esta funciÃ³n es llamada por un background task periÃ³dicamente.
+    """
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    
+    if not now_playing or not now_playing.started_at:
+        return None
+    
+    # Calcular el progreso
+    tiempo_transcurrido = (now_bogota() - now_playing.started_at).total_seconds()
+    duracion_total = now_playing.duracion_seconds or 0
+    
+    if duracion_total == 0:
+        return None
+    
+    progreso_porcentaje = (tiempo_transcurrido / duracion_total) * 100
+    
+    # Si ha llegado al 50% o mÃ¡s, aprobar la siguiente
+    if progreso_porcentaje >= 50:
+        # Verificar que no haya ya una canciÃ³n aprobada esperando
+        approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
+        
+        if approved_count == 0:
+            # Aprobar la siguiente canciÃ³n lazy
             return aprobar_siguiente_cancion_lazy(db)
     
     return None
