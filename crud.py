@@ -1824,6 +1824,14 @@ async def avanzar_cola_automaticamente(db: Session):
     if siguiente_cancion:
         await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
 
+
+    # 5. Aprobar la siguiente canciÛn lazy si es necesario
+    check_and_approve_next_lazy_song(db)
+
+
+    # 5. Aprobar la siguiente canciÛn lazy si es necesario
+    check_and_approve_next_lazy_song(db)
+
     return siguiente_cancion
 
 def registrar_compra_producto(db: Session, compra: schemas.CompraProducto):
@@ -2047,4 +2055,549 @@ def get_cuenta_payment_status(db: Session, cuenta_id: int) -> Optional[dict]:
         saldo_pendiente=saldo_pendiente, 
         consumos=consumos_items, 
         pagos=pagos_detalle
-    ).dict()
+    ).dict()#   C √ ≥ d i g o   p a r a   a g r e g a r   a l   f i n a l   d e   c r u d . p y 
+ 
+ 
+ 
+ #   - - -   L a z y   A p p r o v a l   Q u e u e   F u n c t i o n s   - - - 
+ 
+ 
+ 
+ d e f   g e t _ c o l a _ l a z y ( d b :   S e s s i o n ) : 
+ 
+         " " " 
+ 
+         O b t i e n e   t o d a s   l a s   c a n c i o n e s   e n   e s t a d o   p e n d i e n t e _ l a z y ,   o r d e n a d a s   p o r   p r i o r i d a d . 
+ 
+         U s a   e l   m i s m o   a l g o r i t m o   d e   c o l a   j u s t a   q u e   g e t _ c o l a _ p r i o r i z a d a . 
+ 
+         " " " 
+ 
+         f r o m   c o l l e c t i o n s   i m p o r t   d e q u e 
+ 
+         
+ 
+         #   O b t e n e r   t o d a s   l a s   c a n c i o n e s   e n   e s t a d o   p e n d i e n t e _ l a z y 
+ 
+         t o d a s _ c a n c i o n e s   =   ( 
+ 
+                 d b . q u e r y ( m o d e l s . C a n c i o n ) 
+ 
+                 . j o i n ( m o d e l s . U s u a r i o ,   m o d e l s . C a n c i o n . u s u a r i o _ i d   = =   m o d e l s . U s u a r i o . i d ) 
+ 
+                 . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " p e n d i e n t e _ l a z y " ) 
+ 
+                 . o r d e r _ b y ( m o d e l s . C a n c i o n . o r d e n _ m a n u a l . a s c ( ) . n u l l s _ l a s t ( ) ,   m o d e l s . C a n c i o n . i d . a s c ( ) ) 
+ 
+                 . a l l ( ) 
+ 
+         ) 
+ 
+         
+ 
+         i f   n o t   t o d a s _ c a n c i o n e s : 
+ 
+                 r e t u r n   [ ] 
+ 
+         
+ 
+         #   A p l i c a r   e l   m i s m o   a l g o r i t m o   d e   c o l a   j u s t a 
+ 
+         c o l a _ m a n u a l   =   [ ] 
+ 
+         c o l a _ p o o l   =   [ ] 
+ 
+         
+ 
+         f o r   c a n c i o n   i n   t o d a s _ c a n c i o n e s : 
+ 
+                 i f   c a n c i o n . o r d e n _ m a n u a l   i s   n o t   N o n e : 
+ 
+                         c o l a _ m a n u a l . a p p e n d ( c a n c i o n ) 
+ 
+                 e l s e : 
+ 
+                         c o l a _ p o o l . a p p e n d ( c a n c i o n ) 
+ 
+         
+ 
+         i f   n o t   c o l a _ p o o l : 
+ 
+                 r e t u r n   c o l a _ m a n u a l 
+ 
+         
+ 
+         #   A g r u p a r   p o r   m e s a 
+ 
+         m a t c h _ m e s a _ c a n c i o n e s   =   { } 
+ 
+         m e s a _ a r r i v a l _ t i m e   =   { } 
+ 
+         m e s a s _ i n v o l u c r a d a s _ i d s   =   s e t ( ) 
+ 
+         
+ 
+         f o r   c a n c i o n   i n   c o l a _ p o o l : 
+ 
+                 m e s a _ i d   =   c a n c i o n . u s u a r i o . m e s a _ i d   o r   0 
+ 
+                 i f   m e s a _ i d   n o t   i n   m a t c h _ m e s a _ c a n c i o n e s : 
+ 
+                         m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ]   =   d e q u e ( ) 
+ 
+                         m e s a _ a r r i v a l _ t i m e [ m e s a _ i d ]   =   c a n c i o n . i d 
+ 
+                         m e s a s _ i n v o l u c r a d a s _ i d s . a d d ( m e s a _ i d ) 
+ 
+                 m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] . a p p e n d ( c a n c i o n ) 
+ 
+         
+ 
+         #   C a l c u l a r   q u o t a s 
+ 
+         U M B R A L _ O R O   =   1 5 0 0 0 0 
+ 
+         U M B R A L _ P L A T A   =   5 0 0 0 0 
+ 
+         m e s a _ q u o t a s   =   { } 
+ 
+         
+ 
+         i f   m e s a s _ i n v o l u c r a d a s _ i d s : 
+ 
+                 i d s _ r e a l e s   =   [ m i d   f o r   m i d   i n   m e s a s _ i n v o l u c r a d a s _ i d s   i f   m i d   ! =   0 ] 
+ 
+                 c o n s u m o s _ m e s a s   =   { } 
+ 
+                 
+ 
+                 i f   i d s _ r e a l e s : 
+ 
+                         r o w s   =   ( 
+ 
+                                 d b . q u e r y ( 
+ 
+                                         m o d e l s . U s u a r i o . m e s a _ i d , 
+ 
+                                         f u n c . s u m ( m o d e l s . C o n s u m o . v a l o r _ t o t a l ) 
+ 
+                                 ) 
+ 
+                                 . j o i n ( m o d e l s . C o n s u m o ,   m o d e l s . U s u a r i o . i d   = =   m o d e l s . C o n s u m o . u s u a r i o _ i d ) 
+ 
+                                 . f i l t e r ( m o d e l s . U s u a r i o . m e s a _ i d . i n _ ( i d s _ r e a l e s ) ) 
+ 
+                                 . g r o u p _ b y ( m o d e l s . U s u a r i o . m e s a _ i d ) 
+ 
+                                 . a l l ( ) 
+ 
+                         ) 
+ 
+                         f o r   m i d ,   t o t a l   i n   r o w s : 
+ 
+                                 c o n s u m o s _ m e s a s [ m i d ]   =   t o t a l   o r   0 
+ 
+                 
+ 
+                 f o r   m i d   i n   m e s a s _ i n v o l u c r a d a s _ i d s : 
+ 
+                         t o t a l   =   c o n s u m o s _ m e s a s . g e t ( m i d ,   0 ) 
+ 
+                         i f   m i d   = =   0 : 
+ 
+                                 q u o t a   =   3 
+ 
+                         e l i f   t o t a l   > =   U M B R A L _ O R O : 
+ 
+                                 q u o t a   =   3 
+ 
+                         e l i f   t o t a l   > =   U M B R A L _ P L A T A : 
+ 
+                                 q u o t a   =   2 
+ 
+                         e l s e : 
+ 
+                                 q u o t a   =   1 
+ 
+                         m e s a _ q u o t a s [ m i d ]   =   q u o t a 
+ 
+         
+ 
+         #   R o u n d   R o b i n 
+ 
+         c o l a _ j u s t a   =   [ ] 
+ 
+         o r d e n _ t u r n o s _ m e s a s   =   s o r t e d ( m e s a s _ i n v o l u c r a d a s _ i d s ,   k e y = l a m b d a   m i d :   m e s a _ a r r i v a l _ t i m e [ m i d ] ) 
+ 
+         
+ 
+         w h i l e   m a t c h _ m e s a _ c a n c i o n e s : 
+ 
+                 f o r   m e s a _ i d   i n   o r d e n _ t u r n o s _ m e s a s : 
+ 
+                         i f   m e s a _ i d   n o t   i n   m a t c h _ m e s a _ c a n c i o n e s : 
+ 
+                                 c o n t i n u e 
+ 
+                         q u e u e _ d e _ m e s a   =   m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] 
+ 
+                         c u p o   =   m e s a _ q u o t a s . g e t ( m e s a _ i d ,   1 ) 
+ 
+                         t o m a d a s   =   0 
+ 
+                         w h i l e   t o m a d a s   <   c u p o   a n d   q u e u e _ d e _ m e s a : 
+ 
+                                 c a n c i o n   =   q u e u e _ d e _ m e s a . p o p l e f t ( ) 
+ 
+                                 c o l a _ j u s t a . a p p e n d ( c a n c i o n ) 
+ 
+                                 t o m a d a s   + =   1 
+ 
+                         i f   n o t   q u e u e _ d e _ m e s a : 
+ 
+                                 d e l   m a t c h _ m e s a _ c a n c i o n e s [ m e s a _ i d ] 
+ 
+         
+ 
+         r e t u r n   c o l a _ m a n u a l   +   c o l a _ j u s t a 
+ 
+ 
+ 
+ d e f   a p r o b a r _ s i g u i e n t e _ c a n c i o n _ l a z y ( d b :   S e s s i o n ) : 
+ 
+         " " " 
+ 
+         A p r u e b a   l a   s i g u i e n t e   c a n c i √ ≥ n   d e   l a   c o l a   l a z y . 
+ 
+         L l a m a d a   a u t o m √ ° t i c a m e n t e   c u a n d o   l a   c a n c i √ ≥ n   a c t u a l   l l e g a   a l   5 0 % . 
+ 
+         " " " 
+ 
+         c o l a _ l a z y   =   g e t _ c o l a _ l a z y ( d b ) 
+ 
+         i f   n o t   c o l a _ l a z y : 
+ 
+                 r e t u r n   N o n e 
+ 
+         
+ 
+         s i g u i e n t e   =   c o l a _ l a z y [ 0 ] 
+ 
+         s i g u i e n t e . e s t a d o   =   " a p r o b a d o " 
+ 
+         s i g u i e n t e . a p p r o v e d _ a t   =   n o w _ b o g o t a ( ) 
+ 
+         d b . c o m m i t ( ) 
+ 
+         d b . r e f r e s h ( s i g u i e n t e ) 
+ 
+         
+ 
+         c r e a t e _ a d m i n _ l o g _ e n t r y ( d b ,   a c t i o n = " L A Z Y _ A P P R O V A L " ,   d e t a i l s = f " C a n c i √ ≥ n   ' { s i g u i e n t e . t i t u l o } '   a p r o b a d a   a u t o m √ ° t i c a m e n t e   ( l a z y ) . " ) 
+ 
+         r e t u r n   s i g u i e n t e 
+ 
+ 
+ 
+ d e f   g e t _ c o l a _ c o m p l e t a _ c o n _ l a z y ( d b :   S e s s i o n ) : 
+ 
+         " " " 
+ 
+         V e r s i √ ≥ n   e x t e n d i d a   d e   g e t _ c o l a _ c o m p l e t a   q u e   i n c l u y e   l a   c o l a   l a z y . 
+ 
+         R e t o r n a : 
+ 
+         -   n o w _ p l a y i n g :   C a n c i √ ≥ n   a c t u a l 
+ 
+         -   u p c o m i n g :   S o l o   l a   s i g u i e n t e   c a n c i √ ≥ n   a p r o b a d a   ( m √ ° x i m o   1 ) 
+ 
+         -   l a z y _ q u e u e :   C a n c i o n e s   e n   p e n d i e n t e _ l a z y 
+ 
+         -   p e n d i n g :   C a n c i o n e s   p e n d i e n t e s   d e   a p r o b a c i √ ≥ n   m a n u a l 
+ 
+         " " " 
+ 
+         #   A p l i c a r   a p r o b a c i √ ≥ n   a u t o m √ ° t i c a   d e s p u √ © s   d e   1 0   m i n u t o s 
+ 
+         a u t o _ a p p r o v e _ s o n g s _ a f t e r _ 1 0 _ m i n u t e s ( d b ) 
+ 
+         
+ 
+         n o w _ p l a y i n g   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " r e p r o d u c i e n d o " ) . f i r s t ( ) 
+ 
+         a p p r o v e d _ q u e u e   =   g e t _ c o l a _ p r i o r i z a d a ( d b ) 
+ 
+         l a z y _ q u e u e   =   g e t _ c o l a _ l a z y ( d b ) 
+ 
+         p e n d i n g _ q u e u e   =   g e t _ c a n c i o n e s _ p e n d i e n t e s _ p o r _ a p r o b a r ( d b ) 
+ 
+         
+ 
+         #   S i   l a   c a n c i √ ≥ n   q u e   s e   e s t √ °   r e p r o d u c i e n d o   s i g u e   e n   l a   l i s t a   d e   u p c o m i n g ,   l a   q u i t a m o s 
+ 
+         i f   n o w _ p l a y i n g : 
+ 
+                 a p p r o v e d _ q u e u e   =   [ s o n g   f o r   s o n g   i n   a p p r o v e d _ q u e u e   i f   s o n g . i d   ! =   n o w _ p l a y i n g . i d ] 
+ 
+         
+ 
+         #   L i m i t a r   u p c o m i n g   a   m √ ° x i m o   1   c a n c i √ ≥ n   ( l a   s i g u i e n t e ) 
+ 
+         u p c o m i n g _ l i m i t e d   =   a p p r o v e d _ q u e u e [ : 1 ]   i f   a p p r o v e d _ q u e u e   e l s e   [ ] 
+ 
+         
+ 
+         r e t u r n   { 
+ 
+                 " n o w _ p l a y i n g " :   n o w _ p l a y i n g , 
+ 
+                 " u p c o m i n g " :   u p c o m i n g _ l i m i t e d , 
+ 
+                 " l a z y _ q u e u e " :   l a z y _ q u e u e , 
+ 
+                 " p e n d i n g " :   p e n d i n g _ q u e u e 
+ 
+         } 
+ 
+ 
+ 
+ d e f   c h e c k _ a n d _ a p p r o v e _ n e x t _ l a z y _ s o n g ( d b :   S e s s i o n ) : 
+ 
+         " " " 
+ 
+         V e r i f i c a   s i   l a   c a n c i √ ≥ n   a c t u a l   h a   l l e g a d o   a l   5 0 %   y   a p r u e b a   l a   s i g u i e n t e   l a z y . 
+ 
+         E s t a   f u n c i √ ≥ n   e s   l l a m a d a   p o r   u n   b a c k g r o u n d   t a s k   p e r i √ ≥ d i c a m e n t e . 
+ 
+         " " " 
+ 
+         n o w _ p l a y i n g   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " r e p r o d u c i e n d o " ) . f i r s t ( ) 
+ 
+         
+ 
+         i f   n o t   n o w _ p l a y i n g   o r   n o t   n o w _ p l a y i n g . s t a r t e d _ a t : 
+ 
+                 r e t u r n   N o n e 
+ 
+         
+ 
+         #   C a l c u l a r   e l   p r o g r e s o 
+ 
+         t i e m p o _ t r a n s c u r r i d o   =   ( n o w _ b o g o t a ( )   -   n o w _ p l a y i n g . s t a r t e d _ a t ) . t o t a l _ s e c o n d s ( ) 
+ 
+         d u r a c i o n _ t o t a l   =   n o w _ p l a y i n g . d u r a c i o n _ s e c o n d s   o r   0 
+ 
+         
+ 
+         i f   d u r a c i o n _ t o t a l   = =   0 : 
+ 
+                 r e t u r n   N o n e 
+ 
+         
+ 
+         p r o g r e s o _ p o r c e n t a j e   =   ( t i e m p o _ t r a n s c u r r i d o   /   d u r a c i o n _ t o t a l )   *   1 0 0 
+ 
+         
+ 
+         #   S i   h a   l l e g a d o   a l   5 0 %   o   m √ ° s ,   a p r o b a r   l a   s i g u i e n t e 
+ 
+         i f   p r o g r e s o _ p o r c e n t a j e   > =   5 0 : 
+ 
+                 #   V e r i f i c a r   q u e   n o   h a y a   y a   u n a   c a n c i √ ≥ n   a p r o b a d a   e s p e r a n d o 
+ 
+                 a p p r o v e d _ c o u n t   =   d b . q u e r y ( m o d e l s . C a n c i o n ) . f i l t e r ( m o d e l s . C a n c i o n . e s t a d o   = =   " a p r o b a d o " ) . c o u n t ( ) 
+ 
+                 
+ 
+                 i f   a p p r o v e d _ c o u n t   = =   0 : 
+ 
+                         #   A p r o b a r   l a   s i g u i e n t e   c a n c i √ ≥ n   l a z y 
+ 
+                         r e t u r n   a p r o b a r _ s i g u i e n t e _ c a n c i o n _ l a z y ( d b ) 
+ 
+         
+ 
+         r e t u r n   N o n e 
+ 
+ 
+
+# --- Lazy Approval Queue Functions ---
+
+def get_cola_lazy(db: Session):
+    """
+    Obtiene todas las canciones en estado pendiente_lazy, ordenadas por prioridad.
+    Usa el mismo algoritmo de cola justa que get_cola_priorizada.
+    """
+    from collections import deque
+    
+    # Obtener todas las canciones en estado pendiente_lazy
+    todas_canciones = (
+        db.query(models.Cancion)
+        .join(models.Usuario, models.Cancion.usuario_id == models.Usuario.id)
+        .filter(models.Cancion.estado == "pendiente_lazy")
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
+        .all()
+    )
+    
+    if not todas_canciones:
+        return []
+    
+    # Aplicar el mismo algoritmo de cola justa
+    cola_manual = []
+    cola_pool = []
+    
+    for cancion in todas_canciones:
+        if cancion.orden_manual is not None:
+            cola_manual.append(cancion)
+        else:
+            cola_pool.append(cancion)
+    
+    if not cola_pool:
+        return cola_manual
+    
+    # Agrupar por mesa
+    match_mesa_canciones = {}
+    mesa_arrival_time = {}
+    mesas_involucradas_ids = set()
+    
+    for cancion in cola_pool:
+        mesa_id = cancion.usuario.mesa_id or 0
+        if mesa_id not in match_mesa_canciones:
+            match_mesa_canciones[mesa_id] = deque()
+            mesa_arrival_time[mesa_id] = cancion.id
+            mesas_involucradas_ids.add(mesa_id)
+        match_mesa_canciones[mesa_id].append(cancion)
+    
+    # Calcular quotas
+    UMBRAL_ORO = 150000
+    UMBRAL_PLATA = 50000
+    mesa_quotas = {}
+    
+    if mesas_involucradas_ids:
+        ids_reales = [mid for mid in mesas_involucradas_ids if mid != 0]
+        consumos_mesas = {}
+        
+        if ids_reales:
+            rows = (
+                db.query(
+                    models.Usuario.mesa_id,
+                    func.sum(models.Consumo.valor_total)
+                )
+                .join(models.Consumo, models.Usuario.id == models.Consumo.usuario_id)
+                .filter(models.Usuario.mesa_id.in_(ids_reales))
+                .group_by(models.Usuario.mesa_id)
+                .all()
+            )
+            for mid, total in rows:
+                consumos_mesas[mid] = total or 0
+        
+        for mid in mesas_involucradas_ids:
+            total = consumos_mesas.get(mid, 0)
+            if mid == 0:
+                quota = 3
+            elif total >= UMBRAL_ORO:
+                quota = 3
+            elif total >= UMBRAL_PLATA:
+                quota = 2
+            else:
+                quota = 1
+            mesa_quotas[mid] = quota
+    
+    # Round Robin
+    cola_justa = []
+    orden_turnos_mesas = sorted(mesas_involucradas_ids, key=lambda mid: mesa_arrival_time[mid])
+    
+    while match_mesa_canciones:
+        for mesa_id in orden_turnos_mesas:
+            if mesa_id not in match_mesa_canciones:
+                continue
+            queue_de_mesa = match_mesa_canciones[mesa_id]
+            cupo = mesa_quotas.get(mesa_id, 1)
+            tomadas = 0
+            while tomadas < cupo and queue_de_mesa:
+                cancion = queue_de_mesa.popleft()
+                cola_justa.append(cancion)
+                tomadas += 1
+            if not queue_de_mesa:
+                del match_mesa_canciones[mesa_id]
+    
+    return cola_manual + cola_justa
+
+def aprobar_siguiente_cancion_lazy(db: Session):
+    """
+    Aprueba la siguiente canci√≥n de la cola lazy.
+    Llamada autom√°ticamente cuando la canci√≥n actual llega al 50%.
+    """
+    cola_lazy = get_cola_lazy(db)
+    if not cola_lazy:
+        return None
+    
+    siguiente = cola_lazy[0]
+    siguiente.estado = "aprobado"
+    siguiente.approved_at = now_bogota()
+    db.commit()
+    db.refresh(siguiente)
+    
+    create_admin_log_entry(db, action="LAZY_APPROVAL", details=f"Cancion '{siguiente.titulo}' aprobada automaticamente (lazy).")
+    return siguiente
+
+def get_cola_completa_con_lazy(db: Session):
+    """
+    Versi√≥n extendida de get_cola_completa que incluye la cola lazy.
+    Retorna:
+    - now_playing: Canci√≥n actual
+    - upcoming: Solo la siguiente canci√≥n aprobada (m√°ximo 1)
+    - lazy_queue: Canciones en pendiente_lazy
+    - pending: Canciones pendientes de aprobaci√≥n manual
+    """
+    # Aplicar aprobaci√≥n autom√°tica despu√©s de 10 minutos
+    auto_approve_songs_after_10_minutes(db)
+    
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    approved_queue = get_cola_priorizada(db)
+    lazy_queue = get_cola_lazy(db)
+    pending_queue = get_canciones_pendientes_por_aprobar(db)
+    
+    # Si la canci√≥n que se est√° reproduciendo sigue en la lista de upcoming, la quitamos
+    if now_playing:
+        approved_queue = [song for song in approved_queue if song.id != now_playing.id]
+    
+    # Limitar upcoming a m√°ximo 1 canci√≥n (la siguiente)
+    upcoming_limited = approved_queue[:1] if approved_queue else []
+    
+    return {
+        "now_playing": now_playing,
+        "upcoming": upcoming_limited,
+        "lazy_queue": lazy_queue,
+        "pending": pending_queue
+    }
+
+def check_and_approve_next_lazy_song(db: Session):
+    """
+    Verifica si la canci√≥n actual ha llegado al 50% y aprueba la siguiente lazy.
+    Esta funci√≥n es llamada por un background task peri√≥dicamente.
+    """
+    now_playing = db.query(models.Cancion).filter(models.Cancion.estado == "reproduciendo").first()
+    
+    if not now_playing or not now_playing.started_at:
+        return None
+    
+    # Calcular el progreso
+    tiempo_transcurrido = (now_bogota() - now_playing.started_at).total_seconds()
+    duracion_total = now_playing.duracion_seconds or 0
+    
+    if duracion_total == 0:
+        return None
+    
+    progreso_porcentaje = (tiempo_transcurrido / duracion_total) * 100
+    
+    # Si ha llegado al 50% o m√°s, aprobar la siguiente
+    if progreso_porcentaje >= 50:
+        # Verificar que no haya ya una canci√≥n aprobada esperando
+        approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
+        
+        if approved_count == 0:
+            # Aprobar la siguiente canci√≥n lazy
+            return aprobar_siguiente_cancion_lazy(db)
+    
+    return None

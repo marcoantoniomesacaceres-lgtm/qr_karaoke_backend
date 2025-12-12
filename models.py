@@ -57,7 +57,7 @@ class Cancion(Base):
     youtube_id = Column(String, index=True)
     titulo = Column(String)
     duracion_seconds = Column(Integer, default=0)
-    estado = Column(String, default="pendiente")  # pendiente, aprobado, reproduciendo, cantada, rechazada
+    estado = Column(String, default="pendiente")  # pendiente, pendiente_lazy, aprobado, reproduciendo, cantada, rechazada
     started_at = Column(DateTime, nullable=True)  # Hora en que empieza a sonar
     orden_manual = Column(Integer, nullable=True)  # Posición manual establecida por el admin
     puntuacion_ia = Column(Integer, nullable=True) # Nuevo campo para el puntaje de la IA

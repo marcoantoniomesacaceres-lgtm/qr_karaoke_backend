@@ -102,15 +102,27 @@ async def anadir_cancion(
             detail=f"Esta canción ya está en la cola de tu mesa. '{cancion.titulo}' fue agregada por otro usuario de tu mesa."
         )
 
-    # Crear y aprobar canción
+    # Crear canción
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
-    cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
-
-    # Si autoplay está activo, iniciar reproducción si la cola estaba vacía
-    await crud.start_next_song_if_autoplay_and_idle(db)
+    
+    # LAZY APPROVAL: Solo aprobar si no hay nada en la cola
+    # Si hay una canción reproduciendo o aprobada, esta va a pendiente_lazy
+    hay_cancion_activa = db.query(models.Cancion).filter(
+        models.Cancion.estado.in_(["reproduciendo", "aprobado"])
+    ).first()
+    
+    if hay_cancion_activa:
+        # Poner en cola lazy
+        cancion_final = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="pendiente_lazy")
+    else:
+        # Primera canción, aprobar inmediatamente
+        cancion_final = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+        # Si autoplay está activo, iniciar reproducción si la cola estaba vacía
+        await crud.start_next_song_if_autoplay_and_idle(db)
+    
     await websocket_manager.manager.broadcast_queue_update()
 
-    return cancion_aprobada
+    return cancion_final
 
 @router.get("/{usuario_id}/lista", response_model=List[schemas.Cancion], summary="Ver la lista de canciones de un usuario")
 def ver_lista_de_canciones(usuario_id: int, db: Session = Depends(get_db)):
@@ -154,18 +166,44 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
 async def admin_anadir_cancion(cancion: schemas.CancionCreate, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
     dj_user = crud.get_or_create_dj_user(db)
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=dj_user.id)
-    # La canción se aprueba automáticamente
-    cancion_aprobada = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
     
-    # Si el autoplay está activo, intentamos iniciar la reproducción si la cola estaba vacía
-    await crud.start_next_song_if_autoplay_and_idle(db)
+    # LAZY APPROVAL: Solo aprobar si no hay nada en la cola
+    hay_cancion_activa = db.query(models.Cancion).filter(
+        models.Cancion.estado.in_(["reproduciendo", "aprobado"])
+    ).first()
+    
+    if hay_cancion_activa:
+        cancion_final = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="pendiente_lazy")
+    else:
+        cancion_final = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="aprobado")
+        await crud.start_next_song_if_autoplay_and_idle(db)
+    
     await websocket_manager.manager.broadcast_queue_update()
-    return cancion_aprobada
+    return cancion_final
+
 
 @router.get("/cola", response_model=schemas.ColaView, summary="Ver la cola de canciones")
 def ver_cola_de_canciones(db: Session = Depends(get_db)):
     cola_data = crud.get_cola_completa(db)
     return schemas.ColaView(now_playing=cola_data["now_playing"], upcoming=cola_data["upcoming"])
+
+@router.get("/cola/extended", response_model=schemas.ColaViewExtended, summary="Ver la cola de canciones con lazy queue")
+def ver_cola_extendida(db: Session = Depends(get_db)):
+    """
+    Retorna la cola completa incluyendo:
+    - now_playing: Canción actual
+    - upcoming: Siguiente canción aprobada (máximo 1)
+    - lazy_queue: Canciones en espera de aprobación lazy
+    - pending: Canciones pendientes de aprobación manual
+    """
+    cola_data = crud.get_cola_completa_con_lazy(db)
+    return schemas.ColaViewExtended(
+        now_playing=cola_data["now_playing"],
+        upcoming=cola_data["upcoming"],
+        lazy_queue=cola_data["lazy_queue"],
+        pending=cola_data["pending"]
+    )
+
 
 @router.get("/{cancion_id}/tiempo-espera", response_model=dict, summary="Calcular tiempo de espera")
 def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):

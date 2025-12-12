@@ -152,6 +152,14 @@ class ColaView(BaseModel):
     now_playing: Optional[CancionAdminView] = None
     upcoming: List[CancionAdminView] = []
 
+# --- Schema extendido para la cola con lazy approval ---
+class ColaViewExtended(BaseModel):
+    now_playing: Optional[CancionAdminView] = None
+    upcoming: List[CancionAdminView] = []  # Máximo 1 canción
+    lazy_queue: List[CancionAdminView] = []  # Canciones en pendiente_lazy
+    pending: List[CancionAdminView] = []  # Canciones pendientes de aprobación manual
+
+
 # --- Schema para la respuesta de "siguiente canción" ---
 class PlayNextResponse(BaseModel):
     play_url: str
