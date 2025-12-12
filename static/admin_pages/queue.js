@@ -241,7 +241,6 @@ function renderApprovedSongs(songs, listElement) {
                     <button class="bees-btn bees-btn-primary bees-btn-small" data-id="${song.id}" data-action="play-song" title="Reproducir en player">▶️ Reproducir</button>
                     <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseButtonText}</button>
                     <button class="bees-btn bees-btn-warning bees-btn-small" data-action="restart" title="Reiniciar">🔄 Reiniciar</button>
-                    <button class="bees-btn bees-btn-success bees-btn-small" data-action="next-song" title="Saltar a la siguiente canción">⏭️ Siguiente</button>
                     <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
                 </div>
             `;
@@ -473,23 +472,6 @@ async function handleQueueActions(event) {
                 showNotification('▶️ Reproduciendo en player', 'success');
             } catch (error) {
                 showNotification(`Error al reproducir: ${error.message}`, 'error');
-            }
-
-        } else if (action === 'next-song') {
-            const response = await fetch(`${API_BASE_URL}/canciones/siguiente`, {
-                method: "POST",
-                headers: { "X-API-Key": apiKey }
-            });
-
-            if (response.status === 204) {
-                showNotification('No hay más canciones en la cola.', 'info');
-            } else if (response.ok) {
-                const data = await response.json();
-                showNotification(`⏭️ Saltando a: ${data.cancion.titulo}`, 'success');
-                shouldReloadQueue = true;
-            } else {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Error al reproducir');
             }
 
         } else if (action === 'remove') {

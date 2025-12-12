@@ -220,13 +220,37 @@ async def play_song_now(cancion_id: int, db: Session = Depends(get_db), api_key:
     db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada.")
-    
-    # Enviar orden de reproducir al player a través de WebSocket
+
+    # Marcar la canción seleccionada como 'reproduciendo' en la base de datos
+    # y actualizar el estado de la canción previamente en reproducción si existe.
+    from timezone_utils import now_bogota
+
+    # Marcar la canción que estaba reproduciéndose como 'cantada' (si aplica)
+    current_playing = db.query(models.Cancion).filter(models.Cancion.estado == 'reproduciendo').first()
+    if current_playing and current_playing.id != db_cancion.id:
+        current_playing.estado = 'cantada'
+        current_playing.finished_at = now_bogota()
+
+    # Marcar la nueva canción como reproduciendo
+    db_cancion.estado = 'reproduciendo'
+    db_cancion.started_at = now_bogota()
+    db.commit()
+    db.refresh(db_cancion)
+
+    # Notificar a los clientes que la cola cambió y pedir al player que reproduzca
+    await websocket_manager.manager.broadcast_queue_update()
     await websocket_manager.manager.broadcast_play_song(
         youtube_id=db_cancion.youtube_id,
         duration_seconds=db_cancion.duracion_seconds or 0
     )
-    
+
+    # Registrar la acción en logs de admin
+    try:
+        import crud as _crud
+        _crud.create_admin_log_entry(db, action="PLAY_SONG", details=f"Reproduciendo manualmente: {db_cancion.titulo}")
+    except Exception:
+        pass
+
     return {"mensaje": f"Reproduciendo: {db_cancion.titulo}"}
 
 @router.delete("/{cancion_id}", status_code=204, summary="Eliminar una canción de la lista personal")
