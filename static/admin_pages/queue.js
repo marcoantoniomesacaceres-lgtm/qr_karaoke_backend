@@ -269,7 +269,7 @@ function renderApprovedSongs(songs, listElement) {
             const pauseButtonText = playerState.isPlaying ? '⏸️ Pausar' : '▶️ Reanudar';
             buttonsHtml = `
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 12px;">
-                    <button class="bees-btn bees-btn-success bees-btn-small" data-id="${song.id}" data-action="play" title="Reproducir ahora">▶️ Siguiente</button>
+                    <button class="bees-btn bees-btn-success bees-btn-small" data-id="${song.id}" data-action="play" title="Saltar a la siguiente canción">⏭️ Siguiente</button>
                     <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseButtonText}</button>
                     <button class="bees-btn bees-btn-warning bees-btn-small" data-action="restart" title="Reiniciar">🔄 Reiniciar</button>
                     <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
@@ -566,7 +566,7 @@ async function handleQueueActions(event) {
                 showNotification('No hay más canciones en la cola.', 'info');
             } else if (response.ok) {
                 const data = await response.json();
-                showNotification(`▶️ Reproduciendo: ${data.cancion.titulo}`, 'success');
+                showNotification(`⏭️ Saltando a: ${data.cancion.titulo}`, 'success');
                 shouldReloadQueue = true;
             } else {
                 const errorData = await response.json();
