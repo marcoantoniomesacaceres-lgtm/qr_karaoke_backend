@@ -212,6 +212,23 @@ def calcular_tiempo_espera(cancion_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="La canción no está en la cola.")
     return {"tiempo_espera_segundos": tiempo_segundos}
 
+@router.post("/{cancion_id}/play", status_code=200, summary="Reproducir una canción en el player")
+async def play_song_now(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Envía la orden de reproducir una canción específica en el player.
+    """
+    db_cancion = db.query(models.Cancion).filter(models.Cancion.id == cancion_id).first()
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada.")
+    
+    # Enviar orden de reproducir al player a través de WebSocket
+    await websocket_manager.manager.broadcast_play_song(
+        youtube_id=db_cancion.youtube_id,
+        duration_seconds=db_cancion.duracion_seconds or 0
+    )
+    
+    return {"mensaje": f"Reproduciendo: {db_cancion.titulo}"}
+
 @router.delete("/{cancion_id}", status_code=204, summary="Eliminar una canción de la lista personal")
 async def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depends(get_db)):
     """
