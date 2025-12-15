@@ -7,6 +7,61 @@ let playerState = {
     currentSongId: null
 };
 
+// Muestra un toast temporal con acción "Deshacer" que ejecuta undoCallback
+function showUndoNotification(message, undoCallback, timeout = 15000) {
+    try {
+        const id = `undo-toast-${Date.now()}`;
+        const container = document.createElement('div');
+        container.id = id;
+        container.style.position = 'fixed';
+        container.style.right = '20px';
+        container.style.bottom = '20px';
+        container.style.background = 'var(--page-input-bg)';
+        container.style.color = 'var(--page-text)';
+        container.style.padding = '12px 14px';
+        container.style.borderRadius = '8px';
+        container.style.boxShadow = '0 6px 18px rgba(0,0,0,0.12)';
+        container.style.zIndex = 9999;
+        container.style.display = 'flex';
+        container.style.gap = '10px';
+        container.style.alignItems = 'center';
+
+        const msg = document.createElement('div');
+        msg.style.flex = '1';
+        msg.style.fontSize = '14px';
+        msg.textContent = message;
+
+        const undoBtn = document.createElement('button');
+        undoBtn.className = 'bees-btn bees-btn-secondary bees-btn-small';
+        undoBtn.textContent = 'Deshacer';
+        undoBtn.style.cursor = 'pointer';
+
+        container.appendChild(msg);
+        container.appendChild(undoBtn);
+        document.body.appendChild(container);
+
+        const timer = setTimeout(() => {
+            if (document.getElementById(id)) document.getElementById(id).remove();
+        }, timeout);
+
+        undoBtn.addEventListener('click', async () => {
+            clearTimeout(timer);
+            try {
+                undoBtn.disabled = true;
+                undoBtn.textContent = '⏳';
+                await undoCallback();
+            } catch (err) {
+                console.error('Error en deshacer:', err);
+                showNotification('Error al deshacer la aprobación.', 'error');
+            } finally {
+                if (document.getElementById(id)) document.getElementById(id).remove();
+            }
+        });
+    } catch (err) {
+        console.warn('showUndoNotification falló:', err);
+    }
+}
+
 async function loadQueuePage() {
     const queueContainer = document.getElementById('queue');
     if (!queueContainer) return;
@@ -160,6 +215,33 @@ async function loadQueueData() {
         let queueData = currentQueueData || { now_playing: null, upcoming: [], lazy_queue: [], pending: [] };
         if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
             queueData = await apiFetch('/canciones/cola/extended');
+
+            // Si no hay canción aprobada pero sí hay en la cola lazy, solicitar que se apruebe la siguiente
+            if ((!queueData.now_playing || queueData.now_playing === null) && queueData.lazy_queue && queueData.lazy_queue.length > 0) {
+                try {
+                    const approved = await apiFetch('/admin/canciones/lazy/approve-next', { method: 'POST' });
+                    if (approved && approved.titulo) {
+                        // Mostrar toast con opción de deshacer
+                        showUndoNotification(`Se aprobó automáticamente: ${approved.titulo}`, async () => {
+                            // Llamar endpoint para revertir la aprobación
+                            await apiFetch(`/admin/canciones/${approved.id}/revert-approve`, { method: 'POST' });
+                            showNotification('Aprobación revertida.', 'info');
+                            // Recargar la cola en pantalla
+                            await loadQueueData();
+                        });
+                    } else {
+                        showUndoNotification('Se aprobó automáticamente la siguiente canción lazy.', async () => {
+                            // Si no conocemos el id, recargamos la cola y confiamos en el admin para revertir manualmente
+                            await loadQueueData();
+                        });
+                    }
+                    // Recargar la cola luego de aprobar la siguiente lazy
+                    queueData = await apiFetch('/canciones/cola/extended');
+                } catch (approveErr) {
+                    console.warn('No se pudo aprobar la siguiente canción lazy automáticamente:', approveErr);
+                    showNotification('No se pudo aprobar automáticamente la siguiente canción lazy.', 'error');
+                }
+            }
         }
         currentQueueData = queueData;
 

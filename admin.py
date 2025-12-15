@@ -707,6 +707,51 @@ async def move_lazy_song_down(cancion_id: int, db: Session = Depends(get_db), ap
     await websocket_manager.manager.broadcast_queue_update()
     return {"mensaje": "Canción movida hacia abajo."}
 
+
+@router.post("/canciones/lazy/approve-next", status_code=200, summary="Aprobar siguiente canción lazy")
+async def approve_next_lazy_song(db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Aprueba la siguiente canción en la cola lazy (pendiente_lazy).
+    Útil para forzar que siempre haya una canción disponible en la cola aprobada.
+    """
+    siguiente = crud.aprobar_siguiente_cancion_lazy(db)
+    if not siguiente:
+        raise HTTPException(status_code=404, detail="No hay canciones en cola lazy para aprobar.")
+
+    crud.create_admin_log_entry(db, action="APPROVE_LAZY_NEXT", details=f"Canción '{siguiente.titulo}' aprobada manualmente desde admin.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return siguiente
+
+
+@router.post("/canciones/{cancion_id}/revert-approve", status_code=200, summary="Revertir aprobación de canción")
+async def revert_approved_song(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    Revertir una aprobación previa: devuelve la canción al estado `pendiente_lazy`.
+    """
+    db_cancion = crud.get_cancion_by_id(db, cancion_id)
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción no encontrada.")
+
+    # Solo permitimos revertir si actualmente está aprobada y no está reproduciéndose
+    if db_cancion.estado != 'aprobado':
+        raise HTTPException(status_code=400, detail="La canción no está en estado 'aprobado'.")
+
+    if db_cancion.estado == 'reproduciendo':
+        raise HTTPException(status_code=400, detail="No se puede deshacer: la canción ya está en reproducción.")
+
+    # Revertir
+    db_cancion.estado = 'pendiente_lazy'
+    db_cancion.approved_at = None
+    # Ajuste opcional: actualizar created_at para que vuelva al final de la cola lazy
+    # db_cancion.created_at = now_bogota()
+
+    db.commit()
+    db.refresh(db_cancion)
+
+    crud.create_admin_log_entry(db, action="REVERT_APPROVAL", details=f"Aprobación revertida para '{db_cancion.titulo}' (ID: {cancion_id}).")
+    await websocket_manager.manager.broadcast_queue_update()
+    return db_cancion
+
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
 def get_total_income_report(db: Session = Depends(get_db)):
     """
