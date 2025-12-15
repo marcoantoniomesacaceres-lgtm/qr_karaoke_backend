@@ -52,11 +52,18 @@
             left: 0;
             width: 100%;
             z-index: 2;
-            display: flex;
+            display: none;
+            opacity: 0;
+            transition: opacity 320ms ease-in-out;
             /* Gradiente blanco para asegurar legibilidad sobre la foto */
             background: linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 60%, rgba(255, 255, 255, 0) 100%);
             padding: 20px;
             box-sizing: border-box;
+        }
+
+        .overlay.visible {
+            display: flex;
+            opacity: 1;
         }
 
         .now-playing-section {
@@ -143,6 +150,11 @@
             pointer-events: none;
             overflow: hidden;
             z-index: 9999;
+        }
+
+        /* Ocultar botones de reproducción/pausa sobrepuestos si existen */
+        .player-center-button, .center-controls, .player-play-btn, .player-pause-btn, #play-overlay, .ytp-large-play-button {
+            display: none !important;
         }
 
         .reaction-emoji {
@@ -288,6 +300,42 @@
             if (event.data === YT.PlayerState.CUED) {
                 console.log("Video en espera (Cued), forzando reproducción...");
                 player.playVideo();
+            }
+            // Manejo de visualización del overlay en los últimos segundos
+            handleOverlayTiming(event);
+        }
+
+        let overlayWatcher = null;
+        const OVERLAY_SECONDS = 5; // mostrar overlay en los últimos 5 segundos
+
+        function handleOverlayTiming(event) {
+            const overlay = document.querySelector('.overlay');
+            if (!player || !overlay) return;
+
+            // Si el video está reproduciéndose, arrancamos watcher que revisa el tiempo restante
+            if (event.data === YT.PlayerState.PLAYING) {
+                if (overlayWatcher) clearInterval(overlayWatcher);
+                overlayWatcher = setInterval(async () => {
+                    try {
+                        const duration = player.getDuration();
+                        const current = player.getCurrentTime();
+                        const remaining = duration - current;
+                        if (isFinite(duration) && remaining <= OVERLAY_SECONDS && remaining > 0) {
+                            overlay.classList.add('visible');
+                        } else {
+                            overlay.classList.remove('visible');
+                        }
+                    } catch (err) {
+                        console.warn('Error al comprobar tiempo del player:', err);
+                    }
+                }, 700);
+            } else {
+                // Si no está reproduciendo (pausa, cued, ended), ocultar overlay y limpiar watcher
+                overlay.classList.remove('visible');
+                if (overlayWatcher) {
+                    clearInterval(overlayWatcher);
+                    overlayWatcher = null;
+                }
             }
         }
 

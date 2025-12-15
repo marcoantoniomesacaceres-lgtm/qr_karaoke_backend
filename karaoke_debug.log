@@ -1771,3 +1771,27 @@
 2025-12-12 16:47:21,882 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2ConGJj-JIBZk%2C2JbrCXDNGcA%2CIRSedFplzCc%2CrERCTLp4CK8%2C1wC6r7L1RvA%2C6kYEW6oQfpw%2Ck1jzUtKrFk0%2CUAAy5oTPUOE%2CDWUpLPxb-lA%2CnBhUJ9Rf8s0%2CUjYXahcriA0%2CCfGKChXwc4s%2CA4VTPpOFLwc%2CcaP_V6eHGYY%2CeHflKESzSEY%2CgEejTe7PHxs%2CEZ0uGZyQYkk%2Cdg-Xh5NNMIk%2CPXm8cQKQA7M%2CFzf8tGmrND8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-12 16:47:21,950 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-12 16:47:21,953 - youtube - INFO - Procesamiento finalizado. Se encontraron 25 resultados formateados.
+2025-12-15 11:12:11,214 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el heredero'
+2025-12-15 11:12:11,257 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-15 11:12:14,957 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-15 11:12:14,959 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-15 11:12:14,960 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-15 11:12:15,759 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-15 11:12:15,788 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-15 11:12:15,790 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'O_Jv-_nEqWk', 'bZLojmRvRd8', 'NP3LASw8uWY', 'KTT2QhqY23g', 'N51Iw0B6mYY', 'SAe4DxIadxM']
+2025-12-15 11:12:15,791 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-15 11:12:15,988 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CO_Jv-_nEqWk%2CbZLojmRvRd8%2CNP3LASw8uWY%2CKTT2QhqY23g%2CN51Iw0B6mYY%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-15 11:12:15,999 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-15 11:12:16,012 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-15 11:12:16,046 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el heredero'
+2025-12-15 11:12:16,047 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-15 11:12:18,461 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-15 11:12:18,462 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-15 11:12:18,464 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-15 11:12:19,001 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-15 11:12:19,005 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-15 11:12:19,007 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', 'KI3pWvM19Pc', '9o1ea3O_GTs', 'O_Jv-_nEqWk', 'bZLojmRvRd8', 'sU8FqZQOK3k', 'KTT2QhqY23g', 'NP3LASw8uWY', 'SAe4DxIadxM']
+2025-12-15 11:12:19,011 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-15 11:12:19,296 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CO_Jv-_nEqWk%2CbZLojmRvRd8%2CsU8FqZQOK3k%2CKTT2QhqY23g%2CNP3LASw8uWY%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-15 11:12:19,313 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-15 11:12:19,317 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
