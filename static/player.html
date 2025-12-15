@@ -330,6 +330,11 @@
         let currentVideoDuration = 0;
         let nextSongInfo = null; // Información de la siguiente canción para mostrar en transición
 
+        // Variables para el pre-loading al 50%
+        let preLoadWatcher = null; // Interval watcher para 50% progress
+        let preLoadedVideoId = null; // ID del video pre-cargado
+        let hasPreLoaded = false; // Flag para evitar pre-cargar múltiples veces
+
         // --- Lógica del Carrusel de Fondos ---
         const backgroundImages = [];
         let currentImageIndex = 0;
@@ -410,11 +415,21 @@
             // YT.PlayerState.ENDED = 0
             if (event.data === YT.PlayerState.ENDED) {
                 console.log('🎬 Video terminado, iniciando transición de 5 segundos...');
+                // Limpiar el watcher de pre-carga
+                if (preLoadWatcher) {
+                    clearInterval(preLoadWatcher);
+                    preLoadWatcher = null;
+                }
                 showTransitionScreen();
             } else if (event.data === YT.PlayerState.PLAYING) {
                 console.log('▶️ Video reproduciéndose');
             } else if (event.data === YT.PlayerState.PAUSED) {
                 console.log('⏸️ Video pausado');
+                // Limpiar el watcher cuando se pausa
+                if (preLoadWatcher) {
+                    clearInterval(preLoadWatcher);
+                    preLoadWatcher = null;
+                }
             }
         }
 
@@ -500,8 +515,65 @@
                 createYouTubePlayer(videoId);
             }
 
+            // Iniciar el watcher de 50% para pre-cargar la siguiente canción
+            hasPreLoaded = false;
+            if (preLoadWatcher) {
+                clearInterval(preLoadWatcher);
+            }
+            if (currentVideoDuration > 0) {
+                preLoadWatcher = setInterval(() => {
+                    handleFiftyPercentPreLoad();
+                }, 500); // Verificar cada 500ms
+            }
+
             // NOTA: Ya no usamos temporizador porque detectamos el fin del video automáticamente
             // con el evento onStateChange del YouTube IFrame API
+        }
+
+        // Función para manejar la pre-carga al 50% de la canción
+        function handleFiftyPercentPreLoad() {
+            if (!ytPlayer || !currentVideoDuration || hasPreLoaded) {
+                return;
+            }
+
+            try {
+                const currentTime = ytPlayer.getCurrentTime();
+                const fiftyPercent = currentVideoDuration * 0.5;
+
+                if (currentTime >= fiftyPercent) {
+                    console.log(`📤 Alcanzado 50% de la canción (${currentTime}s / ${currentVideoDuration}s). Pre-cargando siguiente...`);
+                    hasPreLoaded = true;
+
+                    // Llamar al endpoint para obtener la siguiente canción
+                    fetch(`${API_BASE_URL}/canciones/cola/extended`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.upcoming && data.upcoming.length > 0) {
+                            const nextSong = data.upcoming[0];
+                            preLoadedVideoId = nextSong.youtube_id;
+                            console.log(`✅ Pre-cargada siguiente canción: ${nextSong.titulo} (${nextSong.youtube_id})`);
+                            
+                            // Pre-cargar el video sin reproducirlo
+                            if (ytPlayer && ytPlayer.cueVideoById) {
+                                ytPlayer.cueVideoById(nextSong.youtube_id);
+                                console.log(`✅ Video pre-cargado en el reproductor: ${nextSong.youtube_id}`);
+                            }
+                        }
+                    })
+                    .catch(err => console.error('❌ Error pre-cargando siguiente canción:', err));
+
+                    // Limpiar el watcher
+                    if (preLoadWatcher) {
+                        clearInterval(preLoadWatcher);
+                        preLoadWatcher = null;
+                    }
+                }
+            } catch (err) {
+                console.error('❌ Error en handleFiftyPercentPreLoad:', err);
+            }
         }
 
         // 3. Conexión WebSocket para recibir órdenes

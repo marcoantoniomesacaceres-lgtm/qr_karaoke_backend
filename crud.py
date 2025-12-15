@@ -1797,7 +1797,7 @@ async def start_next_song_if_autoplay_and_idle(db: Session):
         # Si se encontrÃÂ³ una siguiente canciÃÂ³n, notificamos a todos los clientes
         # para que la cola se actualice y el reproductor comience a reproducir.
         await websocket_manager.manager.broadcast_queue_update()
-        await websocket_manager.manager.broadcast_play_song(next_song.youtube_id)
+        await websocket_manager.manager.broadcast_play_song(next_song.youtube_id, next_song.duracion_seconds or 0)
         create_admin_log_entry(db, action="AUTO_START", details=f"Iniciada automÃÂ¡ticamente la canciÃÂ³n '{next_song.titulo}'.")
 
 async def avanzar_cola_automaticamente(db: Session):
@@ -1822,7 +1822,7 @@ async def avanzar_cola_automaticamente(db: Session):
 
     # 4. Si hay una nueva canciÃÂ³n, enviar la orden de reproducciÃÂ³n al player
     if siguiente_cancion:
-        await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id)
+        await websocket_manager.manager.broadcast_play_song(siguiente_cancion.youtube_id, siguiente_cancion.duracion_seconds or 0)
 
 
     # 5. Aprobar la siguiente canciÃ³n lazy si es necesario
