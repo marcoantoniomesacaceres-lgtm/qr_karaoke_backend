@@ -645,6 +645,68 @@ async def move_pending_song_down(cancion_id: int, db: Session = Depends(get_db),
     await websocket_manager.manager.broadcast_queue_update()
     return {"mensaje": "Canción movida hacia abajo."}
 
+# ===================== LAZY QUEUE MOVEMENT ENDPOINTS =====================
+
+@router.post("/canciones/lazy/{cancion_id}/move-up", status_code=200, summary="Mover canción lazy hacia arriba")
+async def move_lazy_song_up(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Mueve una canción en la cola lazy una posición hacia arriba.
+    """
+    db_cancion = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'pendiente_lazy'
+    ).first()
+    
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción lazy no encontrada.")
+    
+    # Obtener la canción anterior en la cola lazy
+    previous_song = db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente_lazy',
+        models.Cancion.created_at < db_cancion.created_at
+    ).order_by(models.Cancion.created_at.desc()).first()
+    
+    if previous_song:
+        # Intercambiar los tiempos de creación para mantener el orden
+        temp_created = db_cancion.created_at
+        db_cancion.created_at = previous_song.created_at
+        previous_song.created_at = temp_created
+        db.commit()
+    
+    crud.create_admin_log_entry(db, action="MOVE_LAZY_UP", details=f"Canción '{db_cancion.titulo}' movida hacia arriba en cola lazy.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return {"mensaje": "Canción movida hacia arriba."}
+
+@router.post("/canciones/lazy/{cancion_id}/move-down", status_code=200, summary="Mover canción lazy hacia abajo")
+async def move_lazy_song_down(cancion_id: int, db: Session = Depends(get_db), api_key: str = Depends(api_key_auth)):
+    """
+    **[Admin]** Mueve una canción en la cola lazy una posición hacia abajo.
+    """
+    db_cancion = db.query(models.Cancion).filter(
+        models.Cancion.id == cancion_id,
+        models.Cancion.estado == 'pendiente_lazy'
+    ).first()
+    
+    if not db_cancion:
+        raise HTTPException(status_code=404, detail="Canción lazy no encontrada.")
+    
+    # Obtener la canción siguiente en la cola lazy
+    next_song = db.query(models.Cancion).filter(
+        models.Cancion.estado == 'pendiente_lazy',
+        models.Cancion.created_at > db_cancion.created_at
+    ).order_by(models.Cancion.created_at.asc()).first()
+    
+    if next_song:
+        # Intercambiar los tiempos de creación para mantener el orden
+        temp_created = db_cancion.created_at
+        db_cancion.created_at = next_song.created_at
+        next_song.created_at = temp_created
+        db.commit()
+    
+    crud.create_admin_log_entry(db, action="MOVE_LAZY_DOWN", details=f"Canción '{db_cancion.titulo}' movida hacia abajo en cola lazy.")
+    await websocket_manager.manager.broadcast_queue_update()
+    return {"mensaje": "Canción movida hacia abajo."}
+
 @router.get("/reports/total-income", response_model=schemas.ReporteIngresos, summary="Obtener los ingresos totales de la noche")
 def get_total_income_report(db: Session = Depends(get_db)):
     """

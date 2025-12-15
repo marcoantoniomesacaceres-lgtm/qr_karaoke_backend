@@ -595,6 +595,7 @@ function setupQueueListeners() {
     const karaokeBtn = document.getElementById('admin-search-karaoke-btn');
     const resultsContainer = document.getElementById('admin-search-results');
     const songsList = document.getElementById('approved-songs-list');
+    const lazySongsList = document.getElementById('lazy-songs-list');
 
     if (songsBtn) {
         songsBtn.addEventListener('click', (e) => handleAdminSearch(e, false));
@@ -607,5 +608,9 @@ function setupQueueListeners() {
     }
     if (songsList) {
         songsList.addEventListener('click', handleQueueActions);
+    }
+    // Agregar listener para los botones de la cola lazy (Esperando Turno)
+    if (lazySongsList) {
+        lazySongsList.addEventListener('click', handleQueueActions);
     }
 }
