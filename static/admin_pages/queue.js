@@ -212,35 +212,33 @@ async function loadQueuePage() {
 async function loadQueueData() {
     try {
         // Cargar cola extendida con lazy queue
-        let queueData = currentQueueData || { now_playing: null, upcoming: [], lazy_queue: [], pending: [] };
-        if (!queueData.now_playing && (!queueData.upcoming || queueData.upcoming.length === 0)) {
-            queueData = await apiFetch('/canciones/cola/extended');
+        // Cargar cola extendida con lazy queue
+        let queueData = await apiFetch('/canciones/cola/extended');
 
-            // Si no hay canción aprobada pero sí hay en la cola lazy, solicitar que se apruebe la siguiente
-            if ((!queueData.now_playing || queueData.now_playing === null) && queueData.lazy_queue && queueData.lazy_queue.length > 0) {
-                try {
-                    const approved = await apiFetch('/admin/canciones/lazy/approve-next', { method: 'POST' });
-                    if (approved && approved.titulo) {
-                        // Mostrar toast con opción de deshacer
-                        showUndoNotification(`Se aprobó automáticamente: ${approved.titulo}`, async () => {
-                            // Llamar endpoint para revertir la aprobación
-                            await apiFetch(`/admin/canciones/${approved.id}/revert-approve`, { method: 'POST' });
-                            showNotification('Aprobación revertida.', 'info');
-                            // Recargar la cola en pantalla
-                            await loadQueueData();
-                        });
-                    } else {
-                        showUndoNotification('Se aprobó automáticamente la siguiente canción lazy.', async () => {
-                            // Si no conocemos el id, recargamos la cola y confiamos en el admin para revertir manualmente
-                            await loadQueueData();
-                        });
-                    }
-                    // Recargar la cola luego de aprobar la siguiente lazy
-                    queueData = await apiFetch('/canciones/cola/extended');
-                } catch (approveErr) {
-                    console.warn('No se pudo aprobar la siguiente canción lazy automáticamente:', approveErr);
-                    showNotification('No se pudo aprobar automáticamente la siguiente canción lazy.', 'error');
+        // Si no hay canción aprobada pero sí hay en la cola lazy, solicitar que se apruebe la siguiente
+        if ((!queueData.now_playing || queueData.now_playing === null) && queueData.lazy_queue && queueData.lazy_queue.length > 0) {
+            try {
+                const approved = await apiFetch('/admin/canciones/lazy/approve-next', { method: 'POST' });
+                if (approved && approved.titulo) {
+                    // Mostrar toast con opción de deshacer
+                    showUndoNotification(`Se aprobó automáticamente: ${approved.titulo}`, async () => {
+                        // Llamar endpoint para revertir la aprobación
+                        await apiFetch(`/admin/canciones/${approved.id}/revert-approve`, { method: 'POST' });
+                        showNotification('Aprobación revertida.', 'info');
+                        // Recargar la cola en pantalla
+                        await loadQueueData();
+                    });
+                } else {
+                    showUndoNotification('Se aprobó automáticamente la siguiente canción lazy.', async () => {
+                        // Si no conocemos el id, recargamos la cola y confiamos en el admin para revertir manualmente
+                        await loadQueueData();
+                    });
                 }
+                // Recargar la cola luego de aprobar la siguiente lazy
+                queueData = await apiFetch('/canciones/cola/extended');
+            } catch (approveErr) {
+                console.warn('No se pudo aprobar la siguiente canción lazy automáticamente:', approveErr);
+                showNotification('No se pudo aprobar automáticamente la siguiente canción lazy.', 'error');
             }
         }
         currentQueueData = queueData;

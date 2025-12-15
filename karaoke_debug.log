@@ -1795,3 +1795,27 @@
 2025-12-15 11:12:19,296 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2CKI3pWvM19Pc%2C9o1ea3O_GTs%2CO_Jv-_nEqWk%2CbZLojmRvRd8%2CsU8FqZQOK3k%2CKTT2QhqY23g%2CNP3LASw8uWY%2CSAe4DxIadxM&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-15 11:12:19,313 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-15 11:12:19,317 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-15 15:31:02,535 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-15 15:31:02,539 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-15 15:31:04,934 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-15 15:31:04,935 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-15 15:31:04,936 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-15 15:31:05,589 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-15 15:31:05,598 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-15 15:31:05,600 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'Fs_BnnaEUts', '5yLGjXTF6MY', 'U9GFert9tkU', 'b5WU3czhh3I', '6mysi-heljE', 'xnO-49PvGCY', 'aJ5wyBE9M_0', 'bY61n7lwzrY']
+2025-12-15 15:31:05,602 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-15 15:31:05,813 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CFs_BnnaEUts%2C5yLGjXTF6MY%2CU9GFert9tkU%2Cb5WU3czhh3I%2C6mysi-heljE%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2CbY61n7lwzrY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-15 15:31:05,825 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-15 15:31:05,838 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-15 15:31:05,865 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera y sebastian ayala'
+2025-12-15 15:31:05,901 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera y sebastian ayala' (Karaoke Mode: False)
+2025-12-15 15:31:09,700 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-15 15:31:09,706 - youtube - INFO - Búsqueda por texto: 'jhony rivera y sebastian ayala'
+2025-12-15 15:31:09,717 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-15 15:31:10,397 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera+y+sebastian+ayala&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-15 15:31:10,402 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-15 15:31:10,404 - youtube - INFO - IDs de video encontrados: ['6kyJCaBg0Ys', '69NZ0WUo0dM', 'Fs_BnnaEUts', '5yLGjXTF6MY', 'U9GFert9tkU', 'b5WU3czhh3I', '6mysi-heljE', 'xnO-49PvGCY', 'aJ5wyBE9M_0', 'bY61n7lwzrY']
+2025-12-15 15:31:10,410 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-15 15:31:10,640 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CFs_BnnaEUts%2C5yLGjXTF6MY%2CU9GFert9tkU%2Cb5WU3czhh3I%2C6mysi-heljE%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2CbY61n7lwzrY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-15 15:31:10,648 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-15 15:31:10,680 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

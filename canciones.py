@@ -153,9 +153,9 @@ async def rechazar_cancion(cancion_id: int, db: Session = Depends(get_db), api_k
     if db_cancion.estado == 'aprobado' or db_cancion.approved_at is not None:
         raise HTTPException(status_code=403, detail="No se puede eliminar: la canción ya fue aprobada por el sistema")
     
-    # Solo se pueden rechazar canciones en estado 'pendiente'
-    if db_cancion.estado != 'pendiente':
-        raise HTTPException(status_code=403, detail="Solo se pueden eliminar canciones pendientes")
+    # Solo se pueden rechazar canciones en estado 'pendiente' o 'pendiente_lazy'
+    if db_cancion.estado not in ['pendiente', 'pendiente_lazy']:
+        raise HTTPException(status_code=403, detail="Solo se pueden eliminar canciones pendientes o en cola lazy")
     
     db_cancion = crud.update_cancion_estado(db, cancion_id=cancion_id, nuevo_estado="rechazada")
     crud.create_admin_log_entry(db, action="REJECT_SONG", details=f"Canción '{db_cancion.titulo}' rechazada.")
