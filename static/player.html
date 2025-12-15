@@ -202,61 +202,6 @@
         #notification-banner.show {
             top: 0;
         }
-
-        /* --- Controles de Reproducción --- */
-        .player-controls {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 15;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        .player-controls.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .control-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 70px;
-            height: 70px;
-            font-size: 32px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-
-        .control-btn:hover {
-            background-color: #45a049;
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
-        }
-
-        .control-btn:active {
-            transform: scale(0.95);
-        }
-
-        .control-btn.pause-btn {
-            background-color: #ff9800;
-        }
-
-        .control-btn.pause-btn:hover {
-            background-color: #e68900;
-        }
     </style>
 </head>
 
@@ -270,10 +215,7 @@
 
     <div id="player-container"></div>
 
-    <div class="player-controls" id="player-controls">
-        <button class="control-btn" id="play-btn" title="Reproducir">▶️</button>
-        <button class="control-btn pause-btn" id="pause-btn" title="Pausar">⏸️</button>
-    </div>
+
 
     <div class="info-overlay" id="info-overlay">
         <div class="info-section">
@@ -349,12 +291,8 @@
             standbyScreen.style.opacity = '1';
             infoOverlay.style.opacity = '0';
             backgroundCarousel.classList.add('active');
-            
-            // Ocultar controles cuando no hay video
-            const playerControls = document.getElementById('player-controls');
-            if (playerControls) {
-                playerControls.classList.add('hidden');
-            }
+
+
         }
 
         function stopCarousel() {
@@ -363,12 +301,8 @@
             clearInterval(carouselInterval);
             carouselInterval = null;
             backgroundCarousel.classList.remove('active');
-            
-            // Mostrar controles cuando hay video
-            const playerControls = document.getElementById('player-controls');
-            if (playerControls) {
-                playerControls.classList.remove('hidden');
-            }
+
+
         }
 
         // Función para crear el reproductor de YouTube con la API
@@ -549,21 +483,21 @@
                         method: 'GET',
                         headers: { 'Content-Type': 'application/json' }
                     })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.upcoming && data.upcoming.length > 0) {
-                            const nextSong = data.upcoming[0];
-                            preLoadedVideoId = nextSong.youtube_id;
-                            console.log(`✅ Pre-cargada siguiente canción: ${nextSong.titulo} (${nextSong.youtube_id})`);
-                            
-                            // Pre-cargar el video sin reproducirlo
-                            if (ytPlayer && ytPlayer.cueVideoById) {
-                                ytPlayer.cueVideoById(nextSong.youtube_id);
-                                console.log(`✅ Video pre-cargado en el reproductor: ${nextSong.youtube_id}`);
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.upcoming && data.upcoming.length > 0) {
+                                const nextSong = data.upcoming[0];
+                                preLoadedVideoId = nextSong.youtube_id;
+                                console.log(`✅ Pre-cargada siguiente canción: ${nextSong.titulo} (${nextSong.youtube_id})`);
+
+                                // Pre-cargar el video sin reproducirlo
+                                if (ytPlayer && ytPlayer.cueVideoById) {
+                                    ytPlayer.cueVideoById(nextSong.youtube_id);
+                                    console.log(`✅ Video pre-cargado en el reproductor: ${nextSong.youtube_id}`);
+                                }
                             }
-                        }
-                    })
-                    .catch(err => console.error('❌ Error pre-cargando siguiente canción:', err));
+                        })
+                        .catch(err => console.error('❌ Error pre-cargando siguiente canción:', err));
 
                     // Limpiar el watcher
                     if (preLoadWatcher) {
@@ -733,32 +667,9 @@
         window.addEventListener('DOMContentLoaded', () => {
             connectWebSocket();
             startCarousel(); // Inicia el carrusel al cargar la página
-            setupPlayerControls();
         });
 
-        // Configurar controles de reproducción
-        function setupPlayerControls() {
-            const playBtn = document.getElementById('play-btn');
-            const pauseBtn = document.getElementById('pause-btn');
 
-            if (playBtn) {
-                playBtn.addEventListener('click', () => {
-                    if (ytPlayer && ytPlayer.playVideo) {
-                        ytPlayer.playVideo();
-                        console.log('▶️ Reproducción iniciada por botón manual');
-                    }
-                });
-            }
-
-            if (pauseBtn) {
-                pauseBtn.addEventListener('click', () => {
-                    if (ytPlayer && ytPlayer.pauseVideo) {
-                        ytPlayer.pauseVideo();
-                        console.log('⏸️ Reproducción pausada por botón manual');
-                    }
-                });
-            }
-        }
     </script>
 </body>
 

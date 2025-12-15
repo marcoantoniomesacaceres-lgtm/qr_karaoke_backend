@@ -643,29 +643,37 @@ async function handleQueueActions(event) {
 }
 
 async function handlePauseResume() {
-    try {
-        // Verificar si hay una canción en reproducción
-        const queueData = await apiFetch('/canciones/cola');
-        const nowPlaying = queueData.now_playing;
+    const pauseBtn = document.querySelector('button[data-action="pause-resume-toggle"]');
+    const originalText = pauseBtn ? pauseBtn.textContent : '';
 
-        if (!nowPlaying) {
-            showNotification('No hay canción en reproducción', 'warning');
-            return;
+    try {
+        // 1. Determine Intent based on current local state
+        const isCurrentlyPlaying = playerState.isPlaying;
+        const newIsPlaying = !isCurrentlyPlaying;
+
+        // 2. Optimistic UI Update
+        playerState.isPlaying = newIsPlaying; // Toggle state immediately
+        if (pauseBtn) {
+            pauseBtn.textContent = newIsPlaying ? '⏸️ Pausar' : '▶️ Reanudar';
         }
 
-        // Alternar entre pausar y reanudar basado en el estado actual
-        const endpoint = playerState.isPlaying ? '/admin/player/pause' : '/admin/player/resume';
-        const action = playerState.isPlaying ? 'pausada' : 'reanudada';
-
+        // 3. API Call
+        const endpoint = isCurrentlyPlaying ? '/admin/player/pause' : '/admin/player/resume';
         await apiFetch(endpoint, { method: 'POST' });
 
-        // Actualizar el estado local
-        playerState.isPlaying = !playerState.isPlaying;
-        playerState.currentSongId = nowPlaying.id;
+        showNotification(newIsPlaying ? '▶️ Reproducción reanudada' : '⏸️ Reproducción pausada', 'info');
 
-        showNotification(`⏸️ Reproducción ${action}`, 'info');
+        // 4. Reload Queue (Updates UI fully and ensures sync)
         await reloadApprovedQueue();
+
     } catch (error) {
+        console.error('Error toggling pause/resume:', error);
+
+        // Revert on error
+        playerState.isPlaying = !playerState.isPlaying;
+        if (pauseBtn) {
+            pauseBtn.textContent = originalText;
+        }
         showNotification(`Error: ${error.message}`, 'error');
     }
 }
