@@ -264,7 +264,7 @@ async def eliminar_cancion(cancion_id: int, usuario_id: int, db: Session = Depen
 
     if not db_cancion:
         raise HTTPException(status_code=404, detail="Canción no encontrada o no te pertenece.")
-    if db_cancion.estado not in ['pendiente', 'aprobado']:
+    if db_cancion.estado not in ['pendiente', 'aprobado', 'pendiente_lazy']:
         raise HTTPException(status_code=400, detail="No se puede eliminar una canción que ya está reproduciendo o ha sido cantada.")
 
     crud.delete_cancion(db, cancion_id=cancion_id)

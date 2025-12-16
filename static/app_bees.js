@@ -56,7 +56,7 @@ function renderQueue(queueData) {
 
 function createSongItemHTML(song, isMyList) {
     const statusClass = `status-${song.estado}`;
-    const canDelete = isMyList && song.estado === 'pendiente';
+    const canDelete = isMyList && (song.estado === 'pendiente' || song.estado === 'aprobado' || song.estado === 'pendiente_lazy');
     const scoreInfo = isMyList && song.estado === 'cantada' && song.puntuacion_ia ?
         `<div class="song-score">Puntaje: <strong>${song.puntuacion_ia}</strong></div>` : '';
     const deleteButton = `<button class="delete-song-btn" data-song-id="${song.id}">Eliminar</button>`;

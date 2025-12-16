@@ -2011,3 +2011,15 @@
 2025-12-16 15:57:43,816 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=4Ez2wJnlwag%2CtbUtsvgeTTc%2CbF16O9IBSqw%2C1a3REFH83WA%2Cf5oxjDF9lb4%2CgWKaByT--Xw%2C2vVRiSWRIRY%2CYkPp3LE8Yg8%2Cw3Vy8aCH5mw%2CDWUpLPxb-lA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-16 15:57:43,823 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-16 15:57:43,825 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 16:35:06,717 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-16 16:35:06,720 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el heredero' (Karaoke Mode: False)
+2025-12-16 16:35:08,717 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 16:35:08,718 - youtube - INFO - Búsqueda por texto: 'el heredero'
+2025-12-16 16:35:08,719 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 16:35:09,402 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+heredero&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 16:35:09,409 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 16:35:09,411 - youtube - INFO - IDs de video encontrados: ['76aba24n66U', '9o1ea3O_GTs', 'KI3pWvM19Pc', 'O_Jv-_nEqWk', 'sU8FqZQOK3k', 'bZLojmRvRd8', 'IfoPQ7mGIT0', 'NP3LASw8uWY', 'bu5WOIoGAIU']
+2025-12-16 16:35:09,414 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 16:35:09,647 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2C9o1ea3O_GTs%2CKI3pWvM19Pc%2CO_Jv-_nEqWk%2CsU8FqZQOK3k%2CbZLojmRvRd8%2CIfoPQ7mGIT0%2CNP3LASw8uWY%2Cbu5WOIoGAIU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 16:35:09,658 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 16:35:09,660 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
