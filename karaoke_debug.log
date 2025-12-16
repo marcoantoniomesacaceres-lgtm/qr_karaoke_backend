@@ -1819,3 +1819,75 @@
 2025-12-15 15:31:10,640 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=6kyJCaBg0Ys%2C69NZ0WUo0dM%2CFs_BnnaEUts%2C5yLGjXTF6MY%2CU9GFert9tkU%2Cb5WU3czhh3I%2C6mysi-heljE%2CxnO-49PvGCY%2CaJ5wyBE9M_0%2CbY61n7lwzrY&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-15 15:31:10,648 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-15 15:31:10,680 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:16:59,687 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-16 15:16:59,692 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-16 15:17:02,580 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:17:02,581 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-16 15:17:02,582 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:17:03,346 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:17:03,353 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:17:03,354 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'IRSedFplzCc', 'onGJj-JIBZk', '2JbrCXDNGcA', '6kYEW6oQfpw', 'UAAy5oTPUOE']
+2025-12-16 15:17:03,355 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:17:03,557 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2CIRSedFplzCc%2ConGJj-JIBZk%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CUAAy5oTPUOE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:17:03,563 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:17:03,565 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:17:03,587 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'el mayor de los ranas'
+2025-12-16 15:17:03,615 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-16 15:17:05,597 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:17:05,598 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-16 15:17:05,599 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:17:06,285 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:17:06,291 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:17:06,292 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'IRSedFplzCc', 'onGJj-JIBZk', '2JbrCXDNGcA', '6kYEW6oQfpw', 'UAAy5oTPUOE']
+2025-12-16 15:17:06,295 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:17:06,482 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2CIRSedFplzCc%2ConGJj-JIBZk%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CUAAy5oTPUOE&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:17:06,491 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:17:06,494 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:17:43,177 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del vallenato'
+2025-12-16 15:17:43,178 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del vallenato' (Karaoke Mode: False)
+2025-12-16 15:17:44,733 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:17:44,734 - youtube - INFO - Búsqueda por texto: 'los gigantes del vallenato'
+2025-12-16 15:17:44,734 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:17:45,744 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+vallenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:17:45,748 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:17:45,749 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'Jg3fsmqXoIo', 'XEHRhQgn7Do', 'WyueNqPNUrQ', '3kWwGa4W8Ak', 'jsD3QWHtvGI', '8veX6aXeaBU', 'iolgNqlfI14', 'UWTLJ91A8QA', 'C4cGljNvCig']
+2025-12-16 15:17:45,750 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:17:45,937 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CJg3fsmqXoIo%2CXEHRhQgn7Do%2CWyueNqPNUrQ%2C3kWwGa4W8Ak%2CjsD3QWHtvGI%2C8veX6aXeaBU%2CiolgNqlfI14%2CUWTLJ91A8QA%2CC4cGljNvCig&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:17:46,054 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:17:46,056 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:17:46,073 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del vallenato'
+2025-12-16 15:17:46,074 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del vallenato' (Karaoke Mode: False)
+2025-12-16 15:17:47,679 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:17:47,680 - youtube - INFO - Búsqueda por texto: 'los gigantes del vallenato'
+2025-12-16 15:17:47,680 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:17:48,344 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+vallenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:17:48,347 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:17:48,348 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'XEHRhQgn7Do', '8veX6aXeaBU', 'iolgNqlfI14', '3kWwGa4W8Ak', 'C4cGljNvCig', 'jsD3QWHtvGI', 'UWTLJ91A8QA']
+2025-12-16 15:17:48,350 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:17:48,602 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CXEHRhQgn7Do%2C8veX6aXeaBU%2CiolgNqlfI14%2C3kWwGa4W8Ak%2CC4cGljNvCig%2CjsD3QWHtvGI%2CUWTLJ91A8QA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:17:48,611 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:17:48,613 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:18:27,166 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'niña bonita jean carlos centeno'
+2025-12-16 15:18:27,168 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'niña bonita jean carlos centeno' (Karaoke Mode: False)
+2025-12-16 15:18:28,783 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:18:28,786 - youtube - INFO - Búsqueda por texto: 'niña bonita jean carlos centeno'
+2025-12-16 15:18:28,787 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:18:29,555 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=ni%C3%B1a+bonita+jean+carlos+centeno&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:18:29,562 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:18:29,563 - youtube - INFO - IDs de video encontrados: ['DR6ED6lvkb4', '2A0djyOTwUo', 'qUA6dhh2DqY', 'Fa36CaBfONo', 'tleZFB1Tqks', 'bPK8rO926-U', 'tOPtSacHBwE', 'ZpESML4MSvc', 'rALHWTa8EWU', 'mdnJk_QpvJ0']
+2025-12-16 15:18:29,565 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:18:29,803 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=DR6ED6lvkb4%2C2A0djyOTwUo%2CqUA6dhh2DqY%2CFa36CaBfONo%2CtleZFB1Tqks%2CbPK8rO926-U%2CtOPtSacHBwE%2CZpESML4MSvc%2CrALHWTa8EWU%2CmdnJk_QpvJ0&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:18:29,813 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:18:29,815 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:18:29,831 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'niña bonita jean carlos centeno'
+2025-12-16 15:18:29,832 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'niña bonita jean carlos centeno' (Karaoke Mode: False)
+2025-12-16 15:18:32,806 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:18:32,808 - youtube - INFO - Búsqueda por texto: 'niña bonita jean carlos centeno'
+2025-12-16 15:18:32,810 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:18:33,770 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=ni%C3%B1a+bonita+jean+carlos+centeno&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:18:33,776 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:18:33,777 - youtube - INFO - IDs de video encontrados: ['DR6ED6lvkb4', '2A0djyOTwUo', 'qUA6dhh2DqY', 'Fa36CaBfONo', 'tleZFB1Tqks', 'bPK8rO926-U', 'tOPtSacHBwE', 'rALHWTa8EWU', 'ZpESML4MSvc', 'mdnJk_QpvJ0', 'fEvB0THpcBU', 'YSufzyNyLFE', 'RF7ibcvnlO4', 'OFh4HpLMvxs', 't1qZIGxcSfM', 'wDeZiEZGS3Q', 'CoOhhBHH7VE', 'JgwT_YJoaXo', 'rBYTilqGJZA', 'PXrX_Yk2kKs', 'dzBohtYLekQ', 'JJ1rgvAvydQ', 'qc-76qXIwVU', '5N4GgziPZkw', '4S6uE6LMPbg']
+2025-12-16 15:18:33,799 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:18:34,050 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=DR6ED6lvkb4%2C2A0djyOTwUo%2CqUA6dhh2DqY%2CFa36CaBfONo%2CtleZFB1Tqks%2CbPK8rO926-U%2CtOPtSacHBwE%2CrALHWTa8EWU%2CZpESML4MSvc%2CmdnJk_QpvJ0%2CfEvB0THpcBU%2CYSufzyNyLFE%2CRF7ibcvnlO4%2COFh4HpLMvxs%2Ct1qZIGxcSfM%2CwDeZiEZGS3Q%2CCoOhhBHH7VE%2CJgwT_YJoaXo%2CrBYTilqGJZA%2CPXrX_Yk2kKs%2CdzBohtYLekQ%2CJJ1rgvAvydQ%2Cqc-76qXIwVU%2C5N4GgziPZkw%2C4S6uE6LMPbg&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:18:34,074 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:18:34,078 - youtube - INFO - Procesamiento finalizado. Se encontraron 25 resultados formateados.

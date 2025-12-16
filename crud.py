@@ -2087,7 +2087,7 @@ def get_cola_lazy(db: Session):
 
         .filter(models.Cancion.estado == "pendiente_lazy")
 
-        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.id.asc())
+        .order_by(models.Cancion.orden_manual.asc().nulls_last(), models.Cancion.created_at.asc())
 
         .all()
 
@@ -2145,7 +2145,7 @@ def get_cola_lazy(db: Session):
 
             match_mesa_canciones[mesa_id] = deque()
 
-            mesa_arrival_time[mesa_id] = cancion.id
+            mesa_arrival_time[mesa_id] = cancion.created_at
 
             mesas_involucradas_ids.add(mesa_id)
 
