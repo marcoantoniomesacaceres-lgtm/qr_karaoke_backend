@@ -1963,3 +1963,51 @@
 2025-12-16 15:46:54,785 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=oYobLFYuTXs%2CbKSMX4K_ceM%2CAVB_I-OF678%2CW-vAUvwUK2s%2C-HFP9HnLFpA%2C2h9pIhTocOk%2CkhId1CnKIv4%2C3KLPe0ti0TM%2CEYKTEluW6-8%2C--mwc9RIYw4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-16 15:46:54,815 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-16 15:46:54,817 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-16 15:54:51,555 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-16 15:54:51,558 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-16 15:54:53,442 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:54:53,443 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-16 15:54:53,443 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:54:54,078 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:54:54,099 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:54:54,102 - youtube - INFO - IDs de video encontrados: ['U9GFert9tkU', '69NZ0WUo0dM', 'VazD45BRodk', 'mjaDOIeZErU', 'INFbHAj5URI', 'ZPnsj2Ov2z8', 'mHbPijjfWFA', '1Cx56Nh_ipg', 'n40eIkhL4cE', 'OHDfiCZgUy8']
+2025-12-16 15:54:54,114 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:54:54,401 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=U9GFert9tkU%2C69NZ0WUo0dM%2CVazD45BRodk%2CmjaDOIeZErU%2CINFbHAj5URI%2CZPnsj2Ov2z8%2CmHbPijjfWFA%2C1Cx56Nh_ipg%2Cn40eIkhL4cE%2COHDfiCZgUy8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:54:54,429 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:54:54,434 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:54:54,458 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'jhony rivera'
+2025-12-16 15:54:54,460 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'jhony rivera' (Karaoke Mode: False)
+2025-12-16 15:54:56,012 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:54:56,013 - youtube - INFO - Búsqueda por texto: 'jhony rivera'
+2025-12-16 15:54:56,014 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:54:56,730 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=jhony+rivera&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:54:56,745 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:54:56,747 - youtube - INFO - IDs de video encontrados: ['U9GFert9tkU', '69NZ0WUo0dM', 'VazD45BRodk', 'mjaDOIeZErU', 'INFbHAj5URI', 'ZPnsj2Ov2z8', 'mHbPijjfWFA', '1Cx56Nh_ipg', 'n40eIkhL4cE', 'OHDfiCZgUy8']
+2025-12-16 15:54:56,750 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:54:57,052 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=U9GFert9tkU%2C69NZ0WUo0dM%2CVazD45BRodk%2CmjaDOIeZErU%2CINFbHAj5URI%2CZPnsj2Ov2z8%2CmHbPijjfWFA%2C1Cx56Nh_ipg%2Cn40eIkhL4cE%2COHDfiCZgUy8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:54:57,084 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:54:57,095 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:57:38,917 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'victor valverde'
+2025-12-16 15:57:38,919 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'victor valverde' (Karaoke Mode: False)
+2025-12-16 15:57:40,480 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:57:40,481 - youtube - INFO - Búsqueda por texto: 'victor valverde'
+2025-12-16 15:57:40,482 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:57:41,201 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=victor+valverde&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:57:41,213 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:57:41,216 - youtube - INFO - IDs de video encontrados: ['4Ez2wJnlwag', 'tbUtsvgeTTc', 'bF16O9IBSqw', '1a3REFH83WA', 'f5oxjDF9lb4', 'gWKaByT--Xw', '2vVRiSWRIRY', 'YkPp3LE8Yg8', 'w3Vy8aCH5mw', 'DWUpLPxb-lA']
+2025-12-16 15:57:41,226 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:57:41,392 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=4Ez2wJnlwag%2CtbUtsvgeTTc%2CbF16O9IBSqw%2C1a3REFH83WA%2Cf5oxjDF9lb4%2CgWKaByT--Xw%2C2vVRiSWRIRY%2CYkPp3LE8Yg8%2Cw3Vy8aCH5mw%2CDWUpLPxb-lA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:57:41,400 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:57:41,402 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:57:41,421 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'victor valverde'
+2025-12-16 15:57:41,454 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'victor valverde' (Karaoke Mode: False)
+2025-12-16 15:57:43,030 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:57:43,031 - youtube - INFO - Búsqueda por texto: 'victor valverde'
+2025-12-16 15:57:43,032 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:57:43,624 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=victor+valverde&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:57:43,637 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:57:43,638 - youtube - INFO - IDs de video encontrados: ['4Ez2wJnlwag', 'tbUtsvgeTTc', 'bF16O9IBSqw', '1a3REFH83WA', 'f5oxjDF9lb4', 'gWKaByT--Xw', '2vVRiSWRIRY', 'YkPp3LE8Yg8', 'w3Vy8aCH5mw', 'DWUpLPxb-lA']
+2025-12-16 15:57:43,639 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:57:43,816 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=4Ez2wJnlwag%2CtbUtsvgeTTc%2CbF16O9IBSqw%2C1a3REFH83WA%2Cf5oxjDF9lb4%2CgWKaByT--Xw%2C2vVRiSWRIRY%2CYkPp3LE8Yg8%2Cw3Vy8aCH5mw%2CDWUpLPxb-lA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:57:43,823 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:57:43,825 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

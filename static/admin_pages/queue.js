@@ -321,7 +321,7 @@ function renderApprovedSongs(songs, listElement) {
                     <button class="bees-btn bees-btn-primary bees-btn-small" data-id="${song.id}" data-action="play-song" title="Reproducir en player">▶️ Reproducir</button>
                     <button class="bees-btn bees-btn-info bees-btn-small" data-action="pause-resume-toggle" title="Pausar/Reanudar">${pauseButtonText}</button>
                     <button class="bees-btn bees-btn-warning bees-btn-small" data-action="restart" title="Reiniciar">🔄 Reiniciar</button>
-                    <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
+                    <button class="bees-btn bees-btn-success bees-btn-small" data-action="play-next" title="Siguiente canción">⏭️ Siguiente</button>
                 </div>
             `;
         }
@@ -333,7 +333,13 @@ function renderApprovedSongs(songs, listElement) {
                     <button class="bees-btn bees-btn-warning bees-btn-small" data-id="${song.id}" data-action="move-down" title="Bajar">⬇️ Bajar</button>
                     <button class="bees-btn bees-btn-danger bees-btn-small" data-id="${song.id}" data-action="remove" title="Eliminar">❌ Eliminar</button>
                 </div>
+                </div>
             `;
+        }
+
+        // Ocultar botones SOLO para la segunda canción (la próxima en sonar)
+        if (index === 1) {
+            buttonsHtml = '';
         }
 
         li.innerHTML = `
@@ -570,6 +576,21 @@ async function handleQueueActions(event) {
                 showNotification('🔄 Canción reiniciada', 'info');
             } catch (e) {
                 showNotification('Función no disponible', 'warning');
+            }
+
+        } else if (action === 'play-next') {
+            if (!confirm('¿Pasar a la siguiente canción?')) {
+                button.disabled = false;
+                return;
+            }
+            try {
+                // Endpoint para avanzar cola
+                await apiFetch('/canciones/siguiente', { method: 'POST' });
+                showNotification('⏭️ Cambiando a la siguiente canción...', 'success');
+                // No necesitamos reload manual si el websocket hace su trabajo,
+                // pero por seguridad podemos activarlo o esperar el broadcast.
+            } catch (error) {
+                showNotification(`Error al cambiar de canción: ${error.message}`, 'error');
             }
 
         } else if (action === 'pause-resume-toggle') {
