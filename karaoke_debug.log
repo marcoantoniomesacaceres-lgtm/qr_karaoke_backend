@@ -1891,3 +1891,27 @@
 2025-12-16 15:18:34,050 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=DR6ED6lvkb4%2C2A0djyOTwUo%2CqUA6dhh2DqY%2CFa36CaBfONo%2CtleZFB1Tqks%2CbPK8rO926-U%2CtOPtSacHBwE%2CrALHWTa8EWU%2CZpESML4MSvc%2CmdnJk_QpvJ0%2CfEvB0THpcBU%2CYSufzyNyLFE%2CRF7ibcvnlO4%2COFh4HpLMvxs%2Ct1qZIGxcSfM%2CwDeZiEZGS3Q%2CCoOhhBHH7VE%2CJgwT_YJoaXo%2CrBYTilqGJZA%2CPXrX_Yk2kKs%2CdzBohtYLekQ%2CJJ1rgvAvydQ%2Cqc-76qXIwVU%2C5N4GgziPZkw%2C4S6uE6LMPbg&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-16 15:18:34,074 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-16 15:18:34,078 - youtube - INFO - Procesamiento finalizado. Se encontraron 25 resultados formateados.
+2025-12-16 15:28:01,821 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'osito dormilón los gigantes'
+2025-12-16 15:28:01,824 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'osito dormilón los gigantes' (Karaoke Mode: False)
+2025-12-16 15:28:03,589 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:28:03,590 - youtube - INFO - Búsqueda por texto: 'osito dormilón los gigantes'
+2025-12-16 15:28:03,591 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:28:04,264 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=osito+dormil%C3%B3n+los+gigantes&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:28:04,285 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:28:04,288 - youtube - INFO - IDs de video encontrados: ['SloTFWbshwE', 'EYKTEluW6-8', 'iu6xA-Q9RQg', 'GuUOXiKIjFM', 'yry3rgGlRUw', 'aev33aFR8pw', 't1qZIGxcSfM', 'wDeZiEZGS3Q', 'dodzdbQc9Dw', '_jCGPccJaEc']
+2025-12-16 15:28:04,292 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:28:04,489 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=SloTFWbshwE%2CEYKTEluW6-8%2Ciu6xA-Q9RQg%2CGuUOXiKIjFM%2Cyry3rgGlRUw%2Caev33aFR8pw%2Ct1qZIGxcSfM%2CwDeZiEZGS3Q%2CdodzdbQc9Dw%2C_jCGPccJaEc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:28:04,523 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:28:04,530 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:28:04,545 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'osito dormilón los gigantes'
+2025-12-16 15:28:04,548 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'osito dormilón los gigantes' (Karaoke Mode: False)
+2025-12-16 15:28:06,081 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:28:06,082 - youtube - INFO - Búsqueda por texto: 'osito dormilón los gigantes'
+2025-12-16 15:28:06,083 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:28:06,768 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=osito+dormil%C3%B3n+los+gigantes&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:28:06,775 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:28:06,776 - youtube - INFO - IDs de video encontrados: ['SloTFWbshwE', 'EYKTEluW6-8', 'iu6xA-Q9RQg', 'GuUOXiKIjFM', 'yry3rgGlRUw', 'aev33aFR8pw', 't1qZIGxcSfM', 'wDeZiEZGS3Q', 'dodzdbQc9Dw', '_jCGPccJaEc']
+2025-12-16 15:28:06,783 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:28:07,004 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=SloTFWbshwE%2CEYKTEluW6-8%2Ciu6xA-Q9RQg%2CGuUOXiKIjFM%2Cyry3rgGlRUw%2Caev33aFR8pw%2Ct1qZIGxcSfM%2CwDeZiEZGS3Q%2CdodzdbQc9Dw%2C_jCGPccJaEc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:28:07,042 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:28:07,045 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.

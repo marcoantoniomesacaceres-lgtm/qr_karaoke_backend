@@ -159,6 +159,10 @@ async def _perform_youtube_search(q: str, karaoke_mode: bool = False) -> List[Di
                 else:
                     video_id_val = vid_field or ""
 
+                # Filtrar por duración strict (120s - 600s)
+                if not (120 <= duration_seconds <= 600):
+                    continue
+
                 formatted_results.append({
                     "video_id": video_id_val,
                     "title": title,
