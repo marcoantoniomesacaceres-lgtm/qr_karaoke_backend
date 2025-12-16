@@ -1915,3 +1915,51 @@
 2025-12-16 15:28:07,004 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=SloTFWbshwE%2CEYKTEluW6-8%2Ciu6xA-Q9RQg%2CGuUOXiKIjFM%2Cyry3rgGlRUw%2Caev33aFR8pw%2Ct1qZIGxcSfM%2CwDeZiEZGS3Q%2CdodzdbQc9Dw%2C_jCGPccJaEc&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-16 15:28:07,042 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-16 15:28:07,045 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:45:53,310 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del vallenato'
+2025-12-16 15:45:53,311 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del vallenato' (Karaoke Mode: False)
+2025-12-16 15:45:55,124 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:45:55,125 - youtube - INFO - Búsqueda por texto: 'los gigantes del vallenato'
+2025-12-16 15:45:55,126 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:45:55,791 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+vallenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:45:55,796 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:45:55,797 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'XEHRhQgn7Do', '8veX6aXeaBU', 'iolgNqlfI14', '3kWwGa4W8Ak', 'C4cGljNvCig', 'jsD3QWHtvGI', 'UWTLJ91A8QA']
+2025-12-16 15:45:55,802 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:45:55,969 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CXEHRhQgn7Do%2C8veX6aXeaBU%2CiolgNqlfI14%2C3kWwGa4W8Ak%2CC4cGljNvCig%2CjsD3QWHtvGI%2CUWTLJ91A8QA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:45:55,983 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:45:55,989 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:45:56,009 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'los gigantes del vallenato'
+2025-12-16 15:45:56,044 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'los gigantes del vallenato' (Karaoke Mode: False)
+2025-12-16 15:45:57,637 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:45:57,638 - youtube - INFO - Búsqueda por texto: 'los gigantes del vallenato'
+2025-12-16 15:45:57,640 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:45:58,358 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=los+gigantes+del+vallenato&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:45:58,362 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:45:58,363 - youtube - INFO - IDs de video encontrados: ['LA4X4fyJOcg', 'Jg3fsmqXoIo', 'WyueNqPNUrQ', 'XEHRhQgn7Do', '8veX6aXeaBU', 'iolgNqlfI14', '3kWwGa4W8Ak', 'C4cGljNvCig', 'jsD3QWHtvGI', 'UWTLJ91A8QA']
+2025-12-16 15:45:58,364 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:45:58,724 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=LA4X4fyJOcg%2CJg3fsmqXoIo%2CWyueNqPNUrQ%2CXEHRhQgn7Do%2C8veX6aXeaBU%2CiolgNqlfI14%2C3kWwGa4W8Ak%2CC4cGljNvCig%2CjsD3QWHtvGI%2CUWTLJ91A8QA&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:45:58,771 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:45:58,810 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
+2025-12-16 15:46:49,804 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'vallenatos'
+2025-12-16 15:46:49,805 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'vallenatos' (Karaoke Mode: False)
+2025-12-16 15:46:51,337 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:46:51,338 - youtube - INFO - Búsqueda por texto: 'vallenatos'
+2025-12-16 15:46:51,339 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:46:51,943 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=vallenatos&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:46:51,961 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:46:51,962 - youtube - INFO - IDs de video encontrados: ['oYobLFYuTXs', 'bKSMX4K_ceM', 'AVB_I-OF678', 'W-vAUvwUK2s', '-HFP9HnLFpA', '2h9pIhTocOk', 'khId1CnKIv4', '3KLPe0ti0TM', 'EYKTEluW6-8', '--mwc9RIYw4']
+2025-12-16 15:46:51,963 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:46:52,165 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=oYobLFYuTXs%2CbKSMX4K_ceM%2CAVB_I-OF678%2CW-vAUvwUK2s%2C-HFP9HnLFpA%2C2h9pIhTocOk%2CkhId1CnKIv4%2C3KLPe0ti0TM%2CEYKTEluW6-8%2C--mwc9RIYw4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:46:52,177 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:46:52,179 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-16 15:46:52,200 - youtube - INFO - Búsqueda [Admin] en YouTube con el término: 'vallenatos'
+2025-12-16 15:46:52,225 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'vallenatos' (Karaoke Mode: False)
+2025-12-16 15:46:53,817 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-16 15:46:53,818 - youtube - INFO - Búsqueda por texto: 'vallenatos'
+2025-12-16 15:46:53,819 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-16 15:46:54,543 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=vallenatos&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-16 15:46:54,556 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-16 15:46:54,559 - youtube - INFO - IDs de video encontrados: ['oYobLFYuTXs', 'bKSMX4K_ceM', 'AVB_I-OF678', 'W-vAUvwUK2s', '-HFP9HnLFpA', '2h9pIhTocOk', 'khId1CnKIv4', '3KLPe0ti0TM', 'EYKTEluW6-8', '--mwc9RIYw4']
+2025-12-16 15:46:54,563 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-16 15:46:54,785 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=oYobLFYuTXs%2CbKSMX4K_ceM%2CAVB_I-OF678%2CW-vAUvwUK2s%2C-HFP9HnLFpA%2C2h9pIhTocOk%2CkhId1CnKIv4%2C3KLPe0ti0TM%2CEYKTEluW6-8%2C--mwc9RIYw4&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-16 15:46:54,815 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-16 15:46:54,817 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
