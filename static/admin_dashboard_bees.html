@@ -363,6 +363,9 @@
                                             <ul style="padding-left: 20px; margin: 5px 0; font-size: 0.95em;">${itemsHtml}</ul>
                                             <div class="item-meta">Por: ${pedido.usuario_nick} — ${new Date(pedido.created_at).toLocaleTimeString()}</div>
                                         </div>
+                                        <div class="pending-dialog-container">
+                                            <img src="/static/images/dialog_pending.png" alt="Pedido pendiente" class="pending-dialog-img">
+                                        </div>
                                         <div class="item-actions">
                                             <button class="btn-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Marcar como despachado">Despachado</button>
                                             <button class="btn-no-despachado" data-ids="${pedido.consumo_ids.join(',')}" title="Cancelar pedido">No Despachado</button>

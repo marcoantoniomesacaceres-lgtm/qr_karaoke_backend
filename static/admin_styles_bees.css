@@ -948,4 +948,29 @@ input:checked+.slider:before {
     .grid-2 {
         grid-template-columns: 1fr;
     }
+}/* ============================================
+   PENDING ORDER DIALOG
+   ============================================ */
+
+.pending-dialog-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.pending-dialog-img {
+    height: 60px;
+    /* Ajustar altura según diseño */
+    width: auto;
+    object-fit: contain;
+    max-width: 100%;
+}
+
+@media (max-width: 600px) {
+    .pending-dialog-container {
+        display: none;
+        /* Ocultar en móviles si falta espacio */
+    }
 }
