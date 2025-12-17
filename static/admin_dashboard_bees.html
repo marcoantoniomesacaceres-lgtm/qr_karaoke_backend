@@ -439,10 +439,19 @@
                                 // Solo procesar si es un objeto con estructura de cola
                                 if (data.now_playing || data.upcoming) {
                                     const approvedListEl = document.getElementById('approved-songs-list');
+                                    const lazySongsListEl = document.getElementById('lazy-songs-list');
+
                                     // Prefer module-managed render if available (queue.js defines renderApprovedSongs)
                                     if (typeof renderApprovedSongs === 'function') {
                                         try {
                                             renderApprovedSongs(data, approvedListEl);
+                                            // Fix: Also render lazy songs if present in the payload
+                                            if (data.lazy_queue || data.upcoming) {
+                                                // Assuming renderLazySongs is also global or we can access it
+                                                if (typeof renderLazySongs === 'function') {
+                                                    renderLazySongs(data.lazy_queue || [], lazySongsListEl);
+                                                }
+                                            }
                                         } catch (e) {
                                             console.error('Error in renderApprovedSongs:', e);
                                             // Fallback: ask the queue module to reload its data

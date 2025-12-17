@@ -519,7 +519,7 @@ async function handleAdminAddSong(event) {
 
 async function reloadApprovedQueue() {
     try {
-        const queueData = await apiFetch('/canciones/cola/extended');
+        const queueData = await apiFetch(`/canciones/cola/extended?_=${Date.now()}`);
         currentQueueData = queueData;
 
         const approvedSongsList = document.getElementById('approved-songs-list');
