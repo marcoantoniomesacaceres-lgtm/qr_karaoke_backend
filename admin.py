@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Response, HTTPException, Body
+from fastapi import APIRouter, Depends, Response, HTTPException, Body, BackgroundTasks
+import os, time
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 import models 
@@ -12,6 +13,15 @@ router = APIRouter(dependencies=[Depends(api_key_auth)])
 
 # Creamos un nuevo router para las rutas públicas que no necesitan clave de API
 public_router = APIRouter()
+
+
+def trigger_server_restart():
+    """
+    Helper to trigger Uvicorn reload by touching main.py.
+    """
+    time.sleep(1) # Wait for response to be sent
+    # Touching main.py to trigger reload
+    os.utime("main.py", None)
 
 def get_db():
     db = SessionLocal()
@@ -84,16 +94,22 @@ def get_my_table_account_status_public(usuario_id: int, db: Session = Depends(ge
 # --- Rutas de Administrador (protegidas por API Key) ---
 
 @router.post("/reset-night", status_code=204, summary="Reiniciar el sistema para una nueva noche")
-async def reset_night(db: Session = Depends(get_db)):
+async def reset_night(background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     **[Admin - ¡ACCIÓN DESTRUCTIVA!]** Borra todos los datos de la noche:
     mesas, usuarios, canciones y consumos.
     Útil para empezar de cero al día siguiente.
+    TAMBIÉN REINICIA EL SERVIDOR para evitar conflictos de estado.
     """
     crud.reset_database_for_new_night(db)
     crud.create_admin_log_entry(db, action="RESET_NIGHT", details="El sistema ha sido reiniciado para una nueva noche.")
+    
     # Después de borrar todo, notificamos a los clientes para que la cola se vacíe
     await websocket_manager.manager.broadcast_queue_update()
+    
+    # Programar reinicio del servidor
+    background_tasks.add_task(trigger_server_restart)
+    
     return Response(status_code=204)
 
 @router.post("/set-closing-time", status_code=200, summary="Establecer la hora de cierre")

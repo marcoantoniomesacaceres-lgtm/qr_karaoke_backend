@@ -105,14 +105,12 @@ async def anadir_cancion(
     # Crear canción
     db_cancion = crud.create_cancion_para_usuario(db=db, cancion=cancion, usuario_id=usuario_id)
     
-    # LAZY APPROVAL: Solo aprobar si no hay nada en la cola
-    # Si hay una canción reproduciendo o aprobada, esta va a pendiente_lazy
-    hay_cancion_activa = db.query(models.Cancion).filter(
-        models.Cancion.estado.in_(["reproduciendo", "aprobado"])
-    ).first()
+    # LAZY APPROVAL: Solo aprobar si no hay más de 1 canción aprobada en espera
+    # Si ya hay 1 o más canciones aprobadas (más la que suena), la nueva va a pendiente_lazy
+    approved_count = db.query(models.Cancion).filter(models.Cancion.estado == "aprobado").count()
     
-    if hay_cancion_activa:
-        # Poner en cola lazy
+    if approved_count >= 1:
+        # Ya hay una canción aprobada esperando, poner en cola lazy
         cancion_final = crud.update_cancion_estado(db, cancion_id=db_cancion.id, nuevo_estado="pendiente_lazy")
     else:
         # Primera canción, aprobar inmediatamente
