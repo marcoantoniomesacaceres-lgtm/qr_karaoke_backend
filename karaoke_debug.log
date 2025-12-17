@@ -2203,3 +2203,15 @@
 2025-12-17 11:35:41,109 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=76aba24n66U%2C9o1ea3O_GTs%2CKI3pWvM19Pc%2CO_Jv-_nEqWk%2CsU8FqZQOK3k%2CbZLojmRvRd8%2CIfoPQ7mGIT0%2CKTT2QhqY23g%2Cbu5WOIoGAIU&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
 2025-12-17 11:35:41,119 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
 2025-12-17 11:35:41,121 - youtube - INFO - Procesamiento finalizado. Se encontraron 9 resultados formateados.
+2025-12-17 15:41:59,552 - youtube - INFO - Búsqueda [Pública] en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-17 15:41:59,648 - youtube - INFO - Iniciando búsqueda interna en YouTube con el término: 'el mayor de los ranas' (Karaoke Mode: False)
+2025-12-17 15:42:05,028 - youtube - INFO - ¿Es una URL? ID extraído: None
+2025-12-17 15:42:05,031 - youtube - INFO - Búsqueda por texto: 'el mayor de los ranas'
+2025-12-17 15:42:05,035 - youtube - INFO - Realizando primera llamada a la API de YouTube (search)...
+2025-12-17 15:42:06,023 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/search?part=id&q=el+mayor+de+los+ranas&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94&type=video&videoCategoryId=10&maxResults=10 "HTTP/1.1 200 OK"
+2025-12-17 15:42:06,114 - youtube - INFO - Respuesta de la API (search) recibida con éxito.
+2025-12-17 15:42:06,140 - youtube - INFO - IDs de video encontrados: ['1a3REFH83WA', '4Ez2wJnlwag', 'ftfeDRZA5iE', 'oOl5vy6KiAs', 'DjfaCC3ZKs8', 'IRSedFplzCc', 'onGJj-JIBZk', '2JbrCXDNGcA', '6kYEW6oQfpw', 'rERCTLp4CK8']
+2025-12-17 15:42:06,232 - youtube - INFO - Realizando segunda llamada a la API de YouTube (videos)...
+2025-12-17 15:42:06,461 - httpx - INFO - HTTP Request: GET https://www.googleapis.com/youtube/v3/videos?part=contentDetails%2Csnippet&id=1a3REFH83WA%2C4Ez2wJnlwag%2CftfeDRZA5iE%2CoOl5vy6KiAs%2CDjfaCC3ZKs8%2CIRSedFplzCc%2ConGJj-JIBZk%2C2JbrCXDNGcA%2C6kYEW6oQfpw%2CrERCTLp4CK8&key=AIzaSyD5J79DvieL1TPjhk2ZOiwU-cHgd0QXn94 "HTTP/1.1 200 OK"
+2025-12-17 15:42:06,537 - youtube - INFO - Respuesta de la API (videos) recibida con éxito. Procesando resultados...
+2025-12-17 15:42:06,683 - youtube - INFO - Procesamiento finalizado. Se encontraron 10 resultados formateados.
