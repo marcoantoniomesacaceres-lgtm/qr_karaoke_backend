@@ -400,7 +400,36 @@
                     if (container) container.innerHTML = '';
                     startCarousel();
                 } else if (response.ok) {
-                    console.log('✅ Siguiente canción iniciada automáticamente');
+                    // Intentar usar la respuesta JSON como fallback en caso de que
+                    // el evento WebSocket `play_song` no llegue al cliente.
+                    try {
+                        const data = await response.json();
+                        // El endpoint retorna PlayNextResponse con `play_url` y `cancion`.
+                        let videoId = null;
+                        let duration = 0;
+                        if (data.cancion && data.cancion.youtube_id) {
+                            videoId = data.cancion.youtube_id;
+                            duration = data.cancion.duracion_seconds || 0;
+                        } else if (data.play_url) {
+                            try {
+                                const u = new URL(data.play_url);
+                                const parts = u.pathname.split('/');
+                                videoId = parts.pop() || parts.pop();
+                            } catch (e) {
+                                console.warn('No se pudo parsear play_url:', e);
+                            }
+                        }
+
+                        if (videoId) {
+                            console.log('✅ Iniciando reproducción (fallback HTTP) de:', videoId);
+                            playVideo(videoId, duration);
+                        } else {
+                            console.log('✅ Siguiente canción iniciada automáticamente (sin videoId en respuesta)');
+                        }
+                    } catch (err) {
+                        console.warn('No se pudo leer la respuesta JSON de /siguiente:', err);
+                        console.log('✅ Siguiente canción iniciada automáticamente');
+                    }
                 } else {
                     console.error('❌ Error al avanzar:', response.status);
                 }
