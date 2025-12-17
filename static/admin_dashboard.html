@@ -331,14 +331,20 @@
                         if (!data || !data.type) return;
                         switch (data.type) {
                             case 'consumo_created':
-                                // Activar la alerta visual y sonora
-                                document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+                                // Reproducir sonido solo si está habilitado en localStorage
+                                const soundEnabledConsumo = localStorage.getItem('adminSoundEnabled') !== 'false';
+                                if (soundEnabledConsumo) {
+                                    document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+                                }
                                 // En lugar de añadirlo directamente, recargamos toda la lista para que se agrupe correctamente.
                                 loadRecentOrders();
                                 break;
                             case 'pedido_created':
-                                // Activar la alerta visual y sonora
-                                document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+                                // Reproducir sonido solo si está habilitado en localStorage
+                                const soundEnabledPedido = localStorage.getItem('adminSoundEnabled') !== 'false';
+                                if (soundEnabledPedido) {
+                                    document.getElementById('order-notification-sound').play().catch(e => console.warn("No se pudo reproducir el sonido de notificación:", e));
+                                }
 
                                 const pedido = data.payload;
                                 const listElPedido = document.getElementById('recent-orders-list');

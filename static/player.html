@@ -475,6 +475,23 @@
 
         // Pre-carga totalmente eliminada: no existe handleFiftyPercentPreLoad
 
+        // Función para obtener y actualizar la cola inicial
+        async function fetchAndUpdateQueue() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/canciones/cola/extended`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📋 Cola inicial cargada:', data);
+                    updateQueueUI(data);
+                }
+            } catch (err) {
+                console.warn('⚠️ Error cargando cola inicial:', err);
+            }
+        }
+
         // 3. Conexión WebSocket para recibir órdenes
         function connectWebSocket() {
             console.log('Intentando conectar a WebSocket:', WEBSOCKET_URL);
@@ -482,6 +499,8 @@
 
             socket.onopen = () => {
                 console.log('WebSocket conectado exitosamente');
+                // Obtener la cola inicial al conectar
+                fetchAndUpdateQueue();
             };
 
             socket.onmessage = (event) => {
@@ -575,9 +594,18 @@
                     setTimeout(() => emoji.remove(), 6000); // Limpiar el emoji del DOM después de la animación
                 }
 
-                // 8. Actualización de la cola (Fallback)
+                // 8. Actualización explícita de la cola
+                if (data.type === 'queue_update') {
+                    console.log('📋 Actualización de cola recibida por WebSocket');
+                    if (data.payload) {
+                        updateQueueUI(data.payload);
+                    }
+                    return;
+                }
+
+                // 9. Fallback para otros tipos de dato
                 // Si no es un tipo específico de los anteriores, asumimos que es data de la cola
-                if (!['play_song', 'song_finished', 'notification', 'reaction', 'restart_song', 'pause_playback', 'resume_playback'].includes(data.type)) {
+                if (!['play_song', 'song_finished', 'notification', 'reaction', 'restart_song', 'pause_playback', 'resume_playback', 'queue_update'].includes(data.type)) {
                     updateQueueUI(data);
                 }
             };

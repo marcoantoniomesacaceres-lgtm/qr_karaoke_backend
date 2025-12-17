@@ -3,5 +3,5 @@
     "closing_minute": 0,
     "app_name": "QR Karaoke",
     "theme": "light",
-    "enable_notifications": true
+    "enable_notifications": false
 }
