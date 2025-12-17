@@ -114,7 +114,7 @@ async function loadInventoryPage() {
 
 function renderProducts(products, productList) {
     productList.innerHTML = '';
-    
+
     if (products.length === 0) {
         const emptyItem = document.createElement('li');
         emptyItem.innerHTML = `
@@ -135,19 +135,19 @@ function renderProducts(products, productList) {
     });
 
     products.forEach(product => {
-        const stockStatus = product.stock === 0 
-            ? 'Sin stock' 
-            : product.stock < 10 
-                ? 'Stock bajo' 
+        const stockStatus = product.stock === 0
+            ? 'Sin stock'
+            : product.stock < 10
+                ? 'Stock bajo'
                 : 'En stock';
 
-        const stockBadgeClass = product.stock === 0 
-            ? 'bees-badge-danger' 
-            : product.stock < 10 
-                ? 'bees-badge-warning' 
+        const stockBadgeClass = product.stock === 0
+            ? 'bees-badge-danger'
+            : product.stock < 10
+                ? 'bees-badge-warning'
                 : 'bees-badge-success';
 
-        const statusBadge = product.is_active 
+        const statusBadge = product.is_active
             ? '<span class="bees-badge bees-badge-success">✓ Activo</span>'
             : '<span class="bees-badge bees-badge-danger">✗ Inactivo</span>';
 
@@ -160,7 +160,7 @@ function renderProducts(products, productList) {
         li.style.background = 'var(--page-input-bg)';
         li.style.borderRadius = '12px';
         li.style.borderLeft = product.is_active ? '4px solid var(--bees-green)' : '4px solid var(--bees-red)';
-        
+
         li.innerHTML = `
             <div style="margin-bottom: 12px;">
                 <div style="font-weight: 600; color: var(--page-text); margin-bottom: 6px; font-size: 16px;">
@@ -192,7 +192,7 @@ async function handleCreateProduct(event, form) {
     event.preventDefault();
     const formData = new FormData(form);
     const productData = Object.fromEntries(formData.entries());
-    
+
     productData.costo = parseFloat(productData.costo);
     productData.valor = parseFloat(productData.valor);
     productData.stock = parseInt(productData.stock, 10);
@@ -305,6 +305,7 @@ function setupInventoryListeners() {
     }
 
     if (fileInput) {
+        fileInput.removeEventListener('change', handleProductImageUpload); // Evitar duplicados
         fileInput.addEventListener('change', handleProductImageUpload);
     }
 }
