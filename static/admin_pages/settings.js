@@ -7,24 +7,24 @@ async function loadSettingsPage() {
 
     try {
         // Carga la configuración desde el backend
-        let settings = { 
-            closing_hour: 3, 
-            closing_minute: 0, 
-            app_name: 'QR Karaoke', 
-            theme: 'dark', 
-            enable_notifications: true 
+        let settings = {
+            closing_hour: 3,
+            closing_minute: 0,
+            app_name: 'QR Karaoke',
+            theme: 'dark',
+            enable_notifications: true
         };
-        
+
         try {
             const response = await apiFetch('/admin/settings');
             if (response) settings = { ...settings, ...response };
         } catch (e) {
             console.warn('Settings endpoint not available, using defaults:', e.message);
         }
-        
+
         // Aplicar tema cargado
         document.body.dataset.theme = settings.theme;
-        
+
         renderSettings(settings, settingsContainer);
     } catch (error) {
         const settingsContainer = document.getElementById('settings');
@@ -135,6 +135,14 @@ function renderSettings(settings, container) {
                     <p class="notification-item-desc">Recibe alertas importantes del sistema</p>
                 </div>
                 <input type="checkbox" class="bees-checkbox" id="enable-notifications" name="enable_notifications" ${settings.enable_notifications !== false ? 'checked' : ''}>
+            </div>
+            <div class="notification-item">
+                <div class="notification-item-icon">🔔</div>
+                <div class="notification-item-content">
+                    <p class="notification-item-title">Sonido de Pedidos</p>
+                    <p class="notification-item-desc">Reproducir sonido al recibir nuevos pedidos</p>
+                </div>
+                <input type="checkbox" class="bees-checkbox" id="enable-sound" name="enable_sound" ${localStorage.getItem('adminSoundEnabled') !== 'false' ? 'checked' : ''}>
             </div>
             <button type="submit" class="bees-btn bees-btn-primary">
                 💾 Guardar Preferencias
@@ -255,23 +263,23 @@ async function handleClosingTimeUpdate(event, form) {
     try {
         let success = false;
         try {
-            await apiFetch('/admin/settings/closing-time', { 
-                method: 'POST', 
-                body: JSON.stringify(data) 
+            await apiFetch('/admin/settings/closing-time', {
+                method: 'POST',
+                body: JSON.stringify(data)
             });
             success = true;
         } catch (e) {
             // Fallback
-            const fallbackData = { 
-                hora_cierre: `${String(data.closing_hour).padStart(2, '0')}:${String(data.closing_minute).padStart(2, '0')}` 
+            const fallbackData = {
+                hora_cierre: `${String(data.closing_hour).padStart(2, '0')}:${String(data.closing_minute).padStart(2, '0')}`
             };
-            await apiFetch('/admin/set-closing-time', { 
-                method: 'POST', 
-                body: JSON.stringify(fallbackData) 
+            await apiFetch('/admin/set-closing-time', {
+                method: 'POST',
+                body: JSON.stringify(fallbackData)
             });
             success = true;
         }
-        
+
         if (success) {
             // Actualizar display
             const display = document.getElementById('closing-time-display');
@@ -296,21 +304,21 @@ async function handleThemeChange(event, form) {
             theme: theme,
             enable_notifications: true
         };
-        
-        await apiFetch('/admin/settings/general', { 
-            method: 'POST', 
-            body: JSON.stringify(data) 
+
+        await apiFetch('/admin/settings/general', {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
-        
+
         // Aplicar tema
         document.body.dataset.theme = theme;
-        
+
         // Actualizar botones visuales
         document.querySelectorAll('.theme-option').forEach(option => {
             option.classList.remove('active');
         });
         form.querySelector(`input[value="${theme}"]`).parentElement.classList.add('active');
-        
+
         showNotification(`✅ Tema cambiado a ${theme === 'dark' ? 'Oscuro 🌙' : theme === 'light' ? 'Claro ☀️' : 'Auto 🔄'}`, 'success');
     } catch (error) {
         showNotification(`❌ ${error.message}`, 'error');
@@ -320,20 +328,24 @@ async function handleThemeChange(event, form) {
 async function handleNotificationsChange(event, form) {
     event.preventDefault();
     const enableNotifications = document.getElementById('enable-notifications').checked;
+    const enableSound = document.getElementById('enable-sound').checked;
 
     try {
+        // Guardar preferencia de sonido localmente
+        localStorage.setItem('adminSoundEnabled', enableSound);
+
         const data = {
             app_name: 'QR Karaoke',
             theme: document.body.dataset.theme || 'dark',
             enable_notifications: enableNotifications
         };
-        
-        await apiFetch('/admin/settings/general', { 
-            method: 'POST', 
-            body: JSON.stringify(data) 
+
+        await apiFetch('/admin/settings/general', {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
-        
-        showNotification(`✅ Notificaciones ${enableNotifications ? 'activadas ✔️' : 'desactivadas ✖️'}`, 'success');
+
+        showNotification(`✅ Preferencias actualizadas.`, 'success');
     } catch (error) {
         showNotification(`❌ ${error.message}`, 'error');
     }
@@ -459,9 +471,9 @@ async function handleGeneralSettingsUpdate(event, form) {
     };
 
     try {
-        await apiFetch('/admin/settings/general', { 
-            method: 'POST', 
-            body: JSON.stringify(data) 
+        await apiFetch('/admin/settings/general', {
+            method: 'POST',
+            body: JSON.stringify(data)
         });
         showNotification(`✅ Configuración actualizada. Nombre: "${data.app_name}"`, 'success');
     } catch (error) {
@@ -478,25 +490,25 @@ function setupSettingsListeners() {
     const themeSettingsForm = document.getElementById('theme-settings-form');
     const notificationsSettingsForm = document.getElementById('notifications-settings-form');
     const resetNightBtn = document.getElementById('reset-night-btn');
-    
+
     // Closing time form
     if (closingTimeForm && !closingTimeForm.dataset.listenerAttached) {
         closingTimeForm.addEventListener('submit', (e) => handleClosingTimeUpdate(e, e.target));
         closingTimeForm.dataset.listenerAttached = '1';
     }
-    
+
     // API key form
     if (createApiKeyForm && !createApiKeyForm.dataset.listenerAttached) {
         createApiKeyForm.addEventListener('submit', (e) => handleCreateApiKey(e, e.target));
         createApiKeyForm.dataset.listenerAttached = '1';
     }
-    
+
     // General settings form
     if (generalSettingsForm && !generalSettingsForm.dataset.listenerAttached) {
         generalSettingsForm.addEventListener('submit', (e) => handleGeneralSettingsUpdate(e, e.target));
         generalSettingsForm.dataset.listenerAttached = '1';
     }
-    
+
     // Theme form
     if (themeSettingsForm && !themeSettingsForm.dataset.listenerAttached) {
         themeSettingsForm.addEventListener('submit', (e) => handleThemeChange(e, e.target));
@@ -508,14 +520,21 @@ function setupSettingsListeners() {
         });
         themeSettingsForm.dataset.listenerAttached = '1';
     }
-    
+
     // Notifications form
     if (notificationsSettingsForm && !notificationsSettingsForm.dataset.listenerAttached) {
         notificationsSettingsForm.addEventListener('submit', (e) => handleNotificationsChange(e, e.target));
         // Cambio rápido al hacer click en checkbox
         const notificationCheckbox = document.getElementById('enable-notifications');
+        const soundCheckbox = document.getElementById('enable-sound');
+
         if (notificationCheckbox) {
             notificationCheckbox.addEventListener('change', (e) => {
+                e.target.closest('form').dispatchEvent(new Event('submit'));
+            });
+        }
+        if (soundCheckbox) {
+            soundCheckbox.addEventListener('change', (e) => {
                 e.target.closest('form').dispatchEvent(new Event('submit'));
             });
         }
@@ -535,7 +554,7 @@ async function handleResetNight() {
     if (!confirm('⚠️ ACCIÓN DESTRUCTIVA\n\n¿Estás seguro de reiniciar la noche?\nSe borrarán: mesas, usuarios, canciones y consumos.')) {
         return;
     }
-    
+
     try {
         await apiFetch('/admin/reset-night', { method: 'POST' });
         showNotification('✅ Sistema reiniciado correctamente.', 'success');
